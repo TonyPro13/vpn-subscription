@@ -1,0 +1,479 @@
+from __future__ import annotations
+
+import asyncio
+import base64
+import json
+import os
+import shutil
+import socket
+import tempfile
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from urllib.parse import parse_qs, parse_qsl, unquote, urlencode, urlsplit, urlunsplit
+from urllib.request import Request, urlopen
+
+SOURCES = [
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
+]
+
+SUPPORTED = {"vless", "vmess", "trojan", "ss", "hysteria2", "hy2"}
+STATE_FILE = Path("data/state.json")
+OUT_DIR = Path("output")
+BIN_DIR = Path("bin")
+XRAY = BIN_DIR / "xray"
+SINGBOX = BIN_DIR / "sing-box"
+
+FAILURES_BEFORE_DELETE = int(os.getenv("FAILURES_BEFORE_DELETE", "5"))
+CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "16"))
+PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
+PROBE_URL = os.getenv("PROBE_URL", "https://cp.cloudflare.com/generate_204")
+
+
+@dataclass
+class Probe:
+    ok: bool
+    latency_ms: float | None = None
+    error: str | None = None
+
+
+def q1(q, key, default=""):
+    v = q.get(key)
+    return v[0] if v else default
+
+
+def b64decode(s: str) -> bytes:
+    s = s.strip()
+    s += "=" * (-len(s) % 4)
+    return base64.urlsafe_b64decode(s.encode())
+
+
+def canonical(uri: str) -> str:
+    uri = uri.strip()
+    scheme = uri.split("://", 1)[0].lower() if "://" in uri else ""
+    if scheme == "vmess":
+        return uri.split("#", 1)[0]
+    try:
+        p = urlsplit(uri)
+        q = urlencode(sorted(parse_qsl(p.query, keep_blank_values=True)), doseq=True)
+        return urlunsplit((p.scheme.lower(), p.netloc, p.path, q, ""))
+    except Exception:
+        return uri.split("#", 1)[0]
+
+
+def fetch(url: str) -> str:
+    req = Request(url, headers={"User-Agent": "VPN-Subscription-Builder/0.3"})
+    with urlopen(req, timeout=30) as r:
+        return r.read().decode("utf-8", errors="replace")
+
+
+def collect_sources():
+    unique = {}
+    source_stats = {}
+    duplicates = 0
+
+    for url in SOURCES:
+        count = 0
+        text = fetch(url)
+        for line in text.splitlines():
+            s = line.strip()
+            if not s or s.startswith("#") or "://" not in s:
+                continue
+            scheme = s.split("://", 1)[0].lower()
+            if scheme not in SUPPORTED:
+                continue
+            count += 1
+            k = canonical(s)
+            if k in unique:
+                duplicates += 1
+            else:
+                unique[k] = s
+        source_stats[url] = count
+
+    return unique, source_stats, duplicates
+
+
+def load_state():
+    if not STATE_FILE.exists():
+        return {}
+    try:
+        data = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        return data.get("nodes", {})
+    except Exception:
+        return {}
+
+
+def stream_settings(q):
+    security = q1(q, "security", "none")
+    network = q1(q, "type", "tcp")
+    st = {"network": network, "security": security}
+
+    if security == "tls":
+        tls = {"serverName": q1(q, "sni", "")}
+        fp = q1(q, "fp", "")
+        if fp:
+            tls["fingerprint"] = fp
+        if q1(q, "allowInsecure", q1(q, "insecure", "0")).lower() in {"1", "true"}:
+            tls["allowInsecure"] = True
+        st["tlsSettings"] = tls
+    elif security == "reality":
+        st["realitySettings"] = {
+            "serverName": q1(q, "sni", ""),
+            "fingerprint": q1(q, "fp", "chrome"),
+            "publicKey": q1(q, "pbk", ""),
+            "shortId": q1(q, "sid", ""),
+            "spiderX": q1(q, "spx", ""),
+        }
+
+    if network == "ws":
+        ws = {"path": unquote(q1(q, "path", "/"))}
+        host = q1(q, "host", "")
+        if host:
+            ws["headers"] = {"Host": host}
+        st["wsSettings"] = ws
+    elif network == "grpc":
+        st["grpcSettings"] = {"serviceName": q1(q, "serviceName", q1(q, "service_name", ""))}
+    elif network == "httpupgrade":
+        st["httpupgradeSettings"] = {
+            "path": unquote(q1(q, "path", "/")),
+            "host": q1(q, "host", ""),
+        }
+    elif network == "xhttp":
+        st["xhttpSettings"] = {
+            "path": unquote(q1(q, "path", "/")),
+            "host": q1(q, "host", ""),
+            "mode": q1(q, "mode", "auto"),
+        }
+    return st
+
+
+def xray_outbound(uri: str):
+    p = urlsplit(uri)
+    q = parse_qs(p.query, keep_blank_values=True)
+    scheme = p.scheme.lower()
+
+    if scheme == "vless":
+        return {
+            "protocol": "vless",
+            "settings": {"vnext": [{
+                "address": p.hostname,
+                "port": p.port,
+                "users": [{
+                    "id": p.username or "",
+                    "encryption": q1(q, "encryption", "none"),
+                    "flow": q1(q, "flow", ""),
+                }]
+            }]},
+            "streamSettings": stream_settings(q),
+        }
+
+    if scheme == "trojan":
+        return {
+            "protocol": "trojan",
+            "settings": {"servers": [{
+                "address": p.hostname,
+                "port": p.port,
+                "password": unquote(p.username or ""),
+            }]},
+            "streamSettings": stream_settings(q),
+        }
+
+    if scheme == "vmess":
+        raw = uri[len("vmess://"):].split("#", 1)[0]
+        o = json.loads(b64decode(raw).decode("utf-8", errors="replace"))
+        fake_q = {
+            "type": [o.get("net", "tcp")],
+            "security": [o.get("tls", "") or "none"],
+            "sni": [o.get("sni", "")],
+            "host": [o.get("host", "")],
+            "path": [o.get("path", "")],
+            "fp": [o.get("fp", "")],
+        }
+        return {
+            "protocol": "vmess",
+            "settings": {"vnext": [{
+                "address": o["add"],
+                "port": int(o["port"]),
+                "users": [{
+                    "id": o["id"],
+                    "alterId": int(o.get("aid", 0) or 0),
+                    "security": o.get("scy", "auto"),
+                }]
+            }]},
+            "streamSettings": stream_settings(fake_q),
+        }
+
+    if scheme == "ss":
+        raw = uri[len("ss://"):].split("#", 1)[0].split("?", 1)[0]
+        if "@" in raw:
+            cred, addr = raw.rsplit("@", 1)
+            cred_s = b64decode(cred).decode(errors="replace") if ":" not in cred else unquote(cred)
+        else:
+            decoded = b64decode(raw).decode(errors="replace")
+            cred_s, addr = decoded.rsplit("@", 1)
+        method, password = cred_s.split(":", 1)
+        ap = urlsplit("ss://" + addr)
+        return {
+            "protocol": "shadowsocks",
+            "settings": {"servers": [{
+                "address": ap.hostname,
+                "port": ap.port,
+                "method": method,
+                "password": password,
+            }]}
+        }
+
+    raise ValueError(f"unsupported by xray adapter: {scheme}")
+
+
+def xray_config(uri: str, port: int):
+    return {
+        "log": {"loglevel": "warning"},
+        "inbounds": [{
+            "listen": "127.0.0.1",
+            "port": port,
+            "protocol": "socks",
+            "settings": {"udp": True},
+            "tag": "probe-in",
+        }],
+        "outbounds": [
+            dict(xray_outbound(uri), tag="probe-out"),
+            {"protocol": "freedom", "tag": "direct"},
+        ],
+        "routing": {
+            "rules": [{
+                "type": "field",
+                "inboundTag": ["probe-in"],
+                "outboundTag": "probe-out",
+            }]
+        },
+    }
+
+
+def singbox_config(uri: str, port: int):
+    p = urlsplit(uri)
+    q = parse_qs(p.query, keep_blank_values=True)
+    scheme = p.scheme.lower()
+    if scheme not in {"hysteria2", "hy2"}:
+        raise ValueError("sing-box adapter currently handles Hysteria2/Hy2 only")
+
+    outbound = {
+        "type": "hysteria2",
+        "tag": "probe-out",
+        "server": p.hostname,
+        "server_port": p.port,
+        "password": unquote(p.username or ""),
+        "tls": {
+            "enabled": True,
+            "server_name": q1(q, "sni", p.hostname or ""),
+            "insecure": q1(q, "insecure", q1(q, "allowInsecure", "0")).lower() in {"1", "true"},
+        },
+    }
+    obfs = q1(q, "obfs", "")
+    if obfs:
+        outbound["obfs"] = {
+            "type": obfs,
+            "password": q1(q, "obfs-password", q1(q, "obfs_password", "")),
+        }
+
+    return {
+        "log": {"level": "warn"},
+        "inbounds": [{
+            "type": "socks",
+            "tag": "probe-in",
+            "listen": "127.0.0.1",
+            "listen_port": port,
+        }],
+        "outbounds": [outbound],
+        "route": {"final": "probe-out"},
+    }
+
+
+def free_port():
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
+async def wait_port(port: int, timeout=2.5):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            r, w = await asyncio.open_connection("127.0.0.1", port)
+            w.close()
+            try:
+                await w.wait_closed()
+            except Exception:
+                pass
+            return True
+        except Exception:
+            await asyncio.sleep(0.05)
+    return False
+
+
+async def curl_probe(port: int):
+    start = time.perf_counter()
+    proc = await asyncio.create_subprocess_exec(
+        "curl", "-fsS",
+        "--max-time", str(max(1, int(PROBE_TIMEOUT))),
+        "--proxy", f"socks5h://127.0.0.1:{port}",
+        "-o", os.devnull,
+        "-w", "%{http_code}",
+        PROBE_URL,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        out, err = await asyncio.wait_for(proc.communicate(), timeout=PROBE_TIMEOUT + 2)
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+        return Probe(False, error="HTTP probe timeout")
+
+    code = out.decode(errors="replace").strip()
+    latency = round((time.perf_counter() - start) * 1000, 1)
+    ok = proc.returncode == 0 and code in {"200", "204"}
+    return Probe(ok, latency_ms=latency if ok else None,
+                 error=None if ok else err.decode(errors="replace")[-300:])
+
+
+async def run_probe(uri: str):
+    scheme = uri.split("://", 1)[0].lower()
+    port = free_port()
+    engine = XRAY if scheme in {"vless", "vmess", "trojan", "ss"} else SINGBOX
+    cfg = xray_config(uri, port) if engine == XRAY else singbox_config(uri, port)
+
+    if not engine.exists():
+        return Probe(False, error=f"missing engine: {engine}")
+
+    with tempfile.TemporaryDirectory(prefix="vpnprobe-") as td:
+        cfgpath = Path(td) / "config.json"
+        cfgpath.write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf-8")
+
+        proc = await asyncio.create_subprocess_exec(
+            str(engine), "run", "-c", str(cfgpath),
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
+        try:
+            if not await wait_port(port):
+                err = ""
+                if proc.returncode is not None:
+                    err = (await proc.stderr.read()).decode(errors="replace")[-400:]
+                return Probe(False, error=err or "local SOCKS did not start")
+            return await curl_probe(port)
+        finally:
+            if proc.returncode is None:
+                proc.terminate()
+                try:
+                    await asyncio.wait_for(proc.wait(), timeout=1.5)
+                except asyncio.TimeoutError:
+                    proc.kill()
+                    await proc.wait()
+
+
+async def safe_probe(uri: str, sem: asyncio.Semaphore):
+    async with sem:
+        try:
+            return await run_probe(uri)
+        except Exception as e:
+            return Probe(False, error=f"{type(e).__name__}: {e}")
+
+
+async def main():
+    OUT_DIR.mkdir(exist_ok=True)
+    STATE_FILE.parent.mkdir(exist_ok=True)
+
+    source_nodes, source_stats, duplicates = collect_sources()
+    old = load_state()
+    now = int(time.time())
+
+    # Any key present in the current sources is eligible again, even if it failed in the past.
+    current = {}
+    for key, uri in source_nodes.items():
+        previous = old.get(key, {})
+        current[key] = {
+            "uri": uri,
+            "failures": int(previous.get("failures", 0)),
+            "last_ok": previous.get("last_ok"),
+            "last_latency_ms": previous.get("last_latency_ms"),
+            "last_error": previous.get("last_error"),
+        }
+
+    sem = asyncio.Semaphore(CHECK_CONCURRENCY)
+    keys = list(current.keys())
+    results = await asyncio.gather(*(safe_probe(current[k]["uri"], sem) for k in keys))
+
+    deleted = 0
+    successes = 0
+    failures = 0
+
+    for key, result in zip(keys, results):
+        item = current.get(key)
+        if item is None:
+            continue
+        if result.ok:
+            successes += 1
+            item["failures"] = 0
+            item["last_ok"] = now
+            item["last_latency_ms"] = result.latency_ms
+            item["last_error"] = None
+        else:
+            failures += 1
+            item["failures"] += 1
+            item["last_latency_ms"] = None
+            item["last_error"] = result.error
+            if item["failures"] >= FAILURES_BEFORE_DELETE:
+                del current[key]
+                deleted += 1
+
+    # Fastest successful nodes first; nodes with recent failure go below them.
+    ordered = sorted(
+        current.values(),
+        key=lambda x: (
+            x["failures"] != 0,
+            x["last_latency_ms"] is None,
+            x["last_latency_ms"] if x["last_latency_ms"] is not None else 10**12,
+        ),
+    )
+
+    (OUT_DIR / "subscription.txt").write_text(
+        "\n".join(x["uri"] for x in ordered) + ("\n" if ordered else ""),
+        encoding="utf-8",
+    )
+
+    state = {
+        "updated_at": now,
+        "nodes": current,
+    }
+    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    status = {
+        "updated_at": now,
+        "source_nodes_unique": len(source_nodes),
+        "source_duplicates_removed": duplicates,
+        "source_stats": source_stats,
+        "checked_this_run": len(keys),
+        "successful_this_run": successes,
+        "failed_this_run": failures,
+        "deleted_after_5_failures": deleted,
+        "published_nodes": len(current),
+        "server_check_period_minutes": 5,
+        "failure_limit": FAILURES_BEFORE_DELETE,
+        "note": "Final per-device AUTO/failover is intentionally delegated to the VPN client.",
+    }
+    (OUT_DIR / "status.json").write_text(
+        json.dumps(status, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    print(json.dumps(status, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
