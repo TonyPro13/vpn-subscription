@@ -393,16 +393,20 @@ async def main():
     old = load_state()
     now = int(time.time())
 
-    # Any key present in the current sources is eligible again, even if it failed in the past.
+    # New keys must pass a real VPN probe before they are published.
+    # Previously proven keys may survive temporary failures and are removed
+    # only after FAILURES_BEFORE_DELETE consecutive failed probes.
     current = {}
     for key, uri in source_nodes.items():
         previous = old.get(key, {})
+        established = bool(previous.get("established", previous.get("last_ok") is not None))
         current[key] = {
             "uri": uri,
-            "failures": int(previous.get("failures", 0)),
-            "last_ok": previous.get("last_ok"),
-            "last_latency_ms": previous.get("last_latency_ms"),
-            "last_error": previous.get("last_error"),
+            "established": established,
+            "failures": int(previous.get("failures", 0)) if established else 0,
+            "last_ok": previous.get("last_ok") if established else None,
+            "last_latency_ms": previous.get("last_latency_ms") if established else None,
+            "last_error": previous.get("last_error") if established else None,
         }
 
     sem = asyncio.Semaphore(CHECK_CONCURRENCY)
@@ -412,6 +416,8 @@ async def main():
     deleted = 0
     successes = 0
     failures = 0
+    rejected_new = 0
+    newly_established = 0
 
     for key, result in zip(keys, results):
         item = current.get(key)
@@ -419,18 +425,26 @@ async def main():
             continue
         if result.ok:
             successes += 1
+            if not item["established"]:
+                newly_established += 1
+            item["established"] = True
             item["failures"] = 0
             item["last_ok"] = now
             item["last_latency_ms"] = result.latency_ms
             item["last_error"] = None
         else:
             failures += 1
-            item["failures"] += 1
             item["last_latency_ms"] = None
             item["last_error"] = result.error
-            if item["failures"] >= FAILURES_BEFORE_DELETE:
+
+            if not item["established"]:
                 del current[key]
-                deleted += 1
+                rejected_new += 1
+            else:
+                item["failures"] += 1
+                if item["failures"] >= FAILURES_BEFORE_DELETE:
+                    del current[key]
+                    deleted += 1
 
     # Fastest successful nodes first; nodes with recent failure go below them.
     ordered = sorted(
@@ -461,8 +475,12 @@ async def main():
         "checked_this_run": len(keys),
         "successful_this_run": successes,
         "failed_this_run": failures,
+        "newly_established_this_run": newly_established,
+        "rejected_new_this_run": rejected_new,
         "deleted_after_5_failures": deleted,
         "published_nodes": len(current),
+        "admission_rule": "New key is published only after a successful real VPN probe.",
+        "retention_rule": "Previously working key is removed after 5 consecutive failed probes.",
         "server_check_period_minutes": 5,
         "failure_limit": FAILURES_BEFORE_DELETE,
         "note": "Final per-device AUTO/failover is intentionally delegated to the VPN client.",
