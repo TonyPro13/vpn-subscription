@@ -31,7 +31,6 @@ BIN_DIR = Path("bin")
 XRAY = BIN_DIR / "xray"
 SINGBOX = BIN_DIR / "sing-box"
 
-FAILURES_BEFORE_DELETE = int(os.getenv("FAILURES_BEFORE_DELETE", "5"))
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "16"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
 PROBE_URL = os.getenv("PROBE_URL", "https://cp.cloudflare.com/generate_204")
@@ -616,13 +615,10 @@ async def main():
             item["last_error"] = result.error
 
             if not item["established"]:
-                del current[key]
                 rejected_new += 1
-            else:
-                item["failures"] += 1
-                if item["failures"] >= FAILURES_BEFORE_DELETE:
-                    del current[key]
-                    deleted += 1
+
+            del current[key]
+            deleted += 1
 
     # Fastest successful nodes first; nodes with recent failure go below them.
     ordered = sorted(
@@ -655,12 +651,10 @@ async def main():
         "failed_this_run": failures,
         "newly_established_this_run": newly_established,
         "rejected_new_this_run": rejected_new,
-        "deleted_after_5_failures": deleted,
+        "rejected_this_run": deleted,
         "published_nodes": len(current),
-        "admission_rule": "New key is published only after a successful real VPN probe.",
-        "retention_rule": "Previously working key is removed after 5 consecutive failed probes.",
+        "admission_rule": "A key is published only if it passes all probes in the current run.",
         "server_check_period_minutes": 5,
-        "failure_limit": FAILURES_BEFORE_DELETE,
         "note": "Final per-device AUTO/failover is intentionally delegated to the VPN client.",
     }
     (OUT_DIR / "status.json").write_text(
