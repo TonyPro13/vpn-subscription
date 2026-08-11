@@ -36,6 +36,24 @@ CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "16"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
 PROBE_URL = os.getenv("PROBE_URL", "https://cp.cloudflare.com/generate_204")
 
+CHATGPT_PROBE_URL = os.getenv(
+    "CHATGPT_PROBE_URL",
+    "https://chatgpt.com/robots.txt",
+)
+
+YOUTUBE_PROBE_URL = os.getenv(
+    "YOUTUBE_PROBE_URL",
+    "https://www.youtube.com/generate_204",
+)
+
+QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
+
+QUALITY_PROBES = (
+    ("cloudflare", PROBE_URL, {"200", "204"}),
+    ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
+    ("youtube", YOUTUBE_PROBE_URL, {"204"}),
+)
+
 
 @dataclass
 class Probe:
@@ -415,30 +433,90 @@ async def wait_port(port: int, timeout=2.5):
     return False
 
 
-async def curl_probe(port: int):
-    start = time.perf_counter()
+async def curl_url_probe(port: int, name: str, url: str, ok_codes):
     proc = await asyncio.create_subprocess_exec(
         "curl", "-fsS",
         "--max-time", str(max(1, int(PROBE_TIMEOUT))),
         "--proxy", f"socks5h://127.0.0.1:{port}",
         "-o", os.devnull,
-        "-w", "%{http_code}",
-        PROBE_URL,
+        "-w", "%{http_code} %{time_total}",
+        url,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
+
     try:
-        out, err = await asyncio.wait_for(proc.communicate(), timeout=PROBE_TIMEOUT + 2)
+        out, err = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=PROBE_TIMEOUT + 2,
+        )
     except asyncio.TimeoutError:
         proc.kill()
         await proc.communicate()
-        return Probe(False, error="HTTP probe timeout")
+        return Probe(False, error=f"{name}: timeout")
 
-    code = out.decode(errors="replace").strip()
-    latency = round((time.perf_counter() - start) * 1000, 1)
-    ok = proc.returncode == 0 and code in {"200", "204"}
-    return Probe(ok, latency_ms=latency if ok else None,
-                 error=None if ok else err.decode(errors="replace")[-300:])
+    text = out.decode(errors="replace").strip()
+    parts = text.split()
+
+    code = parts[0] if parts else ""
+
+    try:
+        total_seconds = float(parts[1])
+    except (IndexError, ValueError):
+        total_seconds = PROBE_TIMEOUT + 1
+
+    if proc.returncode != 0:
+        error_text = err.decode(errors="replace")[-300:]
+        return Probe(
+            False,
+            error=f"{name}: {error_text or 'HTTPS/TLS request failed'}",
+        )
+
+    if code not in ok_codes:
+        return Probe(
+            False,
+            error=f"{name}: unexpected HTTP status {code}",
+        )
+
+    if total_seconds > QUALITY_MAX_SECONDS:
+        return Probe(
+            False,
+            error=f"{name}: too slow ({total_seconds:.2f}s)",
+        )
+
+    return Probe(
+        True,
+        latency_ms=round(total_seconds * 1000, 1),
+    )
+
+
+async def curl_probe(port: int):
+    latencies = []
+
+    for name, url, ok_codes in QUALITY_PROBES:
+        result = await curl_url_probe(
+            port,
+            name,
+            url,
+            ok_codes,
+        )
+
+        if not result.ok:
+            return result
+
+        if result.latency_ms is not None:
+            latencies.append(result.latency_ms)
+
+    average_latency = (
+        round(sum(latencies) / len(latencies), 1)
+        if latencies
+        else None
+    )
+
+    return Probe(
+        True,
+        latency_ms=average_latency,
+    )
 
 
 async def run_probe(uri: str):
