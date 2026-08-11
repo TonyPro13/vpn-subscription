@@ -85,7 +85,9 @@ def collect_sources():
             s = line.strip()
             if not s or s.startswith("#") or "://" not in s:
                 continue
-            s = clean_insecure_params(s)    
+            s = clean_insecure_params(s)
+            if "neth.anonch.net" in s and "type=xhttp" in s:
+                continue
             scheme = s.split("://", 1)[0].lower()
             if scheme not in SUPPORTED:
                 continue
