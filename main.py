@@ -65,6 +65,8 @@ def canonical(uri: str) -> str:
 
 def clean_insecure_params(uri: str) -> str:
     uri = re.sub(r'(?i)(allowinsecure|insecure)=[^&]*', '', uri)
+    uri = re.sub(r'(?i)([?&])packetEncoding=none(?=&|#|$)', r'\1', uri)
+    uri = uri.replace("?&", "?")
     uri = re.sub(r'&&+', '&', uri)
     return uri
 def fetch(url: str) -> str:
