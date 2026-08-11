@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import ipaddress
 import json
 import os
 import re
@@ -19,6 +20,9 @@ SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
 ]
+
+RU_IPV4_URL = "https://www.ipdeny.com/ipblocks/data/aggregated/ru-aggregated.zone"
+RU_IPV6_URL = "https://www.ipdeny.com/ipv6/ipaddresses/aggregated/ru-aggregated.zone"
 
 SUPPORTED = {"vless", "vmess", "trojan", "ss", "hysteria2", "hy2"}
 STATE_FILE = Path("data/state.json")
@@ -75,7 +79,55 @@ def fetch(url: str) -> str:
         return r.read().decode("utf-8", errors="replace")
 
 
+def load_ru_networks():
+    networks = []
+
+    for url in (RU_IPV4_URL, RU_IPV6_URL):
+        try:
+            text = fetch(url)
+            for line in text.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                try:
+                    networks.append(ipaddress.ip_network(line, strict=False))
+                except ValueError:
+                    pass
+        except Exception as e:
+            print(f"WARNING: failed to load RU IP ranges from {url}: {e}")
+
+    print(f"Loaded {len(networks)} Russian IP networks")
+    return networks
+
+
+def is_russian_host(host: str, ru_networks) -> bool:
+    try:
+        try:
+            ips = [ipaddress.ip_address(host)]
+        except ValueError:
+            infos = socket.getaddrinfo(host, None)
+            ips = []
+            for info in infos:
+                try:
+                    ip = ipaddress.ip_address(info[4][0])
+                    if ip not in ips:
+                        ips.append(ip)
+                except ValueError:
+                    pass
+
+        for ip in ips:
+            for network in ru_networks:
+                if ip.version == network.version and ip in network:
+                    return True
+
+        return False
+    except Exception as e:
+        print(f"WARNING: failed to check country for {host}: {e}")
+        return False
+
+
 def collect_sources():
+    ru_networks = load_ru_networks()
     unique = {}
     source_stats = {}
     duplicates = 0
@@ -90,9 +142,18 @@ def collect_sources():
             s = clean_insecure_params(s)
             if "neth.anonch.net" in s and "type=xhttp" in s:
                 continue
+                
             scheme = s.split("://", 1)[0].lower()
             if scheme not in SUPPORTED:
                 continue
+                
+            try:
+                host = urlsplit(s).hostname
+                if host and is_russian_host(host, ru_networks):
+                    continue
+            except Exception:
+                pass
+            
             count += 1
             k = canonical(s)
             if k in unique:
