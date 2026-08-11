@@ -4,6 +4,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 import shutil
 import socket
 import tempfile
@@ -62,7 +63,10 @@ def canonical(uri: str) -> str:
     except Exception:
         return uri.split("#", 1)[0]
 
-
+def clean_insecure_params(uri: str) -> str:
+    uri = re.sub(r'(?i)(allowinsecure|insecure)=[^&]*', '', uri)
+    uri = re.sub(r'&&+', '&', uri)
+    return uri
 def fetch(url: str) -> str:
     req = Request(url, headers={"User-Agent": "VPN-Subscription-Builder/0.3"})
     with urlopen(req, timeout=30) as r:
@@ -81,6 +85,7 @@ def collect_sources():
             s = line.strip()
             if not s or s.startswith("#") or "://" not in s:
                 continue
+            s = clean_insecure_params(s)    
             scheme = s.split("://", 1)[0].lower()
             if scheme not in SUPPORTED:
                 continue
