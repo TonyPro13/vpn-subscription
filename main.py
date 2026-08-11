@@ -100,6 +100,39 @@ def load_ru_networks():
     return networks
 
 
+def extract_server_host(uri: str):
+    try:
+        scheme = uri.split("://", 1)[0].lower()
+
+        if scheme == "vmess":
+            raw = uri.split("://", 1)[1].split("#", 1)[0]
+            data = json.loads(b64decode(raw).decode("utf-8", errors="replace"))
+            host = data.get("add")
+            return str(host).strip() if host else None
+
+        if scheme == "ss":
+            raw = uri.split("://", 1)[1]
+            raw = raw.split("#", 1)[0]
+            raw = raw.split("?", 1)[0]
+
+            if "@" in raw:
+                server_part = raw.rsplit("@", 1)[1]
+            else:
+                decoded = b64decode(raw).decode("utf-8", errors="replace")
+                if "@" not in decoded:
+                    return None
+                server_part = decoded.rsplit("@", 1)[1]
+
+            parsed = urlsplit("ss://x@" + server_part)
+            return parsed.hostname
+
+        return urlsplit(uri).hostname
+
+    except Exception as e:
+        print(f"WARNING: failed to extract server host: {e}")
+        return None
+
+
 def is_russian_host(host: str, ru_networks) -> bool:
     try:
         try:
@@ -147,12 +180,9 @@ def collect_sources():
             if scheme not in SUPPORTED:
                 continue
                 
-            try:
-                host = urlsplit(s).hostname
-                if host and is_russian_host(host, ru_networks):
-                    continue
-            except Exception:
-                pass
+            host = extract_server_host(s)
+            if host and is_russian_host(host, ru_networks):
+                continue
             
             count += 1
             k = canonical(s)
