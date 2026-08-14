@@ -49,6 +49,7 @@ YOUTUBE_PROBE_URL = os.getenv(
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
 QUALITY_PROBES = (
+    ("hiddify", "http://captive.apple.com/hotspot-detect.html", {"200"}),
     ("cloudflare", PROBE_URL, {"200", "204"}),
     ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
     ("youtube", YOUTUBE_PROBE_URL, {"204"}),
