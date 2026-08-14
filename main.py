@@ -182,7 +182,7 @@ def collect_sources():
     source_stats = {}
     duplicates = 0
 
-        for url in SOURCES:
+    for url in SOURCES:
         count = 0
         text = fetch(url)
 
