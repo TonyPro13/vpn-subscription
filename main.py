@@ -152,20 +152,23 @@ def extract_server_host(uri: str):
         return None
 
 
-def is_russian_host(host: str, ru_networks) -> bool:
+def is_russian_host(host: str, ru_networks):
     try:
         try:
-            ips = [ipaddress.ip_address(host)]
+            ip = ipaddress.ip_address(host)
+            ips = [ip]
         except ValueError:
             infos = socket.getaddrinfo(host, None)
             ips = []
+
             for info in infos:
                 try:
-                    ip = ipaddress.ip_address(info[4][0])
-                    if ip not in ips:
-                        ips.append(ip)
+                    ips.append(ipaddress.ip_address(info[4][0]))
                 except ValueError:
                     pass
+
+        if not ips:
+            return None
 
         for ip in ips:
             for network in ru_networks:
@@ -173,9 +176,10 @@ def is_russian_host(host: str, ru_networks) -> bool:
                     return True
 
         return False
+
     except Exception as e:
         print(f"WARNING: failed to check country for {host}: {e}")
-        return False
+        return None
 
 
 def collect_sources():
@@ -209,8 +213,12 @@ def collect_sources():
                 continue
                 
             host = extract_server_host(s)
-            if host and is_russian_host(host, ru_networks):
-                continue
+            
+            if host:
+                country_check = is_russian_host(host, ru_networks)
+                
+                if country_check is True or country_check is None:
+                    continue
             
             count += 1
             k = canonical(s)
