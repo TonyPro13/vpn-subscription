@@ -34,7 +34,6 @@ SINGBOX = BIN_DIR / "sing-box"
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "16"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
-PROBE_URL = os.getenv("PROBE_URL", "https://cp.cloudflare.com/generate_204")
 
 CHATGPT_PROBE_URL = os.getenv(
     "CHATGPT_PROBE_URL",
@@ -507,17 +506,6 @@ async def curl_url_probe(port: int, name: str, url: str, ok_codes):
     )
 
 
-async def hiddify_probe(port: int):
-    result = await curl_url_probe(
-        port,
-        "hiddify",
-        "http://captive.apple.com/hotspot-detect.html",
-        {"200"},
-    )
-
-    return result
-
-
 async def quality_probe(port: int):
     latencies = []
 
@@ -548,11 +536,6 @@ async def quality_probe(port: int):
 
 
 async def curl_probe(port: int):
-    hiddify_result = await hiddify_probe(port)
-
-    if not hiddify_result.ok:
-        return hiddify_result
-
     return await quality_probe(port)
 
 
