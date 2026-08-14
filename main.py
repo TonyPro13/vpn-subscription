@@ -707,6 +707,7 @@ async def main():
         "rejected_new_this_run": rejected_new,
         "rejected_this_run": deleted,
         "published_nodes": len(current),
+        "probe_stats": probe_stats,
         "admission_rule": "A key is published only if it passes all probes in the current run.",
         "server_check_period_minutes": 5,
         "note": "Final per-device AUTO/failover is intentionally delegated to the VPN client.",
