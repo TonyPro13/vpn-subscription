@@ -182,9 +182,18 @@ def collect_sources():
     source_stats = {}
     duplicates = 0
 
-    for url in SOURCES:
+        for url in SOURCES:
         count = 0
         text = fetch(url)
+
+        if "://" not in text:
+            try:
+                decoded = b64decode(text).decode("utf-8", errors="replace")
+                if "://" in decoded:
+                    text = decoded
+            except Exception:
+                pass
+
         for line in text.splitlines():
             s = line.strip()
             if not s or s.startswith("#") or "://" not in s:
