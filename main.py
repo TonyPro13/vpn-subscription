@@ -50,10 +50,16 @@ TELEGRAM_PROBE_URL = os.getenv(
     "https://telegram.org",
 )
 
+MAX_PROBE_URL = os.getenv(
+    "MAX_PROBE_URL",
+    "https://max.ru",
+)
+
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
 QUALITY_PROBES = (
     ("apple", "http://captive.apple.com/hotspot-detect.html", {"200"}),
+    ("max", MAX_PROBE_URL, {"200"}),
     ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
     ("youtube", YOUTUBE_PROBE_URL, {"204"}),
     ("telegram", "https://telegram.org", {"200"}),
@@ -191,6 +197,7 @@ def collect_sources():
     unique = {}
     source_stats = {}
     duplicates = 0
+    geo_passed = 0
 
     for url in SOURCES:
         count = 0
@@ -223,6 +230,8 @@ def collect_sources():
                 
                 if country_check is True or country_check is None:
                     continue
+
+            geo_passed += 1
             
             count += 1
             k = canonical(s)
@@ -232,7 +241,7 @@ def collect_sources():
                 unique[k] = s
         source_stats[url] = count
 
-    return unique, source_stats, duplicates
+    return unique, source_stats, duplicates, geo_passed
 
 
 def load_state():
@@ -597,7 +606,7 @@ async def main():
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
 
-    source_nodes, source_stats, duplicates = collect_sources()
+    source_nodes, source_stats, duplicates, geo_passed = collect_sources()
     old = load_state()
     now = int(time.time())
 
@@ -634,6 +643,11 @@ async def main():
             "failed": 0,
         },
         "telegram": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "max": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
@@ -700,6 +714,7 @@ async def main():
         "source_nodes_unique": len(source_nodes),
         "source_duplicates_removed": duplicates,
         "source_stats": source_stats,
+        "geo_passed": geo_passed,
         "checked_this_run": len(keys),
         "successful_this_run": successes,
         "failed_this_run": failures,
