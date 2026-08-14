@@ -45,12 +45,18 @@ YOUTUBE_PROBE_URL = os.getenv(
     "https://www.youtube.com/generate_204",
 )
 
+TELEGRAM_PROBE_URL = os.getenv(
+    "TELEGRAM_PROBE_URL",
+    "https://telegram.org",
+)
+
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
 QUALITY_PROBES = (
-    ("hiddify", "http://captive.apple.com/hotspot-detect.html", {"200"}),
+    ("apple", "http://captive.apple.com/hotspot-detect.html", {"200"}),
     ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
     ("youtube", YOUTUBE_PROBE_URL, {"204"}),
+    ("telegram", "https://telegram.org", {"200"}),
 )
 
 
@@ -506,10 +512,11 @@ async def curl_url_probe(port: int, name: str, url: str, ok_codes):
     )
 
 
-async def quality_probe(port: int):
+async def quality_probe(port: int, probe_stats: dict):
     latencies = []
 
     for name, url, ok_codes in QUALITY_PROBES:
+        probe_stats[name]["checked"] += 1
         result = await curl_url_probe(
             port,
             name,
@@ -518,7 +525,10 @@ async def quality_probe(port: int):
         )
 
         if not result.ok:
+            probe_stats[name]["failed"] += 1
             return result
+
+        probe_stats[name]["passed"] += 1
 
         if result.latency_ms is not None:
             latencies.append(result.latency_ms)
@@ -535,11 +545,11 @@ async def quality_probe(port: int):
     )
 
 
-async def curl_probe(port: int):
-    return await quality_probe(port)
+async def curl_probe(port: int, probe_stats: dict):
+    return await quality_probe(port, probe_stats)
 
 
-async def run_probe(uri: str):
+async def run_probe(uri: str, probe_stats: dict):
     scheme = uri.split("://", 1)[0].lower()
     port = free_port()
     engine = XRAY if scheme in {"vless", "vmess", "trojan", "ss"} else SINGBOX
@@ -564,7 +574,7 @@ async def run_probe(uri: str):
                 if proc.returncode is not None:
                     err = (await proc.stderr.read()).decode(errors="replace")[-400:]
                 return Probe(False, error=err or "local SOCKS did not start")
-            return await curl_probe(port)
+            return await curl_probe(port, probe_stats)
         finally:
             if proc.returncode is None:
                 proc.terminate()
@@ -575,10 +585,10 @@ async def run_probe(uri: str):
                     await proc.wait()
 
 
-async def safe_probe(uri: str, sem: asyncio.Semaphore):
+async def safe_probe(uri: str, sem: asyncio.Semaphore, probe_stats: dict):
     async with sem:
         try:
-            return await run_probe(uri)
+            return await run_probe(uri, probe_stats)
         except Exception as e:
             return Probe(False, error=f"{type(e).__name__}: {e}")
 
@@ -607,9 +617,32 @@ async def main():
             "last_error": previous.get("last_error") if established else None,
         }
 
+    probe_stats = {
+        "apple": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "chatgpt": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "youtube": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "telegram": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+    }
+
     sem = asyncio.Semaphore(CHECK_CONCURRENCY)
     keys = list(current.keys())
-    results = await asyncio.gather(*(safe_probe(current[k]["uri"], sem) for k in keys))
+    results = await asyncio.gather(*(safe_probe(current[k]["uri"], sem, probe_stats) for k in keys))
 
     deleted = 0
     successes = 0
