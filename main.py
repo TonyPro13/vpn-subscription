@@ -833,7 +833,7 @@ async def quality_probe(
 ):
     latencies = []
 
-    for name, url, ok_codes in QUALITY_PROBES:
+        for name, url, ok_codes in QUALITY_PROBES:
         probe_stats[name]["checked"] += 1
 
         result = await curl_url_probe(
@@ -867,38 +867,37 @@ async def quality_probe(
         if result.latency_ms is not None:
             latencies.append(result.latency_ms)
 
-    probe_stats["youtube_real"]["checked"] += 1
+        if name == "max":
+            probe_stats["youtube_real"]["checked"] += 1
 
-    youtube_result = await youtube_real_probe(port)
+            youtube_result = await youtube_real_probe(port)
 
-    if not youtube_result.ok:
-        probe_stats["youtube_real"]["failed"] += 1
+            if not youtube_result.ok:
+                probe_stats["youtube_real"]["failed"] += 1
 
-        error_text = youtube_result.error or ""
+                error_text = youtube_result.error or ""
 
-        if (
-            "all reference videos failed" in error_text
-            or "media URL" in error_text
-        ):
-            probe_stats["youtube_real"]["media_url_failed"] += 1
+                if (
+                    "all reference videos failed" in error_text
+                    or "no real YouTube video traffic received" in error_text
+                ):
+                    probe_stats["youtube_real"]["media_url_failed"] += 1
 
-        elif (
-            "download timeout" in error_text
-            or "download failed" in error_text
-            or "invalid download result" in error_text
-            or "no media data received" in error_text
-        ):
-            probe_stats["youtube_real"]["download_failed"] += 1
+                elif (
+                    "too slow or stalled" in error_text
+                    or "invalid media duration" in error_text
+                ):
+                    probe_stats["youtube_real"]["download_failed"] += 1
 
-        elif "unexpected HTTP status" in error_text:
-            probe_stats["youtube_real"]["bad_http_status"] += 1
+                elif "too slow" in error_text:
+                    probe_stats["youtube_real"]["too_slow"] += 1
 
-        elif "too slow" in error_text:
-            probe_stats["youtube_real"]["too_slow"] += 1
+                else:
+                    probe_stats["youtube_real"]["download_failed"] += 1
 
-        return youtube_result
+                return youtube_result
 
-    probe_stats["youtube_real"]["passed"] += 1
+            probe_stats["youtube_real"]["passed"] += 1
 
     average_latency = (
         round(sum(latencies) / len(latencies), 1)
