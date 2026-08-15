@@ -1005,6 +1005,16 @@ async def main():
     youtube_checked = probe_stats["youtube_real"]["checked"]
     youtube_passed = probe_stats["youtube_real"]["passed"]
 
+    print(
+        json.dumps(
+            {
+                "youtube_real_diagnostics": probe_stats["youtube_real"]
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+
     if youtube_checked >= 100 and youtube_passed == 0:
         raise RuntimeError(
             "YouTube real probe failed for all checked nodes. "
