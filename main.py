@@ -34,6 +34,7 @@ SINGBOX = BIN_DIR / "sing-box"
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "16"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
+APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "200"))
 
 CHATGPT_PROBE_URL = os.getenv(
     "CHATGPT_PROBE_URL",
@@ -61,7 +62,7 @@ YOUTUBE_REAL_TEST_VIDEOS = (
     "OHOpb2fS-cM",
 )
 
-YOUTUBE_MIN_SPEED_MBPS = float(os.getenv("YOUTUBE_MIN_SPEED_MBPS", "4.9"))
+YOUTUBE_MIN_SPEED_MBPS = float(os.getenv("YOUTUBE_MIN_SPEED_MBPS", "2.5"))
 YOUTUBE_TEST_BYTES = int(os.getenv("YOUTUBE_TEST_BYTES", str(2 * 1024 * 1024)))
 YOUTUBE_TEST_TIMEOUT = float(os.getenv("YOUTUBE_TEST_TIMEOUT_SECONDS", "12"))
 
@@ -493,7 +494,7 @@ async def select_youtube_reference_video():
             "--extractor-args",
             "youtube:player_client=web_embedded",
             "-f",
-            "bestvideo[height<=1080]/best[height<=1080]/best",
+            "bestvideo[height<=1080]/best[height<=720]/best",
             "--get-url",
             url,
             stdout=asyncio.subprocess.PIPE,
@@ -547,7 +548,7 @@ async def youtube_real_probe(port: int):
             "--extractor-args",
             "youtube:player_client=web_embedded",
             "-f",
-            "bestvideo[height<=1080]/best[height<=1080]/best",
+            "bestvideo[height<=1080]/best[height<=720]/best",
             "--get-url",
             video_url,
             stdout=asyncio.subprocess.PIPE,
@@ -732,6 +733,21 @@ async def quality_probe(
             probe_stats[name]["failed"] += 1
             return result
 
+                if (
+            name == "apple"
+            and result.latency_ms is not None
+            and result.latency_ms > APPLE_MAX_LATENCY_MS
+        ):
+            probe_stats[name]["failed"] += 1
+            return Probe(
+                False,
+                latency_ms=result.latency_ms,
+                error=(
+                    f"apple: latency too high "
+                    f"({result.latency_ms:.1f} ms > {APPLE_MAX_LATENCY_MS:.1f} ms)"
+                ),
+            )
+
         probe_stats[name]["passed"] += 1
 
         if result.latency_ms is not None:
@@ -741,8 +757,31 @@ async def quality_probe(
 
     youtube_result = await youtube_real_probe(port)
 
-    if not youtube_result.ok:
+        if not youtube_result.ok:
         probe_stats["youtube_real"]["failed"] += 1
+
+        error_text = youtube_result.error or ""
+
+        if (
+            "all reference videos failed" in error_text
+            or "media URL" in error_text
+        ):
+            probe_stats["youtube_real"]["media_url_failed"] += 1
+
+        elif (
+            "download timeout" in error_text
+            or "download failed" in error_text
+            or "invalid download result" in error_text
+            or "no media data received" in error_text
+        ):
+            probe_stats["youtube_real"]["download_failed"] += 1
+
+        elif "unexpected HTTP status" in error_text:
+            probe_stats["youtube_real"]["bad_http_status"] += 1
+
+        elif "too slow" in error_text:
+            probe_stats["youtube_real"]["too_slow"] += 1
+
         return youtube_result
 
     probe_stats["youtube_real"]["passed"] += 1
@@ -837,10 +876,43 @@ async def main():
     # New keys must pass a real VPN probe before they are published.
     # Previously proven keys may survive temporary failures and are removed
     # only after FAILURES_BEFORE_DELETE consecutive failed probes.
-    current = {}
+       candidates = {}
+
+    for key, item in old.items():
+        uri = item.get("uri")
+        if uri:
+            candidates[key] = uri
+
     for key, uri in source_nodes.items():
+        candidates[key] = uri
+
+    current = {}
+
+    ru_networks = load_ru_networks()
+    geo_candidates = {}
+
+    for key, uri in candidates.items():
+        host = extract_server_host(uri)
+
+        if not host:
+            continue
+
+        country_check = is_russian_host(host, ru_networks)
+
+        if country_check is True or country_check is None:
+            continue
+
+        geo_candidates[key] = uri
+
+        for key, uri in geo_candidates.items():
         previous = old.get(key, {})
-        established = bool(previous.get("established", previous.get("last_ok") is not None))
+        established = bool(
+            previous.get(
+                "established",
+                previous.get("last_ok") is not None,
+            )
+        )
+
         current[key] = {
             "uri": uri,
             "established": established,
@@ -880,6 +952,10 @@ async def main():
             "checked": 0,
             "passed": 0,
             "failed": 0,
+            "media_url_failed": 0,
+            "download_failed": 0,
+            "bad_http_status": 0,
+            "too_slow": 0,
         },
     }
 
@@ -924,6 +1000,15 @@ async def main():
 
             del current[key]
             deleted += 1
+
+    youtube_checked = probe_stats["youtube_real"]["checked"]
+    youtube_passed = probe_stats["youtube_real"]["passed"]
+
+    if youtube_checked >= 100 and youtube_passed == 0:
+        raise RuntimeError(
+            "YouTube real probe failed for all checked nodes. "
+            "Aborting refresh without updating subscription or state."
+        )
 
     # Fastest successful nodes first; nodes with recent failure go below them.
     ordered = sorted(
