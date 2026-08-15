@@ -795,7 +795,7 @@ async def quality_probe(
 ):
     latencies = []
 
-        for name, url, ok_codes in QUALITY_PROBES:
+    for name, url, ok_codes in QUALITY_PROBES:
         probe_stats[name]["checked"] += 1
 
         result = await curl_url_probe(
@@ -859,11 +859,6 @@ async def quality_probe(
         round(sum(latencies) / len(latencies), 1)
         if latencies
         else None
-    )
-
-    return Probe(
-        True,
-        latency_ms=average_latency,
     )
 
     return Probe(
