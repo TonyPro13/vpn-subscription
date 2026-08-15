@@ -21,17 +21,9 @@ SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
     "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/refs/heads/main/output/v2ray-base64.txt",
-    "https://raw.githubusercontent.com/MahanKenway/Freedom-V2Ray/main/configs/mix.txt",
-    "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/top100.txt",
+    "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/data/light/configs.txt",
     "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/super-sub.txt",
-    "https://raw.githubusercontent.com/rtwo2/FastNodes/main/sub/continents/Europe.txt",
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/V2Ray-Config-By-EbraSha.txt",
-    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/Sub1.txt",
-    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/Sub2.txt",
-    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/Sub3.txt",
-    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/Sub4.txt",
-    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/Sub5.txt",
-    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/Sub6.txt",
+    "https://raw.githubusercontent.com/MahanKenway/Freedom-V2Ray/main/configs/mix.txt",
 ]
 
 RU_IPV4_URL = "https://www.ipdeny.com/ipblocks/data/aggregated/ru-aggregated.zone"
@@ -51,7 +43,7 @@ CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
 GEO_DNS_CONCURRENCY = int(os.getenv("GEO_DNS_CONCURRENCY", "32"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
-APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "500"))
+APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "300"))
 
 CHATGPT_PROBE_URL = os.getenv(
     "CHATGPT_PROBE_URL",
@@ -748,6 +740,26 @@ async def quality_probe(
                     f"({result.latency_ms:.1f} ms > {APPLE_MAX_LATENCY_MS:.1f} ms)"
                 ),
             )
+
+        probe_stats[name]["passed"] += 1
+
+        if result.latency_ms is not None:
+            latencies.append(result.latency_ms)
+
+        if name == "max":
+            probe_stats["youtube_204"]["checked"] += 1
+
+            async with CHEAP_PROBE_SEMAPHORE:
+                youtube_result = await youtube_generate_204_probe(port)
+
+            if not youtube_result.ok:
+                probe_stats["youtube_204"]["failed"] += 1
+                return youtube_result
+
+            probe_stats["youtube_204"]["passed"] += 1
+
+            if youtube_result.latency_ms is not None:
+                latencies.append(youtube_result.latency_ms)
 
     average_latency = (
         round(sum(latencies) / len(latencies), 1)
