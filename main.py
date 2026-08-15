@@ -10,6 +10,7 @@ import shutil
 import socket
 import tempfile
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs, parse_qsl, unquote, urlencode, urlsplit, urlunsplit
@@ -43,6 +44,7 @@ VPN_PROCESS_SEMAPHORE = None
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
+GEO_DNS_CONCURRENCY = int(os.getenv("GEO_DNS_CONCURRENCY", "32"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
 APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "200"))
 
@@ -216,14 +218,17 @@ def is_russian_host(host: str, ru_networks):
 
 def collect_sources():
     ru_networks = load_ru_networks()
+
     unique = {}
     source_stats = {}
     pre_geo_unique = set()
     duplicates = 0
-    geo_passed = 0
+
+    pending_entries = []
+    unique_hosts = set()
 
     for url in SOURCES:
-        count = 0
+        source_stats[url] = 0
 
         try:
             text = fetch(url)
@@ -232,12 +237,15 @@ def collect_sources():
                 f"WARNING: failed to load source {url}: "
                 f"{type(e).__name__}: {e}"
             )
-            source_stats[url] = 0
             continue
 
         if "://" not in text:
             try:
-                decoded = b64decode(text).decode("utf-8", errors="replace")
+                decoded = b64decode(text).decode(
+                    "utf-8",
+                    errors="replace",
+                )
+
                 if "://" in decoded:
                     text = decoded
             except Exception:
@@ -245,41 +253,89 @@ def collect_sources():
 
         for line in text.splitlines():
             s = line.strip()
+
             if not s or s.startswith("#") or "://" not in s:
                 continue
+
             s = clean_insecure_params(s)
+
             if "neth.anonch.net" in s and "type=xhttp" in s:
                 continue
-                
+
             scheme = s.split("://", 1)[0].lower()
+
             if scheme not in SUPPORTED:
                 continue
 
             k = canonical(s)
             pre_geo_unique.add(k)
-                
+
             host = extract_server_host(s)
-            
+
             if not host:
                 continue
 
-            country_check = is_russian_host(host, ru_networks)
+            pending_entries.append(
+                (
+                    url,
+                    k,
+                    s,
+                    host,
+                )
+            )
 
-            if country_check is True or country_check is None:
-                continue
-            
-            count += 1
-            if k in unique:
-                duplicates += 1
-            else:
-                unique[k] = s
-        source_stats[url] = count
+            unique_hosts.add(host)
+
+    print(
+        f"Geo/DNS: {len(pending_entries)} configs use "
+        f"{len(unique_hosts)} unique hosts"
+    )
+
+    host_results = {}
+
+    def check_host(host):
+        return (
+            host,
+            is_russian_host(
+                host,
+                ru_networks,
+            ),
+        )
+
+    with ThreadPoolExecutor(
+        max_workers=GEO_DNS_CONCURRENCY
+    ) as executor:
+        for host, country_check in executor.map(
+            check_host,
+            unique_hosts,
+        ):
+            host_results[host] = country_check
+
+    for url, k, s, host in pending_entries:
+        country_check = host_results.get(host)
+
+        if country_check is True or country_check is None:
+            continue
+
+        source_stats[url] += 1
+
+        if k in unique:
+            duplicates += 1
+        else:
+            unique[k] = s
 
     geo_checked = len(pre_geo_unique)
     geo_passed = len(unique)
     geo_failed = geo_checked - geo_passed
 
-    return unique, source_stats, duplicates, geo_checked, geo_passed, geo_failed
+    return (
+        unique,
+        source_stats,
+        duplicates,
+        geo_checked,
+        geo_passed,
+        geo_failed,
+    )
 
 
 def load_state():
