@@ -60,6 +60,16 @@ CLOUDFLARE_PROBE_URL = os.getenv(
     "https://cp.cloudflare.com/generate_204",
 )
 
+YOUTUBE_REAL_TEST_VIDEOS = (
+    "aqz-KE-bpKQ",
+    "eRsGyueVLvQ",
+    "OHOpb2fS-cM",
+)
+
+YOUTUBE_MIN_SPEED_MBPS = float(os.getenv("YOUTUBE_MIN_SPEED_MBPS", "4.9"))
+YOUTUBE_TEST_BYTES = int(os.getenv("YOUTUBE_TEST_BYTES", str(2 * 1024 * 1024)))
+YOUTUBE_TEST_TIMEOUT = float(os.getenv("YOUTUBE_TEST_TIMEOUT_SECONDS", "12"))
+
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
 QUALITY_PROBES = (
@@ -475,6 +485,51 @@ async def wait_port(port: int, timeout=2.5):
         except Exception:
             await asyncio.sleep(0.05)
     return False
+
+async def select_youtube_reference_video():
+    for video_id in YOUTUBE_REAL_TEST_VIDEOS:
+        url = f"https://www.youtube.com/watch?v={video_id}"
+
+        proc = await asyncio.create_subprocess_exec(
+            "yt-dlp",
+            "--quiet",
+            "--no-warnings",
+            "--no-playlist",
+            "--skip-download",
+            "--extractor-args",
+            "youtube:player_client=web_embedded",
+            "-f",
+            "bestvideo[height<=1080]/best[height<=1080]/best",
+            "--get-url",
+            url,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
+        try:
+            out, err = await asyncio.wait_for(
+                proc.communicate(),
+                timeout=20,
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.communicate()
+            print(f"WARNING: YouTube reference {video_id} timed out")
+            continue
+
+        media_urls = out.decode(errors="replace").strip().splitlines()
+
+        if proc.returncode == 0 and media_urls:
+            print(f"YouTube reference selected: {video_id}")
+            return video_id
+
+        error_text = err.decode(errors="replace").strip()
+        print(
+            f"WARNING: YouTube reference {video_id} unavailable: "
+            f"{error_text[-300:]}"
+        )
+
+    return None
 
 
 async def curl_url_probe(port: int, name: str, url: str, ok_codes):
