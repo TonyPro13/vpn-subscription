@@ -69,7 +69,8 @@ YOUTUBE_REAL_TEST_VIDEOS = (
 
 YOUTUBE_MIN_SPEED_MBPS = float(os.getenv("YOUTUBE_MIN_SPEED_MBPS", "2.5"))
 YOUTUBE_TEST_BYTES = int(os.getenv("YOUTUBE_TEST_BYTES", str(2 * 1024 * 1024)))
-YOUTUBE_TEST_TIMEOUT = float(os.getenv("YOUTUBE_TEST_TIMEOUT_SECONDS", "12"))
+YOUTUBE_START_TIMEOUT = float(os.getenv("YOUTUBE_START_TIMEOUT_SECONDS", "10"))
+YOUTUBE_TRANSFER_TIMEOUT = float(os.getenv("YOUTUBE_TRANSFER_TIMEOUT_SECONDS", "10"))
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
@@ -511,6 +512,7 @@ async def youtube_real_probe(port: int):
             media_bytes = 0
             first_media_timestamp = None
             last_media_timestamp = None
+            first_media_received = asyncio.Event()
             target_reached = asyncio.Event()
 
             try:
@@ -578,6 +580,7 @@ async def youtube_real_probe(port: int):
 
                     if first_media_timestamp is None:
                         first_media_timestamp = timestamp
+                        first_media_received.set()
 
                     last_media_timestamp = timestamp
                     media_bytes += chunk_bytes
@@ -634,18 +637,22 @@ async def youtube_real_probe(port: int):
 
                 try:
                     await asyncio.wait_for(
-                        target_reached.wait(),
-                        timeout=YOUTUBE_TEST_TIMEOUT,
+                        first_media_received.wait(),
+                        timeout=YOUTUBE_START_TIMEOUT,
                     )
-
                 except asyncio.TimeoutError:
-                    if media_bytes == 0:
-                        last_error = (
-                            f"{video_id}: no real YouTube "
-                            f"video traffic received"
-                        )
-                        continue
+                    last_error = (
+                        f"{video_id}: no real YouTube "
+                        f"video traffic received"
+                    )
+                    continue
 
+                try:
+                    await asyncio.wait_for(
+                        target_reached.wait(),
+                        timeout=YOUTUBE_TRANSFER_TIMEOUT,
+                    )
+                except asyncio.TimeoutError:
                     return Probe(
                         False,
                         error=(
