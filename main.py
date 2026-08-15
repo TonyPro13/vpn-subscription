@@ -486,51 +486,6 @@ async def wait_port(port: int, timeout=2.5):
             await asyncio.sleep(0.05)
     return False
 
-async def select_youtube_reference_video():
-    for video_id in YOUTUBE_REAL_TEST_VIDEOS:
-        url = f"https://www.youtube.com/watch?v={video_id}"
-
-        proc = await asyncio.create_subprocess_exec(
-            "yt-dlp",
-            "--quiet",
-            "--no-warnings",
-            "--no-playlist",
-            "--skip-download",
-            "--extractor-args",
-            "youtube:player_client=web_embedded",
-            "-f",
-            "bestvideo[height<=720]/best[height<=720]/best",
-            "--get-url",
-            url,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-
-        try:
-            out, err = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=20,
-            )
-        except asyncio.TimeoutError:
-            proc.kill()
-            await proc.communicate()
-            print(f"WARNING: YouTube reference {video_id} timed out")
-            continue
-
-        media_urls = out.decode(errors="replace").strip().splitlines()
-
-        if proc.returncode == 0 and media_urls:
-            print(f"YouTube reference selected: {video_id}")
-            return video_id
-
-        error_text = err.decode(errors="replace").strip()
-        print(
-            f"WARNING: YouTube reference {video_id} unavailable: "
-            f"{error_text[-300:]}"
-        )
-
-    return None
-
 async def youtube_real_probe(port: int):
     if YOUTUBE_BROWSER is None:
         return Probe(
@@ -877,23 +832,17 @@ async def quality_probe(
 
                 error_text = youtube_result.error or ""
 
-                if (
-                    "all reference videos failed" in error_text
-                    or "no real YouTube video traffic received" in error_text
-                ):
-                    probe_stats["youtube_real"]["media_url_failed"] += 1
+                if "no real YouTube video traffic received" in error_text:
+                    probe_stats["youtube_real"]["no_video_traffic"] += 1
 
-                elif (
-                    "too slow or stalled" in error_text
-                    or "invalid media duration" in error_text
-                ):
-                    probe_stats["youtube_real"]["download_failed"] += 1
+                elif "too slow or stalled" in error_text:
+                    probe_stats["youtube_real"]["stalled"] += 1
 
                 elif "too slow" in error_text:
                     probe_stats["youtube_real"]["too_slow"] += 1
 
                 else:
-                    probe_stats["youtube_real"]["download_failed"] += 1
+                    probe_stats["youtube_real"]["browser_error"] += 1
 
                 return youtube_result
 
@@ -903,6 +852,11 @@ async def quality_probe(
         round(sum(latencies) / len(latencies), 1)
         if latencies
         else None
+    )
+
+    return Probe(
+        True,
+        latency_ms=average_latency,
     )
 
     return Probe(
@@ -1074,10 +1028,10 @@ async def main():
             "checked": 0,
             "passed": 0,
             "failed": 0,
-            "media_url_failed": 0,
-            "download_failed": 0,
-            "bad_http_status": 0,
+            "no_video_traffic": 0,
+            "stalled": 0,
             "too_slow": 0,
+            "browser_error": 0,
         },
     }
 
