@@ -674,6 +674,14 @@ async def main():
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
 
+    youtube_reference_video = await select_youtube_reference_video()
+
+    if not youtube_reference_video:
+        raise RuntimeError(
+            "All YouTube reference videos are unavailable. "
+            "Aborting refresh without updating the subscription."
+        )
+
     source_nodes, source_stats, duplicates, geo_checked, geo_passed, geo_failed = collect_sources()
     old = load_state()
     now = int(time.time())
