@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs, parse_qsl, unquote, urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
-from playwright.async_api import async_playwright
 
 SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
@@ -33,14 +32,10 @@ BIN_DIR = Path("bin")
 XRAY = BIN_DIR / "xray"
 SINGBOX = BIN_DIR / "sing-box"
 
-YOUTUBE_BROWSER = None
-YOUTUBE_SEMAPHORE = None
 CHEAP_PROBE_SEMAPHORE = None
 VPN_PROCESS_SEMAPHORE = None
-YOUTUBE_PREFERRED_VIDEO = None
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
-YOUTUBE_CONCURRENCY = int(os.getenv("YOUTUBE_CONCURRENCY", "8"))
 VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
 APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "200"))
@@ -65,12 +60,6 @@ CLOUDFLARE_PROBE_URL = os.getenv(
     "https://cp.cloudflare.com/generate_204",
 )
 
-YOUTUBE_REAL_TEST_VIDEOS = (
-    "aqz-KE-bpKQ",
-    "eRsGyueVLvQ",
-    "OHOpb2fS-cM",
-)
-
 YOUTUBE_PREFLIGHT_URL = os.getenv(
     "YOUTUBE_PREFLIGHT_URL",
     "https://www.youtube.com/robots.txt",
@@ -81,11 +70,6 @@ YOUTUBE_PREFLIGHT_TIMEOUT = float(
 YOUTUBE_PREFLIGHT_MAX_SECONDS = float(
     os.getenv("YOUTUBE_PREFLIGHT_MAX_SECONDS", "2.0")
 )
-
-YOUTUBE_MIN_SPEED_MBPS = float(os.getenv("YOUTUBE_MIN_SPEED_MBPS", "2.5"))
-YOUTUBE_TEST_BYTES = int(os.getenv("YOUTUBE_TEST_BYTES", str(2 * 1024 * 1024)))
-YOUTUBE_START_TIMEOUT = float(os.getenv("YOUTUBE_START_TIMEOUT_SECONDS", "10"))
-YOUTUBE_TRANSFER_TIMEOUT = float(os.getenv("YOUTUBE_TRANSFER_TIMEOUT_SECONDS", "10"))
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
@@ -570,305 +554,6 @@ async def youtube_preflight_probe(port: int):
         latency_ms=round(total_seconds * 1000, 1),
     )
 
-async def youtube_real_probe(port: int):
-    global YOUTUBE_PREFERRED_VIDEO
-
-    if YOUTUBE_BROWSER is None:
-        return Probe(
-            False,
-            error="youtube_real: browser unavailable",
-        )
-
-    if YOUTUBE_SEMAPHORE is None:
-        return Probe(
-            False,
-            error="youtube_real: semaphore unavailable",
-        )
-
-    async with YOUTUBE_SEMAPHORE:
-        proxy_url = f"socks5://127.0.0.1:{port}"
-        last_error = ""
-
-        video_order = list(YOUTUBE_REAL_TEST_VIDEOS)
-
-        if YOUTUBE_PREFERRED_VIDEO in video_order:
-            video_order.remove(YOUTUBE_PREFERRED_VIDEO)
-            video_order.insert(0, YOUTUBE_PREFERRED_VIDEO)
-
-        for video_id in video_order:
-            context = None
-            cdp = None
-
-            media_request_ids = set()
-            media_bytes = 0
-            first_media_timestamp = None
-            last_media_timestamp = None
-            first_media_received = asyncio.Event()
-            target_reached = asyncio.Event()
-
-            try:
-                context = await YOUTUBE_BROWSER.new_context(
-                    proxy={
-                        "server": proxy_url,
-                    },
-                    viewport={
-                        "width": 1280,
-                        "height": 720,
-                    },
-                )
-
-                async def block_unneeded_resources(route):
-                    resource_type = route.request.resource_type
-
-                    if resource_type in {"image", "font"}:
-                        await route.abort()
-                    else:
-                        await route.continue_()
-
-                await context.route(
-                    "**/*",
-                    block_unneeded_resources,
-                )
-
-                page = await context.new_page()
-                cdp = await context.new_cdp_session(page)
-
-                await cdp.send("Network.enable")
-
-                def on_response_received(params):
-                    response = params.get("response", {})
-                    request_id = params.get("requestId")
-                    url = response.get("url", "")
-                    mime_type = response.get("mimeType", "")
-
-                    is_youtube_video = (
-                        request_id
-                        and "googlevideo.com" in url
-                        and "videoplayback" in url
-                        and mime_type.startswith("video/")
-                    )
-
-                    if is_youtube_video:
-                        media_request_ids.add(request_id)
-
-                def on_data_received(params):
-                    nonlocal media_bytes
-                    nonlocal first_media_timestamp
-                    nonlocal last_media_timestamp
-
-                    request_id = params.get("requestId")
-
-                    if request_id not in media_request_ids:
-                        return
-
-                    encoded_length = int(
-                        params.get("encodedDataLength", 0) or 0
-                    )
-
-                    data_length = int(
-                        params.get("dataLength", 0) or 0
-                    )
-
-                    chunk_bytes = (
-                        encoded_length
-                        if encoded_length > 0
-                        else data_length
-                    )
-
-                    if chunk_bytes <= 0:
-                        return
-
-                    timestamp = float(
-                        params.get("timestamp", time.monotonic())
-                    )
-
-                    if first_media_timestamp is None:
-                        first_media_timestamp = timestamp
-                        first_media_received.set()
-
-                    last_media_timestamp = timestamp
-                    media_bytes += chunk_bytes
-
-                    if media_bytes >= YOUTUBE_TEST_BYTES:
-                        target_reached.set()
-
-                cdp.on(
-                    "Network.responseReceived",
-                    on_response_received,
-                )
-
-                cdp.on(
-                    "Network.dataReceived",
-                    on_data_received,
-                )
-
-                video_url = (
-                    f"https://www.youtube.com/embed/{video_id}"
-                    "?autoplay=1"
-                    "&mute=1"
-                    "&playsinline=1"
-                )
-
-                await page.goto(
-                    video_url,
-                    wait_until="commit",
-                    timeout=10000,
-                )
-
-                try:
-                    await page.wait_for_selector(
-                        "video",
-                        state="attached",
-                        timeout=5000,
-                    )
-
-                    playback_state = await page.evaluate(
-                        """
-                        async () => {
-                            const video = document.querySelector("video");
-
-                            if (!video) {
-                                return {
-                                    video_found: false
-                                };
-                            }
-
-                            video.muted = true;
-
-                            let play_ok = false;
-                            let play_error = "";
-
-                            try {
-                                await video.play();
-                                play_ok = true;
-                            } catch (e) {
-                                play_error = String(e);
-                            }
-
-                            return {
-                                video_found: true,
-                                play_ok: play_ok,
-                                play_error: play_error,
-                                ready_state: video.readyState,
-                                paused: video.paused,
-                                current_time: video.currentTime,
-                                network_state: video.networkState
-                            };
-                        }
-                        """
-                    )
-
-                    print(
-                        "YOUTUBE_DEBUG "
-                        f"video={video_id} "
-                        f"state={json.dumps(playback_state, ensure_ascii=False)}"
-                    )
-
-                except Exception as e:
-                    print(
-                        "YOUTUBE_DEBUG "
-                        f"video={video_id} "
-                        f"player_error={type(e).__name__}: {e}"
-                    )
-
-                try:
-                    await asyncio.wait_for(
-                        first_media_received.wait(),
-                        timeout=YOUTUBE_START_TIMEOUT,
-                    )
-                except asyncio.TimeoutError:
-                    last_error = (
-                        f"{video_id}: no real YouTube "
-                        f"video traffic received"
-                    )
-                    continue
-
-                try:
-                    await asyncio.wait_for(
-                        target_reached.wait(),
-                        timeout=YOUTUBE_TRANSFER_TIMEOUT,
-                    )
-                except asyncio.TimeoutError:
-                    return Probe(
-                        False,
-                        error=(
-                            f"youtube_real: too slow or stalled "
-                            f"({media_bytes} of "
-                            f"{YOUTUBE_TEST_BYTES} bytes received)"
-                        ),
-                    )
-
-                if (
-                    first_media_timestamp is None
-                    or last_media_timestamp is None
-                ):
-                    last_error = (
-                        f"{video_id}: invalid media timing"
-                    )
-                    continue
-
-                elapsed = (
-                    last_media_timestamp
-                    - first_media_timestamp
-                )
-
-                if elapsed <= 0:
-                    return Probe(
-                        False,
-                        error="youtube_real: invalid media duration",
-                    )
-
-                speed_mbps = (
-                    media_bytes
-                    * 8
-                    / elapsed
-                    / 1_000_000
-                )
-
-                if speed_mbps < YOUTUBE_MIN_SPEED_MBPS:
-                    return Probe(
-                        False,
-                        error=(
-                            f"youtube_real: too slow "
-                            f"({speed_mbps:.2f} Mbps < "
-                            f"{YOUTUBE_MIN_SPEED_MBPS:.2f} Mbps)"
-                        ),
-                    )
-
-                YOUTUBE_PREFERRED_VIDEO = video_id
-
-                return Probe(
-                    True,
-                    latency_ms=round(elapsed * 1000, 1),
-                )
-
-            except Exception as e:
-                last_error = (
-                    f"{video_id}: "
-                    f"{type(e).__name__}: {e}"
-                )
-
-            finally:
-                if cdp is not None:
-                    try:
-                        await cdp.detach()
-                    except Exception:
-                        pass
-
-                if context is not None:
-                    try:
-                        await context.close()
-                    except Exception:
-                        pass
-
-        return Probe(
-            False,
-            error=(
-                "youtube_real: all reference videos failed: "
-                f"{last_error}"
-            ),
-        )
-
 
 async def curl_url_probe(port: int, name: str, url: str, ok_codes):
     proc = await asyncio.create_subprocess_exec(
@@ -1065,17 +750,9 @@ async def main():
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
 
-    global YOUTUBE_BROWSER
-    global YOUTUBE_SEMAPHORE
     global CHEAP_PROBE_SEMAPHORE
     global VPN_PROCESS_SEMAPHORE
 
-    playwright = await async_playwright().start()
-    YOUTUBE_BROWSER = await playwright.chromium.launch(
-        headless=True,
-    )
-
-    YOUTUBE_SEMAPHORE = asyncio.Semaphore(YOUTUBE_CONCURRENCY)
     CHEAP_PROBE_SEMAPHORE = asyncio.Semaphore(CHECK_CONCURRENCY)
     VPN_PROCESS_SEMAPHORE = asyncio.Semaphore(VPN_PROCESS_CONCURRENCY)
 
@@ -1166,15 +843,6 @@ async def main():
             "passed": 0,
             "failed": 0,
         },
-        "youtube_real": {
-            "checked": 0,
-            "passed": 0,
-            "failed": 0,
-            "no_video_traffic": 0,
-            "stalled": 0,
-            "too_slow": 0,
-            "browser_error": 0,
-        },
     }
 
     keys = list(current.keys())
@@ -1217,25 +885,6 @@ async def main():
 
             del current[key]
             deleted += 1
-
-    youtube_checked = probe_stats["youtube_real"]["checked"]
-    youtube_passed = probe_stats["youtube_real"]["passed"]
-
-    print(
-        json.dumps(
-            {
-                "youtube_real_diagnostics": probe_stats["youtube_real"]
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-    )
-
-    if youtube_checked >= 100 and youtube_passed == 0:
-        raise RuntimeError(
-            "YouTube real probe failed for all checked nodes. "
-            "Aborting refresh without updating subscription or state."
-        )
 
     # Fastest successful nodes first; nodes with recent failure go below them.
     ordered = sorted(
@@ -1284,11 +933,6 @@ async def main():
     )
 
     print(json.dumps(status, ensure_ascii=False, indent=2))
-
-    if YOUTUBE_BROWSER is not None:
-        await YOUTUBE_BROWSER.close()
-
-    await playwright.stop()
 
 
 if __name__ == "__main__":
