@@ -33,6 +33,9 @@ BIN_DIR = Path("bin")
 XRAY = BIN_DIR / "xray"
 SINGBOX = BIN_DIR / "sing-box"
 
+YOUTUBE_BROWSER = None
+YOUTUBE_SEMAPHORE = None
+
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 YOUTUBE_CONCURRENCY = int(os.getenv("YOUTUBE_CONCURRENCY", "8"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
@@ -872,6 +875,15 @@ async def main():
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
 
+    global YOUTUBE_BROWSER
+    global YOUTUBE_SEMAPHORE
+
+    playwright = await async_playwright().start()
+    YOUTUBE_BROWSER = await playwright.chromium.launch(
+        headless=True,
+    )
+    YOUTUBE_SEMAPHORE = asyncio.Semaphore(YOUTUBE_CONCURRENCY)
+
     source_nodes, source_stats, duplicates, geo_checked, geo_passed, geo_failed = collect_sources()
     old = load_state()
     now = int(time.time())
@@ -1070,6 +1082,11 @@ async def main():
     )
 
     print(json.dumps(status, ensure_ascii=False, indent=2))
+
+    if YOUTUBE_BROWSER is not None:
+        await YOUTUBE_BROWSER.close()
+
+    await playwright.stop()
 
 
 if __name__ == "__main__":
