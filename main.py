@@ -78,6 +78,9 @@ YOUTUBE_PREFLIGHT_URL = os.getenv(
 YOUTUBE_PREFLIGHT_TIMEOUT = float(
     os.getenv("YOUTUBE_PREFLIGHT_TIMEOUT_SECONDS", "4")
 )
+YOUTUBE_PREFLIGHT_MAX_SECONDS = float(
+    os.getenv("YOUTUBE_PREFLIGHT_MAX_SECONDS", "2.0")
+)
 
 YOUTUBE_MIN_SPEED_MBPS = float(os.getenv("YOUTUBE_MIN_SPEED_MBPS", "2.5"))
 YOUTUBE_TEST_BYTES = int(os.getenv("YOUTUBE_TEST_BYTES", str(2 * 1024 * 1024)))
@@ -551,6 +554,17 @@ async def youtube_preflight_probe(port: int):
             ),
         )
 
+    if total_seconds > YOUTUBE_PREFLIGHT_MAX_SECONDS:
+        return Probe(
+            False,
+            latency_ms=round(total_seconds * 1000, 1),
+            error=(
+                f"youtube_preflight: too slow "
+                f"({total_seconds:.2f}s > "
+                f"{YOUTUBE_PREFLIGHT_MAX_SECONDS:.2f}s)"
+            ),
+        )
+
     return Probe(
         True,
         latency_ms=round(total_seconds * 1000, 1),
@@ -966,30 +980,8 @@ async def quality_probe(
 
             probe_stats["youtube_preflight"]["passed"] += 1
 
-            probe_stats["youtube_real"]["checked"] += 1
-
-            youtube_result = await youtube_real_probe(port)
-
-            if not youtube_result.ok:
-                probe_stats["youtube_real"]["failed"] += 1
-
-                error_text = youtube_result.error or ""
-
-                if "no real YouTube video traffic received" in error_text:
-                    probe_stats["youtube_real"]["no_video_traffic"] += 1
-
-                elif "too slow or stalled" in error_text:
-                    probe_stats["youtube_real"]["stalled"] += 1
-
-                elif "too slow" in error_text:
-                    probe_stats["youtube_real"]["too_slow"] += 1
-
-                else:
-                    probe_stats["youtube_real"]["browser_error"] += 1
-
-                return youtube_result
-
-            probe_stats["youtube_real"]["passed"] += 1
+            if preflight_result.latency_ms is not None:
+                latencies.append(preflight_result.latency_ms)
 
     average_latency = (
         round(sum(latencies) / len(latencies), 1)
