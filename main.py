@@ -241,9 +241,6 @@ def collect_sources():
 
         try:
             text = fetch(url)
-
-        try:
-            text = fetch(url)
         except Exception as e:
             print(
                 f"WARNING: failed to load source {url}: "
