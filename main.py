@@ -311,6 +311,15 @@ def collect_sources():
 
     host_results = {}
 
+        host_results = {}
+
+    geo_dns_stats = {
+        "unique_hosts": len(unique_hosts),
+        "ru": 0,
+        "non_ru": 0,
+        "dns_failed": 0,
+    }
+
     def check_host(host):
         return (
             host,
@@ -328,6 +337,25 @@ def collect_sources():
             unique_hosts,
         ):
             host_results[host] = country_check
+
+            if country_check is True:
+                geo_dns_stats["ru"] += 1
+
+            elif country_check is False:
+                geo_dns_stats["non_ru"] += 1
+
+            else:
+                geo_dns_stats["dns_failed"] += 1
+
+    print(
+        json.dumps(
+            {
+                "geo_dns_stats": geo_dns_stats
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
     for url, k, s, host in pending_entries:
         country_check = host_results.get(host)
