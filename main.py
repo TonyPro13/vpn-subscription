@@ -180,8 +180,7 @@ def extract_server_host(uri: str):
 
         return urlsplit(uri).hostname
 
-    except Exception as e:
-        print(f"WARNING: failed to extract server host: {e}")
+    except Exception:
         return None
 
 
@@ -210,8 +209,7 @@ def is_russian_host(host: str, ru_networks):
 
         return False
 
-    except Exception as e:
-        print(f"WARNING: failed to check country for {host}: {e}")
+    except Exception:
         return None
 
 
@@ -220,6 +218,7 @@ def collect_sources():
 
     unique = {}
     source_stats = {}
+    source_parse_stats = {}
     pre_geo_unique = set()
     duplicates = 0
 
@@ -228,6 +227,13 @@ def collect_sources():
 
     for url in SOURCES:
         source_stats[url] = 0
+        source_parse_stats[url] = {
+            "parsed": 0,
+            "malformed": 0,
+        }
+
+        try:
+            text = fetch(url)
 
         try:
             text = fetch(url)
@@ -272,7 +278,10 @@ def collect_sources():
             host = extract_server_host(s)
 
             if not host:
+                source_parse_stats[url]["malformed"] += 1
                 continue
+
+            source_parse_stats[url]["parsed"] += 1
 
             pending_entries.append(
                 (
@@ -284,6 +293,16 @@ def collect_sources():
             )
 
             unique_hosts.add(host)
+
+    print(
+        json.dumps(
+            {
+                "source_parse_stats": source_parse_stats
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
     print(
         f"Geo/DNS: {len(pending_entries)} configs use "
