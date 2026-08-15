@@ -35,6 +35,7 @@ SINGBOX = BIN_DIR / "sing-box"
 
 YOUTUBE_BROWSER = None
 YOUTUBE_SEMAPHORE = None
+YOUTUBE_PREFERRED_VIDEO = None
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 YOUTUBE_CONCURRENCY = int(os.getenv("YOUTUBE_CONCURRENCY", "8"))
@@ -488,6 +489,8 @@ async def wait_port(port: int, timeout=2.5):
     return False
 
 async def youtube_real_probe(port: int):
+    global YOUTUBE_PREFERRED_VIDEO
+
     if YOUTUBE_BROWSER is None:
         return Probe(
             False,
@@ -504,7 +507,13 @@ async def youtube_real_probe(port: int):
         proxy_url = f"socks5://127.0.0.1:{port}"
         last_error = ""
 
-        for video_id in YOUTUBE_REAL_TEST_VIDEOS:
+        video_order = list(YOUTUBE_REAL_TEST_VIDEOS)
+
+        if YOUTUBE_PREFERRED_VIDEO in video_order:
+            video_order.remove(YOUTUBE_PREFERRED_VIDEO)
+            video_order.insert(0, YOUTUBE_PREFERRED_VIDEO)
+
+        for video_id in video_order:
             context = None
             cdp = None
 
@@ -698,6 +707,8 @@ async def youtube_real_probe(port: int):
                             f"{YOUTUBE_MIN_SPEED_MBPS:.2f} Mbps)"
                         ),
                     )
+
+                YOUTUBE_PREFERRED_VIDEO = video_id
 
                 return Probe(
                     True,
