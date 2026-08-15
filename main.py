@@ -532,134 +532,242 @@ async def select_youtube_reference_video():
     return None
 
 async def youtube_real_probe(port: int):
-    proxy_url = f"socks5://127.0.0.1:{port}"
-
-    media_url = None
-    last_error = ""
-
-    for video_id in YOUTUBE_REAL_TEST_VIDEOS:
-        video_url = f"https://www.youtube.com/watch?v={video_id}"
-
-        proc = await asyncio.create_subprocess_exec(
-            "yt-dlp",
-            "--quiet",
-            "--no-warnings",
-            "--no-playlist",
-            "--skip-download",
-            "--proxy",
-            proxy_url,
-            "--socket-timeout",
-            str(max(1, int(YOUTUBE_TEST_TIMEOUT))),
-            "--extractor-args",
-            "youtube:player_client=web_embedded",
-            "-f",
-            "bestvideo[height<=720]/best[height<=720]/best",
-            "--get-url",
-            video_url,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-
-        try:
-            out, err = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=YOUTUBE_TEST_TIMEOUT + 8,
-            )
-        except asyncio.TimeoutError:
-            proc.kill()
-            await proc.communicate()
-            last_error = f"{video_id}: media URL timeout"
-            continue
-
-        media_urls = out.decode(errors="replace").strip().splitlines()
-
-        if proc.returncode == 0 and media_urls:
-            media_url = media_urls[0]
-            break
-
-        error_text = err.decode(errors="replace").strip()
-        last_error = (
-            f"{video_id}: media URL failed: "
-            f"{error_text[-300:]}"
-        )
-
-    if not media_url:
+    if YOUTUBE_BROWSER is None:
         return Probe(
             False,
-            error=f"youtube_real: all reference videos failed: {last_error}",
+            error="youtube_real: browser unavailable",
         )
 
-    range_end = YOUTUBE_TEST_BYTES - 1
-
-    proc = await asyncio.create_subprocess_exec(
-        "curl",
-        "-fsS",
-        "--max-time",
-        str(max(1, int(YOUTUBE_TEST_TIMEOUT))),
-        "--proxy",
-        f"socks5h://127.0.0.1:{port}",
-        "--range",
-        f"0-{range_end}",
-        "-o",
-        os.devnull,
-        "-w",
-        "%{http_code} %{size_download} %{time_total}",
-        media_url,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-
-    try:
-        out, err = await asyncio.wait_for(
-            proc.communicate(),
-            timeout=YOUTUBE_TEST_TIMEOUT + 2,
-        )
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.communicate()
-        return Probe(False, error="youtube_real: download timeout")
-
-    text = out.decode(errors="replace").strip()
-    parts = text.split()
-
-    try:
-        http_code = parts[0]
-        downloaded_bytes = float(parts[1])
-        total_seconds = float(parts[2])
-    except (IndexError, ValueError):
-        return Probe(False, error="youtube_real: invalid download result")
-
-    if proc.returncode != 0:
-        error_text = err.decode(errors="replace").strip()
+    if YOUTUBE_SEMAPHORE is None:
         return Probe(
             False,
-            error=f"youtube_real: download failed: {error_text[-300:]}",
+            error="youtube_real: semaphore unavailable",
         )
 
-    if http_code != "206":
-        return Probe(
-            False,
-            error=f"youtube_real: unexpected HTTP status {http_code}",
-        )
+    async with YOUTUBE_SEMAPHORE:
+        proxy_url = f"socks5://127.0.0.1:{port}"
+        last_error = ""
 
-    if downloaded_bytes <= 0 or total_seconds <= 0:
-        return Probe(False, error="youtube_real: no media data received")
+        for video_id in YOUTUBE_REAL_TEST_VIDEOS:
+            context = None
+            cdp = None
 
-    speed_mbps = (downloaded_bytes * 8) / total_seconds / 1_000_000
+            media_request_ids = set()
+            media_bytes = 0
+            first_media_timestamp = None
+            last_media_timestamp = None
+            target_reached = asyncio.Event()
 
-    if speed_mbps < YOUTUBE_MIN_SPEED_MBPS:
+            try:
+                context = await YOUTUBE_BROWSER.new_context(
+                    proxy={
+                        "server": proxy_url,
+                    },
+                    viewport={
+                        "width": 1280,
+                        "height": 720,
+                    },
+                )
+
+                page = await context.new_page()
+                cdp = await context.new_cdp_session(page)
+
+                await cdp.send("Network.enable")
+
+                def on_response_received(params):
+                    response = params.get("response", {})
+                    request_id = params.get("requestId")
+                    url = response.get("url", "")
+                    mime_type = response.get("mimeType", "")
+
+                    is_youtube_video = (
+                        request_id
+                        and "googlevideo.com" in url
+                        and "videoplayback" in url
+                        and mime_type.startswith("video/")
+                    )
+
+                    if is_youtube_video:
+                        media_request_ids.add(request_id)
+
+                def on_data_received(params):
+                    nonlocal media_bytes
+                    nonlocal first_media_timestamp
+                    nonlocal last_media_timestamp
+
+                    request_id = params.get("requestId")
+
+                    if request_id not in media_request_ids:
+                        return
+
+                    encoded_length = int(
+                        params.get("encodedDataLength", 0) or 0
+                    )
+
+                    data_length = int(
+                        params.get("dataLength", 0) or 0
+                    )
+
+                    chunk_bytes = (
+                        encoded_length
+                        if encoded_length > 0
+                        else data_length
+                    )
+
+                    if chunk_bytes <= 0:
+                        return
+
+                    timestamp = float(
+                        params.get("timestamp", time.monotonic())
+                    )
+
+                    if first_media_timestamp is None:
+                        first_media_timestamp = timestamp
+
+                    last_media_timestamp = timestamp
+                    media_bytes += chunk_bytes
+
+                    if media_bytes >= YOUTUBE_TEST_BYTES:
+                        target_reached.set()
+
+                cdp.on(
+                    "Network.responseReceived",
+                    on_response_received,
+                )
+
+                cdp.on(
+                    "Network.dataReceived",
+                    on_data_received,
+                )
+
+                video_url = (
+                    f"https://www.youtube.com/embed/{video_id}"
+                    "?autoplay=1"
+                    "&mute=1"
+                    "&playsinline=1"
+                )
+
+                await page.goto(
+                    video_url,
+                    wait_until="domcontentloaded",
+                    timeout=10000,
+                )
+
+                try:
+                    await page.evaluate(
+                        """
+                        async () => {
+                            const video = document.querySelector("video");
+
+                            if (!video) {
+                                return false;
+                            }
+
+                            video.muted = true;
+
+                            try {
+                                await video.play();
+                                return true;
+                            } catch (e) {
+                                return false;
+                            }
+                        }
+                        """
+                    )
+                except Exception:
+                    pass
+
+                try:
+                    await asyncio.wait_for(
+                        target_reached.wait(),
+                        timeout=YOUTUBE_TEST_TIMEOUT,
+                    )
+
+                except asyncio.TimeoutError:
+                    if media_bytes == 0:
+                        last_error = (
+                            f"{video_id}: no real YouTube "
+                            f"video traffic received"
+                        )
+                        continue
+
+                    return Probe(
+                        False,
+                        error=(
+                            f"youtube_real: too slow or stalled "
+                            f"({media_bytes} of "
+                            f"{YOUTUBE_TEST_BYTES} bytes received)"
+                        ),
+                    )
+
+                if (
+                    first_media_timestamp is None
+                    or last_media_timestamp is None
+                ):
+                    last_error = (
+                        f"{video_id}: invalid media timing"
+                    )
+                    continue
+
+                elapsed = (
+                    last_media_timestamp
+                    - first_media_timestamp
+                )
+
+                if elapsed <= 0:
+                    return Probe(
+                        False,
+                        error="youtube_real: invalid media duration",
+                    )
+
+                speed_mbps = (
+                    media_bytes
+                    * 8
+                    / elapsed
+                    / 1_000_000
+                )
+
+                if speed_mbps < YOUTUBE_MIN_SPEED_MBPS:
+                    return Probe(
+                        False,
+                        error=(
+                            f"youtube_real: too slow "
+                            f"({speed_mbps:.2f} Mbps < "
+                            f"{YOUTUBE_MIN_SPEED_MBPS:.2f} Mbps)"
+                        ),
+                    )
+
+                return Probe(
+                    True,
+                    latency_ms=round(elapsed * 1000, 1),
+                )
+
+            except Exception as e:
+                last_error = (
+                    f"{video_id}: "
+                    f"{type(e).__name__}: {e}"
+                )
+
+            finally:
+                if cdp is not None:
+                    try:
+                        await cdp.detach()
+                    except Exception:
+                        pass
+
+                if context is not None:
+                    try:
+                        await context.close()
+                    except Exception:
+                        pass
+
         return Probe(
             False,
             error=(
-                f"youtube_real: too slow "
-                f"({speed_mbps:.2f} Mbps < {YOUTUBE_MIN_SPEED_MBPS:.2f} Mbps)"
+                "youtube_real: all reference videos failed: "
+                f"{last_error}"
             ),
         )
-
-    return Probe(
-        True,
-        latency_ms=round(total_seconds * 1000, 1),
-    )
 
 
 async def curl_url_probe(port: int, name: str, url: str, ok_codes):
