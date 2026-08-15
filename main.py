@@ -71,6 +71,14 @@ YOUTUBE_REAL_TEST_VIDEOS = (
     "OHOpb2fS-cM",
 )
 
+YOUTUBE_PREFLIGHT_URL = os.getenv(
+    "YOUTUBE_PREFLIGHT_URL",
+    "https://www.youtube.com/robots.txt",
+)
+YOUTUBE_PREFLIGHT_TIMEOUT = float(
+    os.getenv("YOUTUBE_PREFLIGHT_TIMEOUT_SECONDS", "4")
+)
+
 YOUTUBE_MIN_SPEED_MBPS = float(os.getenv("YOUTUBE_MIN_SPEED_MBPS", "2.5"))
 YOUTUBE_TEST_BYTES = int(os.getenv("YOUTUBE_TEST_BYTES", str(2 * 1024 * 1024)))
 YOUTUBE_START_TIMEOUT = float(os.getenv("YOUTUBE_START_TIMEOUT_SECONDS", "10"))
@@ -491,6 +499,63 @@ async def wait_port(port: int, timeout=2.5):
             await asyncio.sleep(0.05)
     return False
 
+async def youtube_preflight_probe(port: int):
+    proc = await asyncio.create_subprocess_exec(
+        "curl",
+        "-sS",
+        "--max-time",
+        str(max(1, int(YOUTUBE_PREFLIGHT_TIMEOUT))),
+        "--proxy",
+        f"socks5h://127.0.0.1:{port}",
+        "-o",
+        os.devnull,
+        "-w",
+        "%{http_code} %{time_total}",
+        YOUTUBE_PREFLIGHT_URL,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    try:
+        out, err = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=YOUTUBE_PREFLIGHT_TIMEOUT + 2,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+
+        return Probe(
+            False,
+            error="youtube_preflight: timeout",
+        )
+
+    text = out.decode(errors="replace").strip()
+    parts = text.split()
+
+    code = parts[0] if parts else ""
+
+    try:
+        total_seconds = float(parts[1])
+    except (IndexError, ValueError):
+        total_seconds = YOUTUBE_PREFLIGHT_TIMEOUT + 1
+
+    if proc.returncode != 0 or not code or code == "000":
+        error_text = err.decode(errors="replace").strip()
+
+        return Probe(
+            False,
+            error=(
+                "youtube_preflight: connection failed: "
+                f"{error_text[-300:]}"
+            ),
+        )
+
+    return Probe(
+        True,
+        latency_ms=round(total_seconds * 1000, 1),
+    )
+
 async def youtube_real_probe(port: int):
     global YOUTUBE_PREFERRED_VIDEO
 
@@ -822,12 +887,6 @@ async def quality_probe(
 ):
     latencies = []
 
-async def quality_probe(
-    port: int,
-    probe_stats: dict,
-):
-    latencies = []
-
     for name, url, ok_codes in QUALITY_PROBES:
         probe_stats[name]["checked"] += 1
 
@@ -864,6 +923,17 @@ async def quality_probe(
             latencies.append(result.latency_ms)
 
         if name == "max":
+            probe_stats["youtube_preflight"]["checked"] += 1
+
+            async with CHEAP_PROBE_SEMAPHORE:
+                preflight_result = await youtube_preflight_probe(port)
+
+            if not preflight_result.ok:
+                probe_stats["youtube_preflight"]["failed"] += 1
+                return preflight_result
+
+            probe_stats["youtube_preflight"]["passed"] += 1
+
             probe_stats["youtube_real"]["checked"] += 1
 
             youtube_result = await youtube_real_probe(port)
@@ -1063,6 +1133,11 @@ async def main():
             "failed": 0,
         },
         "telegram": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "youtube_preflight": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
