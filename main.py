@@ -21,11 +21,11 @@ SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
     "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/v2ray-base64.txt",
     "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt",
-    "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/all_sub.txt"
-    "https://raw.githubusercontent.com/MahanKenway/Freedom-V2Ray/main/configs/mix.txt"
-    "https://raw.githubusercontent.com/rtwo2/FastNodes/main/sub/everything.txt"
-    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/all_extracted_configs.txt"
-    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/All_Configs_base64_Sub.txt"
+    "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/all_sub.txt",
+    "https://raw.githubusercontent.com/MahanKenway/Freedom-V2Ray/main/configs/mix.txt",
+    "https://raw.githubusercontent.com/rtwo2/FastNodes/main/sub/everything.txt",
+    "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/all_extracted_configs.txt",
+    "https://raw.githubusercontent.com/Epodonios/v2ray-configs/refs/heads/main/All_Configs_base64_Sub.txt",
     ]
 
 RU_IPV4_URL = "https://www.ipdeny.com/ipblocks/data/aggregated/ru-aggregated.zone"
@@ -224,7 +224,16 @@ def collect_sources():
 
     for url in SOURCES:
         count = 0
-        text = fetch(url)
+
+        try:
+            text = fetch(url)
+        except Exception as e:
+            print(
+                f"WARNING: failed to load source {url}: "
+                f"{type(e).__name__}: {e}"
+            )
+            source_stats[url] = 0
+            continue
 
         if "://" not in text:
             try:
