@@ -978,9 +978,7 @@ async def main():
     # New keys must pass a real VPN probe before they are published.
     # Previously proven keys may survive temporary failures and are removed
     # only after FAILURES_BEFORE_DELETE consecutive failed probes.
-    candidates = {}
-
-        candidates = dict(source_nodes)
+    candidates = dict(source_nodes)
 
     ru_networks = load_ru_networks()
 
@@ -1011,20 +1009,8 @@ async def main():
     current = {}
 
     for key, uri in candidates.items():
-        host = extract_server_host(uri)
-
-        if not host:
-            continue
-
-        country_check = is_russian_host(host, ru_networks)
-
-        if country_check is True or country_check is None:
-            continue
-
-        geo_candidates[key] = uri
-
-    for key, uri in candidates.items():
         previous = old.get(key, {})
+
         established = bool(
             previous.get(
                 "established",
