@@ -629,7 +629,7 @@ async def youtube_real_probe(port: int):
 
                 await page.goto(
                     video_url,
-                    wait_until="domcontentloaded",
+                    wait_until="commit",
                     timeout=10000,
                 )
 
@@ -980,18 +980,35 @@ async def main():
     # only after FAILURES_BEFORE_DELETE consecutive failed probes.
     candidates = {}
 
-    for key, item in old.items():
-        uri = item.get("uri")
-        if uri:
-            candidates[key] = uri
+        candidates = dict(source_nodes)
 
-    for key, uri in source_nodes.items():
+    ru_networks = load_ru_networks()
+
+    for key, item in old.items():
+        if key in source_nodes:
+            continue
+
+        uri = item.get("uri")
+
+        if not uri:
+            continue
+
+        host = extract_server_host(uri)
+
+        if not host:
+            continue
+
+        country_check = is_russian_host(
+            host,
+            ru_networks,
+        )
+
+        if country_check is True or country_check is None:
+            continue
+
         candidates[key] = uri
 
     current = {}
-
-    ru_networks = load_ru_networks()
-    geo_candidates = {}
 
     for key, uri in candidates.items():
         host = extract_server_host(uri)
@@ -1006,7 +1023,7 @@ async def main():
 
         geo_candidates[key] = uri
 
-    for key, uri in geo_candidates.items():
+    for key, uri in candidates.items():
         previous = old.get(key, {})
         established = bool(
             previous.get(
