@@ -196,6 +196,7 @@ def collect_sources():
     ru_networks = load_ru_networks()
     unique = {}
     source_stats = {}
+    pre_geo_unique = set()
     duplicates = 0
     geo_passed = 0
 
@@ -222,6 +223,9 @@ def collect_sources():
             scheme = s.split("://", 1)[0].lower()
             if scheme not in SUPPORTED:
                 continue
+
+            k = canonical(s)
+            pre_geo_unique.add(k)
                 
             host = extract_server_host(s)
             
@@ -234,12 +238,15 @@ def collect_sources():
             geo_passed += 1
             
             count += 1
-            k = canonical(s)
             if k in unique:
                 duplicates += 1
             else:
                 unique[k] = s
         source_stats[url] = count
+
+    geo_checked = len(pre_geo_unique)
+    geo_passed = len(unique)
+    geo_failed = geo_checked - geo_passed
 
     return unique, source_stats, duplicates, geo_passed
 
