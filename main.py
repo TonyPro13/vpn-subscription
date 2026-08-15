@@ -229,13 +229,13 @@ def collect_sources():
                 
             host = extract_server_host(s)
             
-            if host:
-                country_check = is_russian_host(host, ru_networks)
-                
-                if country_check is True or country_check is None:
-                    continue
+            if not host:
+                continue
 
-            geo_passed += 1
+            country_check = is_russian_host(host, ru_networks)
+
+            if country_check is True or country_check is None:
+                continue
             
             count += 1
             if k in unique:
@@ -248,7 +248,7 @@ def collect_sources():
     geo_passed = len(unique)
     geo_failed = geo_checked - geo_passed
 
-    return unique, source_stats, duplicates, geo_passed
+    return unique, source_stats, duplicates, geo_checked, geo_passed, geo_failed
 
 
 def load_state():
@@ -613,7 +613,7 @@ async def main():
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
 
-    source_nodes, source_stats, duplicates, geo_passed = collect_sources()
+    source_nodes, source_stats, duplicates, geo_checked, geo_passed, geo_failed = collect_sources()
     old = load_state()
     now = int(time.time())
 
@@ -721,7 +721,9 @@ async def main():
         "source_nodes_unique": len(source_nodes),
         "source_duplicates_removed": duplicates,
         "source_stats": source_stats,
+        "geo_checked": geo_checked,
         "geo_passed": geo_passed,
+        "geo_failed": geo_failed,
         "checked_this_run": len(keys),
         "successful_this_run": successes,
         "failed_this_run": failures,
