@@ -531,6 +531,122 @@ async def select_youtube_reference_video():
 
     return None
 
+async def youtube_real_probe(port: int, video_id: str):
+    video_url = f"https://www.youtube.com/watch?v={video_id}"
+    proxy_url = f"socks5://127.0.0.1:{port}"
+
+    proc = await asyncio.create_subprocess_exec(
+        "yt-dlp",
+        "--quiet",
+        "--no-warnings",
+        "--no-playlist",
+        "--skip-download",
+        "--proxy",
+        proxy_url,
+        "--socket-timeout",
+        str(max(1, int(YOUTUBE_TEST_TIMEOUT))),
+        "--extractor-args",
+        "youtube:player_client=web_embedded",
+        "-f",
+        "bestvideo[height<=1080]/best[height<=1080]/best",
+        "--get-url",
+        video_url,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    try:
+        out, err = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=YOUTUBE_TEST_TIMEOUT + 8,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+        return Probe(False, error="youtube_real: media URL timeout")
+
+    media_urls = out.decode(errors="replace").strip().splitlines()
+
+    if proc.returncode != 0 or not media_urls:
+        error_text = err.decode(errors="replace").strip()
+        return Probe(
+            False,
+            error=f"youtube_real: media URL failed: {error_text[-300:]}",
+        )
+
+    media_url = media_urls[0]
+    range_end = YOUTUBE_TEST_BYTES - 1
+
+    proc = await asyncio.create_subprocess_exec(
+        "curl",
+        "-fsS",
+        "--max-time",
+        str(max(1, int(YOUTUBE_TEST_TIMEOUT))),
+        "--proxy",
+        f"socks5h://127.0.0.1:{port}",
+        "--range",
+        f"0-{range_end}",
+        "-o",
+        os.devnull,
+        "-w",
+        "%{http_code} %{size_download} %{time_total}",
+        media_url,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    try:
+        out, err = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=YOUTUBE_TEST_TIMEOUT + 2,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+        return Probe(False, error="youtube_real: download timeout")
+
+    text = out.decode(errors="replace").strip()
+    parts = text.split()
+
+    try:
+        http_code = parts[0]
+        downloaded_bytes = float(parts[1])
+        total_seconds = float(parts[2])
+    except (IndexError, ValueError):
+        return Probe(False, error="youtube_real: invalid download result")
+
+    if proc.returncode != 0:
+        error_text = err.decode(errors="replace").strip()
+        return Probe(
+            False,
+            error=f"youtube_real: download failed: {error_text[-300:]}",
+        )
+
+    if http_code != "206":
+        return Probe(
+            False,
+            error=f"youtube_real: unexpected HTTP status {http_code}",
+        )
+
+    if downloaded_bytes <= 0 or total_seconds <= 0:
+        return Probe(False, error="youtube_real: no media data received")
+
+    speed_mbps = (downloaded_bytes * 8) / total_seconds / 1_000_000
+
+    if speed_mbps < YOUTUBE_MIN_SPEED_MBPS:
+        return Probe(
+            False,
+            error=(
+                f"youtube_real: too slow "
+                f"({speed_mbps:.2f} Mbps < {YOUTUBE_MIN_SPEED_MBPS:.2f} Mbps)"
+            ),
+        )
+
+    return Probe(
+        True,
+        latency_ms=round(total_seconds * 1000, 1),
+    )
+
 
 async def curl_url_probe(port: int, name: str, url: str, ok_codes):
     proc = await asyncio.create_subprocess_exec(
