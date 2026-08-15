@@ -494,7 +494,7 @@ async def select_youtube_reference_video():
             "--extractor-args",
             "youtube:player_client=web_embedded",
             "-f",
-            "bestvideo[height<=1080]/best[height<=720]/best",
+            "bestvideo[height<=720]/best[height<=720]/best",
             "--get-url",
             url,
             stdout=asyncio.subprocess.PIPE,
@@ -548,7 +548,7 @@ async def youtube_real_probe(port: int):
             "--extractor-args",
             "youtube:player_client=web_embedded",
             "-f",
-            "bestvideo[height<=1080]/best[height<=720]/best",
+            "bestvideo[height<=720]/best[height<=720]/best",
             "--get-url",
             video_url,
             stdout=asyncio.subprocess.PIPE,
@@ -722,6 +722,7 @@ async def quality_probe(
 
     for name, url, ok_codes in QUALITY_PROBES:
         probe_stats[name]["checked"] += 1
+
         result = await curl_url_probe(
             port,
             name,
@@ -733,7 +734,7 @@ async def quality_probe(
             probe_stats[name]["failed"] += 1
             return result
 
-                if (
+        if (
             name == "apple"
             and result.latency_ms is not None
             and result.latency_ms > APPLE_MAX_LATENCY_MS
@@ -757,7 +758,7 @@ async def quality_probe(
 
     youtube_result = await youtube_real_probe(port)
 
-        if not youtube_result.ok:
+    if not youtube_result.ok:
         probe_stats["youtube_real"]["failed"] += 1
 
         error_text = youtube_result.error or ""
@@ -876,7 +877,7 @@ async def main():
     # New keys must pass a real VPN probe before they are published.
     # Previously proven keys may survive temporary failures and are removed
     # only after FAILURES_BEFORE_DELETE consecutive failed probes.
-       candidates = {}
+    candidates = {}
 
     for key, item in old.items():
         uri = item.get("uri")
@@ -904,7 +905,7 @@ async def main():
 
         geo_candidates[key] = uri
 
-        for key, uri in geo_candidates.items():
+    for key, uri in geo_candidates.items():
         previous = old.get(key, {})
         established = bool(
             previous.get(
