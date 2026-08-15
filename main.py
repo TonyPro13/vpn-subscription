@@ -724,7 +724,7 @@ async def quality_probe(
         if result.latency_ms is not None:
             latencies.append(result.latency_ms)
 
-        probe_stats["youtube_real"]["checked"] += 1
+    probe_stats["youtube_real"]["checked"] += 1
 
     youtube_result = await youtube_real_probe(
         port,
