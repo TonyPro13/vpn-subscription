@@ -40,11 +40,6 @@ CHATGPT_PROBE_URL = os.getenv(
     "https://chatgpt.com/robots.txt",
 )
 
-YOUTUBE_PROBE_URL = os.getenv(
-    "YOUTUBE_PROBE_URL",
-    "https://www.youtube.com/generate_204",
-)
-
 TELEGRAM_PROBE_URL = os.getenv(
     "TELEGRAM_PROBE_URL",
     "https://telegram.org",
@@ -78,7 +73,6 @@ QUALITY_PROBES = (
     ("cloudflare", CLOUDFLARE_PROBE_URL, {"200", "204"}),
     ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
     ("telegram", "https://telegram.org", {"200"}),
-    ("youtube", YOUTUBE_PROBE_URL, {"204"}),
 )
 
 
@@ -705,7 +699,11 @@ async def curl_url_probe(port: int, name: str, url: str, ok_codes):
     )
 
 
-async def quality_probe(port: int, probe_stats: dict):
+async def quality_probe(
+    port: int,
+    probe_stats: dict,
+    youtube_reference_video: str,
+):
     latencies = []
 
     for name, url, ok_codes in QUALITY_PROBES:
@@ -726,6 +724,19 @@ async def quality_probe(port: int, probe_stats: dict):
         if result.latency_ms is not None:
             latencies.append(result.latency_ms)
 
+        probe_stats["youtube_real"]["checked"] += 1
+
+    youtube_result = await youtube_real_probe(
+        port,
+        youtube_reference_video,
+    )
+
+    if not youtube_result.ok:
+        probe_stats["youtube_real"]["failed"] += 1
+        return youtube_result
+
+    probe_stats["youtube_real"]["passed"] += 1
+
     average_latency = (
         round(sum(latencies) / len(latencies), 1)
         if latencies
@@ -738,11 +749,23 @@ async def quality_probe(port: int, probe_stats: dict):
     )
 
 
-async def curl_probe(port: int, probe_stats: dict):
-    return await quality_probe(port, probe_stats)
+async def curl_probe(
+    port: int,
+    probe_stats: dict,
+    youtube_reference_video: str,
+):
+    return await quality_probe(
+        port,
+        probe_stats,
+        youtube_reference_video,
+    )
 
 
-async def run_probe(uri: str, probe_stats: dict):
+async def run_probe(
+    uri: str,
+    probe_stats: dict,
+    youtube_reference_video: str,
+):
     scheme = uri.split("://", 1)[0].lower()
     port = free_port()
     engine = XRAY if scheme in {"vless", "vmess", "trojan", "ss"} else SINGBOX
@@ -767,7 +790,11 @@ async def run_probe(uri: str, probe_stats: dict):
                 if proc.returncode is not None:
                     err = (await proc.stderr.read()).decode(errors="replace")[-400:]
                 return Probe(False, error=err or "local SOCKS did not start")
-            return await curl_probe(port, probe_stats)
+            return await curl_probe(
+                port,
+                probe_stats,
+                youtube_reference_video,
+            )
         finally:
             if proc.returncode is None:
                 proc.terminate()
@@ -778,10 +805,19 @@ async def run_probe(uri: str, probe_stats: dict):
                     await proc.wait()
 
 
-async def safe_probe(uri: str, sem: asyncio.Semaphore, probe_stats: dict):
+async def safe_probe(
+    uri: str,
+    sem: asyncio.Semaphore,
+    probe_stats: dict,
+    youtube_reference_video: str,
+):
     async with sem:
         try:
-            return await run_probe(uri, probe_stats)
+            return await run_probe(
+                uri,
+                probe_stats,
+                youtube_reference_video,
+            )
         except Exception as e:
             return Probe(False, error=f"{type(e).__name__}: {e}")
 
@@ -839,12 +875,12 @@ async def main():
             "passed": 0,
             "failed": 0,
         },
-        "youtube": {
+        "telegram": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
         },
-        "telegram": {
+        "youtube_real": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
@@ -853,7 +889,17 @@ async def main():
 
     sem = asyncio.Semaphore(CHECK_CONCURRENCY)
     keys = list(current.keys())
-    results = await asyncio.gather(*(safe_probe(current[k]["uri"], sem, probe_stats) for k in keys))
+    results = await asyncio.gather(
+        *(
+            safe_probe(
+                current[k]["uri"],
+                sem,
+                probe_stats,
+                youtube_reference_video,
+            )
+            for k in keys
+        )
+    )
 
     deleted = 0
     successes = 0
