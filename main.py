@@ -525,50 +525,64 @@ async def select_youtube_reference_video():
 
     return None
 
-async def youtube_real_probe(port: int, video_id: str):
-    video_url = f"https://www.youtube.com/watch?v={video_id}"
+async def youtube_real_probe(port: int):
     proxy_url = f"socks5://127.0.0.1:{port}"
 
-    proc = await asyncio.create_subprocess_exec(
-        "yt-dlp",
-        "--quiet",
-        "--no-warnings",
-        "--no-playlist",
-        "--skip-download",
-        "--proxy",
-        proxy_url,
-        "--socket-timeout",
-        str(max(1, int(YOUTUBE_TEST_TIMEOUT))),
-        "--extractor-args",
-        "youtube:player_client=web_embedded",
-        "-f",
-        "bestvideo[height<=1080]/best[height<=1080]/best",
-        "--get-url",
-        video_url,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
+    media_url = None
+    last_error = ""
 
-    try:
-        out, err = await asyncio.wait_for(
-            proc.communicate(),
-            timeout=YOUTUBE_TEST_TIMEOUT + 8,
+    for video_id in YOUTUBE_REAL_TEST_VIDEOS:
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
+
+        proc = await asyncio.create_subprocess_exec(
+            "yt-dlp",
+            "--quiet",
+            "--no-warnings",
+            "--no-playlist",
+            "--skip-download",
+            "--proxy",
+            proxy_url,
+            "--socket-timeout",
+            str(max(1, int(YOUTUBE_TEST_TIMEOUT))),
+            "--extractor-args",
+            "youtube:player_client=web_embedded",
+            "-f",
+            "bestvideo[height<=1080]/best[height<=1080]/best",
+            "--get-url",
+            video_url,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.communicate()
-        return Probe(False, error="youtube_real: media URL timeout")
 
-    media_urls = out.decode(errors="replace").strip().splitlines()
+        try:
+            out, err = await asyncio.wait_for(
+                proc.communicate(),
+                timeout=YOUTUBE_TEST_TIMEOUT + 8,
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.communicate()
+            last_error = f"{video_id}: media URL timeout"
+            continue
 
-    if proc.returncode != 0 or not media_urls:
+        media_urls = out.decode(errors="replace").strip().splitlines()
+
+        if proc.returncode == 0 and media_urls:
+            media_url = media_urls[0]
+            break
+
         error_text = err.decode(errors="replace").strip()
+        last_error = (
+            f"{video_id}: media URL failed: "
+            f"{error_text[-300:]}"
+        )
+
+    if not media_url:
         return Probe(
             False,
-            error=f"youtube_real: media URL failed: {error_text[-300:]}",
+            error=f"youtube_real: all reference videos failed: {last_error}",
         )
 
-    media_url = media_urls[0]
     range_end = YOUTUBE_TEST_BYTES - 1
 
     proc = await asyncio.create_subprocess_exec(
@@ -702,7 +716,6 @@ async def curl_url_probe(port: int, name: str, url: str, ok_codes):
 async def quality_probe(
     port: int,
     probe_stats: dict,
-    youtube_reference_video: str,
 ):
     latencies = []
 
@@ -726,10 +739,7 @@ async def quality_probe(
 
     probe_stats["youtube_real"]["checked"] += 1
 
-    youtube_result = await youtube_real_probe(
-        port,
-        youtube_reference_video,
-    )
+    youtube_result = await youtube_real_probe(port)
 
     if not youtube_result.ok:
         probe_stats["youtube_real"]["failed"] += 1
@@ -752,19 +762,16 @@ async def quality_probe(
 async def curl_probe(
     port: int,
     probe_stats: dict,
-    youtube_reference_video: str,
 ):
     return await quality_probe(
         port,
         probe_stats,
-        youtube_reference_video,
     )
 
 
 async def run_probe(
     uri: str,
     probe_stats: dict,
-    youtube_reference_video: str,
 ):
     scheme = uri.split("://", 1)[0].lower()
     port = free_port()
@@ -793,7 +800,6 @@ async def run_probe(
             return await curl_probe(
                 port,
                 probe_stats,
-                youtube_reference_video,
             )
         finally:
             if proc.returncode is None:
@@ -809,14 +815,12 @@ async def safe_probe(
     uri: str,
     sem: asyncio.Semaphore,
     probe_stats: dict,
-    youtube_reference_video: str,
 ):
     async with sem:
         try:
             return await run_probe(
                 uri,
                 probe_stats,
-                youtube_reference_video,
             )
         except Exception as e:
             return Probe(False, error=f"{type(e).__name__}: {e}")
@@ -825,14 +829,6 @@ async def safe_probe(
 async def main():
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
-
-    youtube_reference_video = await select_youtube_reference_video()
-
-    if not youtube_reference_video:
-        raise RuntimeError(
-            "All YouTube reference videos are unavailable. "
-            "Aborting refresh without updating the subscription."
-        )
 
     source_nodes, source_stats, duplicates, geo_checked, geo_passed, geo_failed = collect_sources()
     old = load_state()
@@ -895,12 +891,10 @@ async def main():
                 current[k]["uri"],
                 sem,
                 probe_stats,
-                youtube_reference_video,
             )
             for k in keys
         )
     )
-
     deleted = 0
     successes = 0
     failures = 0
