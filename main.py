@@ -1010,7 +1010,7 @@ async def main():
             "checked": 0,
             "passed": 0,
             "failed": 0,
-        }
+        },
         "chatgpt_ws": {
             "checked": 0,
             "passed": 0,
