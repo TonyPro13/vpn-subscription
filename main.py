@@ -315,8 +315,6 @@ def collect_sources():
 
     host_results = {}
 
-        host_results = {}
-
     geo_dns_stats = {
         "unique_hosts": len(unique_hosts),
         "ru": 0,
