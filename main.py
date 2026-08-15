@@ -35,6 +35,7 @@ SINGBOX = BIN_DIR / "sing-box"
 
 YOUTUBE_BROWSER = None
 YOUTUBE_SEMAPHORE = None
+CHEAP_PROBE_SEMAPHORE = None
 YOUTUBE_PREFERRED_VIDEO = None
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
@@ -819,15 +820,22 @@ async def quality_probe(
 ):
     latencies = []
 
+async def quality_probe(
+    port: int,
+    probe_stats: dict,
+):
+    latencies = []
+
     for name, url, ok_codes in QUALITY_PROBES:
         probe_stats[name]["checked"] += 1
 
-        result = await curl_url_probe(
-            port,
-            name,
-            url,
-            ok_codes,
-        )
+        async with CHEAP_PROBE_SEMAPHORE:
+            result = await curl_url_probe(
+                port,
+                name,
+                url,
+                ok_codes,
+            )
 
         if not result.ok:
             probe_stats[name]["failed"] += 1
@@ -945,17 +953,15 @@ async def run_probe(
 
 async def safe_probe(
     uri: str,
-    sem: asyncio.Semaphore,
     probe_stats: dict,
 ):
-    async with sem:
-        try:
-            return await run_probe(
-                uri,
-                probe_stats,
-            )
-        except Exception as e:
-            return Probe(False, error=f"{type(e).__name__}: {e}")
+    try:
+        return await run_probe(
+            uri,
+            probe_stats,
+        )
+    except Exception as e:
+        return Probe(False, error=f"{type(e).__name__}: {e}")
 
 
 async def main():
@@ -964,12 +970,15 @@ async def main():
 
     global YOUTUBE_BROWSER
     global YOUTUBE_SEMAPHORE
+    global CHEAP_PROBE_SEMAPHORE
 
     playwright = await async_playwright().start()
     YOUTUBE_BROWSER = await playwright.chromium.launch(
         headless=True,
     )
+
     YOUTUBE_SEMAPHORE = asyncio.Semaphore(YOUTUBE_CONCURRENCY)
+    CHEAP_PROBE_SEMAPHORE = asyncio.Semaphore(CHECK_CONCURRENCY)
 
     source_nodes, source_stats, duplicates, geo_checked, geo_passed, geo_failed = collect_sources()
     old = load_state()
@@ -1064,13 +1073,12 @@ async def main():
         },
     }
 
-    sem = asyncio.Semaphore(CHECK_CONCURRENCY)
     keys = list(current.keys())
+
     results = await asyncio.gather(
         *(
             safe_probe(
                 current[k]["uri"],
-                sem,
                 probe_stats,
             )
             for k in keys
