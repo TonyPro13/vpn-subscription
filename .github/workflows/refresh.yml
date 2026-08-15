@@ -28,18 +28,20 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install curl, unzip and yt-dlp
+      - name: Install curl, unzip and Playwright
         run: |
           sudo apt-get update
           sudo apt-get install -y curl unzip jq
-          python -m pip install --upgrade yt-dlp
+          python -m pip install --upgrade playwright
+          python -m playwright install --with-deps chromium
 
       - name: Install Xray and sing-box
         run: bash scripts/install_engines.sh
 
       - name: Refresh and verify pool
         env:
-          CHECK_CONCURRENCY: "16"
+          CHECK_CONCURRENCY: "20"
+          YOUTUBE_CONCURRENCY: "8"
           PROBE_TIMEOUT_SECONDS: "9"
           FAILURES_BEFORE_DELETE: "5"
         run: python main.py
