@@ -55,14 +55,20 @@ MAX_PROBE_URL = os.getenv(
     "https://max.ru",
 )
 
+CLOUDFLARE_PROBE_URL = os.getenv(
+    "CLOUDFLARE_PROBE_URL",
+    "https://cp.cloudflare.com/generate_204",
+)
+
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
 QUALITY_PROBES = (
     ("apple", "http://captive.apple.com/hotspot-detect.html", {"200"}),
     ("max", MAX_PROBE_URL, {"200"}),
+    ("cloudflare", CLOUDFLARE_PROBE_URL, {"200", "204"}),
     ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
-    ("youtube", YOUTUBE_PROBE_URL, {"204"}),
     ("telegram", "https://telegram.org", {"200"}),
+    ("youtube", YOUTUBE_PROBE_URL, {"204"}),
 )
 
 
@@ -639,6 +645,16 @@ async def main():
             "passed": 0,
             "failed": 0,
         },
+        "max": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "cloudflare": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
         "chatgpt": {
             "checked": 0,
             "passed": 0,
@@ -650,11 +666,6 @@ async def main():
             "failed": 0,
         },
         "telegram": {
-            "checked": 0,
-            "passed": 0,
-            "failed": 0,
-        },
-        "max": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
