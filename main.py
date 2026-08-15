@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import parse_qs, parse_qsl, unquote, urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
+from playwright.async_api import async_playwright
 
 SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
@@ -32,7 +33,8 @@ BIN_DIR = Path("bin")
 XRAY = BIN_DIR / "xray"
 SINGBOX = BIN_DIR / "sing-box"
 
-CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "16"))
+CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
+YOUTUBE_CONCURRENCY = int(os.getenv("YOUTUBE_CONCURRENCY", "8"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
 APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "200"))
 
