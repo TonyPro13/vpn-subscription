@@ -702,28 +702,60 @@ async def youtube_real_probe(port: int):
                 )
 
                 try:
-                    await page.evaluate(
+                    await page.wait_for_selector(
+                        "video",
+                        state="attached",
+                        timeout=5000,
+                    )
+
+                    playback_state = await page.evaluate(
                         """
                         async () => {
                             const video = document.querySelector("video");
 
                             if (!video) {
-                                return false;
+                                return {
+                                    video_found: false
+                                };
                             }
 
                             video.muted = true;
 
+                            let play_ok = false;
+                            let play_error = "";
+
                             try {
                                 await video.play();
-                                return true;
+                                play_ok = true;
                             } catch (e) {
-                                return false;
+                                play_error = String(e);
                             }
+
+                            return {
+                                video_found: true,
+                                play_ok: play_ok,
+                                play_error: play_error,
+                                ready_state: video.readyState,
+                                paused: video.paused,
+                                current_time: video.currentTime,
+                                network_state: video.networkState
+                            };
                         }
                         """
                     )
-                except Exception:
-                    pass
+
+                    print(
+                        "YOUTUBE_DEBUG "
+                        f"video={video_id} "
+                        f"state={json.dumps(playback_state, ensure_ascii=False)}"
+                    )
+
+                except Exception as e:
+                    print(
+                        "YOUTUBE_DEBUG "
+                        f"video={video_id} "
+                        f"player_error={type(e).__name__}: {e}"
+                    )
 
                 try:
                     await asyncio.wait_for(
