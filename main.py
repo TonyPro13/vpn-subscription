@@ -58,9 +58,13 @@ CHATGPT_PROBE_URL = os.getenv(
     "https://chatgpt.com/robots.txt",
 )
 
-TELEGRAM_PROBE_URL = os.getenv(
-    "TELEGRAM_PROBE_URL",
-    "https://telegram.org",
+CHATGPT_WS_URL = os.getenv(
+    "CHATGPT_WS_URL",
+    "https://ws.chatgpt.com/",
+)
+
+CHATGPT_WS_TIMEOUT = float(
+    os.getenv("CHATGPT_WS_TIMEOUT_SECONDS", "5")
 )
 
 MAX_PROBE_URL = os.getenv(
@@ -68,20 +72,13 @@ MAX_PROBE_URL = os.getenv(
     "https://max.ru",
 )
 
-CLOUDFLARE_PROBE_URL = os.getenv(
-    "CLOUDFLARE_PROBE_URL",
-    "https://cp.cloudflare.com/generate_204",
+YOUTUBE_PROBE_URL = os.getenv(
+    "YOUTUBE_PROBE_URL",
+    "https://www.youtube.com/generate_204",
 )
 
-YOUTUBE_PREFLIGHT_URL = os.getenv(
-    "YOUTUBE_PREFLIGHT_URL",
-    "https://www.youtube.com/robots.txt",
-)
-YOUTUBE_PREFLIGHT_TIMEOUT = float(
-    os.getenv("YOUTUBE_PREFLIGHT_TIMEOUT_SECONDS", "4")
-)
-YOUTUBE_PREFLIGHT_MAX_SECONDS = float(
-    os.getenv("YOUTUBE_PREFLIGHT_MAX_SECONDS", "2.0")
+YOUTUBE_PROBE_TIMEOUT = float(
+    os.getenv("YOUTUBE_PROBE_TIMEOUT_SECONDS", "5")
 )
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
@@ -89,9 +86,7 @@ QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 QUALITY_PROBES = (
     ("apple", "http://captive.apple.com/hotspot-detect.html", {"200"}),
     ("max", MAX_PROBE_URL, {"200"}),
-    ("cloudflare", CLOUDFLARE_PROBE_URL, {"200", "204"}),
     ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
-    ("telegram", "https://telegram.org", {"200"}),
 )
 
 
@@ -604,19 +599,19 @@ async def wait_port(port: int, timeout=2.5):
             await asyncio.sleep(0.05)
     return False
 
-async def youtube_preflight_probe(port: int):
+async def youtube_generate_204_probe(port: int):
     proc = await asyncio.create_subprocess_exec(
         "curl",
         "-sS",
         "--max-time",
-        str(max(1, int(YOUTUBE_PREFLIGHT_TIMEOUT))),
+        str(max(1, int(YOUTUBE_PROBE_TIMEOUT))),
         "--proxy",
         f"socks5h://127.0.0.1:{port}",
         "-o",
         os.devnull,
         "-w",
         "%{http_code} %{time_total}",
-        YOUTUBE_PREFLIGHT_URL,
+        YOUTUBE_PROBE_URL,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -624,7 +619,7 @@ async def youtube_preflight_probe(port: int):
     try:
         out, err = await asyncio.wait_for(
             proc.communicate(),
-            timeout=YOUTUBE_PREFLIGHT_TIMEOUT + 2,
+            timeout=YOUTUBE_PROBE_TIMEOUT + 2,
         )
     except asyncio.TimeoutError:
         proc.kill()
@@ -632,7 +627,7 @@ async def youtube_preflight_probe(port: int):
 
         return Probe(
             False,
-            error="youtube_preflight: timeout",
+            error="youtube_204: timeout",
         )
 
     text = out.decode(errors="replace").strip()
@@ -643,33 +638,91 @@ async def youtube_preflight_probe(port: int):
     try:
         total_seconds = float(parts[1])
     except (IndexError, ValueError):
-        total_seconds = YOUTUBE_PREFLIGHT_TIMEOUT + 1
+        total_seconds = YOUTUBE_PROBE_TIMEOUT + 1
 
-    if proc.returncode != 0 or not code or code == "000":
+    if proc.returncode != 0:
         error_text = err.decode(errors="replace").strip()
 
         return Probe(
             False,
             error=(
-                "youtube_preflight: connection failed: "
+                "youtube_204: connection failed: "
                 f"{error_text[-300:]}"
             ),
         )
 
-    if total_seconds > YOUTUBE_PREFLIGHT_MAX_SECONDS:
+    if code != "204":
         return Probe(
             False,
             latency_ms=round(total_seconds * 1000, 1),
             error=(
-                f"youtube_preflight: too slow "
-                f"({total_seconds:.2f}s > "
-                f"{YOUTUBE_PREFLIGHT_MAX_SECONDS:.2f}s)"
+                f"youtube_204: unexpected HTTP status {code}"
             ),
         )
 
     return Probe(
         True,
         latency_ms=round(total_seconds * 1000, 1),
+    )
+
+async def chatgpt_websocket_probe(port: int):
+    proc = await asyncio.create_subprocess_exec(
+        "curl",
+        "-sS",
+        "--http1.1",
+        "--max-time",
+        str(max(1, int(CHATGPT_WS_TIMEOUT))),
+        "--proxy",
+        f"socks5h://127.0.0.1:{port}",
+        "-o",
+        os.devnull,
+        "-D",
+        "-",
+        "-H",
+        "Connection: Upgrade",
+        "-H",
+        "Upgrade: websocket",
+        "-H",
+        "Sec-WebSocket-Version: 13",
+        "-H",
+        "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==",
+        CHATGPT_WS_URL,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    try:
+        out, err = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=CHATGPT_WS_TIMEOUT + 2,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+
+        return Probe(
+            False,
+            error="chatgpt_ws: timeout",
+        )
+
+    headers = out.decode(errors="replace")
+    first_line = headers.splitlines()[0] if headers.splitlines() else ""
+
+    if (
+        " 101 " in first_line
+        or " 401 " in first_line
+        or " 403 " in first_line
+    ):
+        return Probe(True)
+
+    error_text = err.decode(errors="replace").strip()
+
+    return Probe(
+        False,
+        error=(
+            f"chatgpt_ws: handshake failed "
+            f"({first_line or error_text[-300:]})"
+        ),
     )
 
 
@@ -771,20 +824,32 @@ async def quality_probe(
         if result.latency_ms is not None:
             latencies.append(result.latency_ms)
 
-        if name == "max":
-            probe_stats["youtube_preflight"]["checked"] += 1
+        if name == "chatgpt":
+            probe_stats["chatgpt_ws"]["checked"] += 1
 
             async with CHEAP_PROBE_SEMAPHORE:
-                preflight_result = await youtube_preflight_probe(port)
+                ws_result = await chatgpt_websocket_probe(port)
 
-            if not preflight_result.ok:
-                probe_stats["youtube_preflight"]["failed"] += 1
-                return preflight_result
+            if not ws_result.ok:
+                probe_stats["chatgpt_ws"]["failed"] += 1
+                return ws_result
 
-            probe_stats["youtube_preflight"]["passed"] += 1
+            probe_stats["chatgpt_ws"]["passed"] += 1
 
-            if preflight_result.latency_ms is not None:
-                latencies.append(preflight_result.latency_ms)
+        if name == "max":
+            probe_stats["youtube_204"]["checked"] += 1
+
+            async with CHEAP_PROBE_SEMAPHORE:
+                youtube_result = await youtube_generate_204_probe(port)
+
+            if not youtube_result.ok:
+                probe_stats["youtube_204"]["failed"] += 1
+                return youtube_result
+
+            probe_stats["youtube_204"]["passed"] += 1
+
+            if youtube_result.latency_ms is not None:
+                latencies.append(youtube_result.latency_ms)
 
     average_latency = (
         round(sum(latencies) / len(latencies), 1)
@@ -941,22 +1006,17 @@ async def main():
             "passed": 0,
             "failed": 0,
         },
-        "cloudflare": {
-            "checked": 0,
-            "passed": 0,
-            "failed": 0,
-        },
         "chatgpt": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
-        },
-        "telegram": {
+        }
+        "chatgpt_ws": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
         },
-        "youtube_preflight": {
+        "youtube_204": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
