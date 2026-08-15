@@ -36,10 +36,12 @@ SINGBOX = BIN_DIR / "sing-box"
 YOUTUBE_BROWSER = None
 YOUTUBE_SEMAPHORE = None
 CHEAP_PROBE_SEMAPHORE = None
+VPN_PROCESS_SEMAPHORE = None
 YOUTUBE_PREFERRED_VIDEO = None
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 YOUTUBE_CONCURRENCY = int(os.getenv("YOUTUBE_CONCURRENCY", "8"))
+VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
 APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "200"))
 
@@ -956,10 +958,11 @@ async def safe_probe(
     probe_stats: dict,
 ):
     try:
-        return await run_probe(
-            uri,
-            probe_stats,
-        )
+        async with VPN_PROCESS_SEMAPHORE:
+            return await run_probe(
+                uri,
+                probe_stats,
+            )
     except Exception as e:
         return Probe(False, error=f"{type(e).__name__}: {e}")
 
@@ -971,6 +974,7 @@ async def main():
     global YOUTUBE_BROWSER
     global YOUTUBE_SEMAPHORE
     global CHEAP_PROBE_SEMAPHORE
+    global VPN_PROCESS_SEMAPHORE
 
     playwright = await async_playwright().start()
     YOUTUBE_BROWSER = await playwright.chromium.launch(
@@ -979,6 +983,7 @@ async def main():
 
     YOUTUBE_SEMAPHORE = asyncio.Semaphore(YOUTUBE_CONCURRENCY)
     CHEAP_PROBE_SEMAPHORE = asyncio.Semaphore(CHECK_CONCURRENCY)
+    VPN_PROCESS_SEMAPHORE = asyncio.Semaphore(VPN_PROCESS_CONCURRENCY)
 
     source_nodes, source_stats, duplicates, geo_checked, geo_passed, geo_failed = collect_sources()
     old = load_state()
