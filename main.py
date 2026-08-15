@@ -535,6 +535,19 @@ async def youtube_real_probe(port: int):
                     },
                 )
 
+                async def block_unneeded_resources(route):
+                    resource_type = route.request.resource_type
+
+                    if resource_type in {"image", "font"}:
+                        await route.abort()
+                    else:
+                        await route.continue_()
+
+                await context.route(
+                    "**/*",
+                    block_unneeded_resources,
+                )
+
                 page = await context.new_page()
                 cdp = await context.new_cdp_session(page)
 
