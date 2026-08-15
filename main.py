@@ -51,20 +51,11 @@ CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
 GEO_DNS_CONCURRENCY = int(os.getenv("GEO_DNS_CONCURRENCY", "32"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
-APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "200"))
+APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "500"))
 
 CHATGPT_PROBE_URL = os.getenv(
     "CHATGPT_PROBE_URL",
     "https://chatgpt.com/robots.txt",
-)
-
-CHATGPT_WS_URL = os.getenv(
-    "CHATGPT_WS_URL",
-    "https://ws.chatgpt.com/",
-)
-
-CHATGPT_WS_TIMEOUT = float(
-    os.getenv("CHATGPT_WS_TIMEOUT_SECONDS", "5")
 )
 
 MAX_PROBE_URL = os.getenv(
@@ -665,67 +656,6 @@ async def youtube_generate_204_probe(port: int):
         latency_ms=round(total_seconds * 1000, 1),
     )
 
-async def chatgpt_websocket_probe(port: int):
-    proc = await asyncio.create_subprocess_exec(
-        "curl",
-        "-sS",
-        "--http1.1",
-        "--max-time",
-        str(max(1, int(CHATGPT_WS_TIMEOUT))),
-        "--proxy",
-        f"socks5h://127.0.0.1:{port}",
-        "-o",
-        os.devnull,
-        "-D",
-        "-",
-        "-H",
-        "Connection: Upgrade",
-        "-H",
-        "Upgrade: websocket",
-        "-H",
-        "Sec-WebSocket-Version: 13",
-        "-H",
-        "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==",
-        CHATGPT_WS_URL,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-
-    try:
-        out, err = await asyncio.wait_for(
-            proc.communicate(),
-            timeout=CHATGPT_WS_TIMEOUT + 2,
-        )
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.communicate()
-
-        return Probe(
-            False,
-            error="chatgpt_ws: timeout",
-        )
-
-    headers = out.decode(errors="replace")
-    first_line = headers.splitlines()[0] if headers.splitlines() else ""
-
-    if (
-        " 101 " in first_line
-        or " 401 " in first_line
-        or " 403 " in first_line
-    ):
-        return Probe(True)
-
-    error_text = err.decode(errors="replace").strip()
-
-    return Probe(
-        False,
-        error=(
-            f"chatgpt_ws: handshake failed "
-            f"({first_line or error_text[-300:]})"
-        ),
-    )
-
-
 async def curl_url_probe(port: int, name: str, url: str, ok_codes):
     proc = await asyncio.create_subprocess_exec(
         "curl", "-fsS",
@@ -818,38 +748,6 @@ async def quality_probe(
                     f"({result.latency_ms:.1f} ms > {APPLE_MAX_LATENCY_MS:.1f} ms)"
                 ),
             )
-
-        probe_stats[name]["passed"] += 1
-
-        if result.latency_ms is not None:
-            latencies.append(result.latency_ms)
-
-        if name == "chatgpt":
-            probe_stats["chatgpt_ws"]["checked"] += 1
-
-            async with CHEAP_PROBE_SEMAPHORE:
-                ws_result = await chatgpt_websocket_probe(port)
-
-            if not ws_result.ok:
-                probe_stats["chatgpt_ws"]["failed"] += 1
-                return ws_result
-
-            probe_stats["chatgpt_ws"]["passed"] += 1
-
-        if name == "max":
-            probe_stats["youtube_204"]["checked"] += 1
-
-            async with CHEAP_PROBE_SEMAPHORE:
-                youtube_result = await youtube_generate_204_probe(port)
-
-            if not youtube_result.ok:
-                probe_stats["youtube_204"]["failed"] += 1
-                return youtube_result
-
-            probe_stats["youtube_204"]["passed"] += 1
-
-            if youtube_result.latency_ms is not None:
-                latencies.append(youtube_result.latency_ms)
 
     average_latency = (
         round(sum(latencies) / len(latencies), 1)
@@ -1007,11 +905,6 @@ async def main():
             "failed": 0,
         },
         "chatgpt": {
-            "checked": 0,
-            "passed": 0,
-            "failed": 0,
-        },
-        "chatgpt_ws": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
