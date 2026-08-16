@@ -1,0 +1,23 @@
+mixed-port: 7890
+allow-lan: false
+mode: "rule"
+log-level: "info"
+ipv6: true
+proxy-providers:
+  VPN:
+    type: "http"
+    url: "https://raw.githubusercontent.com/TonyPro13/vpn-subscription/main/output/mihomo-provider.yaml"
+    path: "./providers/vpn.yaml"
+    interval: 3600
+proxy-groups:
+  - name: "AUTO"
+    type: "url-test"
+    use:
+      - "VPN"
+    url: "https://www.gstatic.com/generate_204"
+    interval: 60
+    timeout: 5000
+    tolerance: 50
+    lazy: false
+rules:
+  - "MATCH,AUTO"
