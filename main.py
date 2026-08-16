@@ -39,11 +39,20 @@ CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
 GEO_DNS_CONCURRENCY = int(os.getenv("GEO_DNS_CONCURRENCY", "32"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
-APPLE_MAX_LATENCY_MS = float(os.getenv("APPLE_MAX_LATENCY_MS", "1000"))
 
 CHATGPT_PROBE_URL = os.getenv(
     "CHATGPT_PROBE_URL",
     "https://chatgpt.com/robots.txt",
+)
+
+CHATGPT_AUTH_PROBE_URL = os.getenv(
+    "CHATGPT_AUTH_PROBE_URL",
+    "https://auth.openai.com/",
+)
+
+CHATGPT_ANDROID_PROBE_URL = os.getenv(
+    "CHATGPT_ANDROID_PROBE_URL",
+    "https://android.chat.openai.com/",
 )
 
 MAX_PROBE_URL = os.getenv(
@@ -62,8 +71,62 @@ YOUTUBE_PROBE_TIMEOUT = float(
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
+async def curl_tls_probe(port: int, name: str, url: str):
+    proc = await asyncio.create_subprocess_exec(
+        "curl",
+        "-sS",
+        "--max-time",
+        str(max(1, int(PROBE_TIMEOUT))),
+        "--proxy",
+        f"socks5h://127.0.0.1:{port}",
+        "-o",
+        os.devnull,
+        "-w",
+        "%{http_code} %{time_total}",
+        url,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    try:
+        out, err = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=PROBE_TIMEOUT + 2,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+        return Probe(False, error=f"{name}: timeout")
+
+    text = out.decode(errors="replace").strip()
+    parts = text.split()
+
+    code = parts[0] if parts else ""
+
+    try:
+        total_seconds = float(parts[1])
+    except (IndexError, ValueError):
+        total_seconds = PROBE_TIMEOUT + 1
+
+    if proc.returncode != 0:
+        error_text = err.decode(errors="replace").strip()
+        return Probe(
+            False,
+            error=f"{name}: TLS/HTTPS failed: {error_text[-300:]}",
+        )
+
+    if not code or code == "000":
+        return Probe(
+            False,
+            error=f"{name}: no HTTP response",
+        )
+
+    return Probe(
+        True,
+        latency_ms=round(total_seconds * 1000, 1),
+    )
+
 QUALITY_PROBES = (
-    ("apple", "http://captive.apple.com/hotspot-detect.html", {"200"}),
     ("max", MAX_PROBE_URL, {"200"}),
     ("chatgpt", CHATGPT_PROBE_URL, {"200"}),
 )
@@ -722,25 +785,41 @@ async def quality_probe(
             probe_stats[name]["failed"] += 1
             return result
 
-        if (
-            name == "apple"
-            and result.latency_ms is not None
-            and result.latency_ms > APPLE_MAX_LATENCY_MS
-        ):
-            probe_stats[name]["failed"] += 1
-            return Probe(
-                False,
-                latency_ms=result.latency_ms,
-                error=(
-                    f"apple: latency too high "
-                    f"({result.latency_ms:.1f} ms > {APPLE_MAX_LATENCY_MS:.1f} ms)"
-                ),
-            )
-
         probe_stats[name]["passed"] += 1
 
         if result.latency_ms is not None:
             latencies.append(result.latency_ms)
+
+        if name == "chatgpt":
+            extra_gpt_probes = (
+                (
+                    "chatgpt_auth_tls",
+                    CHATGPT_AUTH_PROBE_URL,
+                ),
+                (
+                    "chatgpt_android_tls",
+                    CHATGPT_ANDROID_PROBE_URL,
+                ),
+            )
+
+            for extra_name, extra_url in extra_gpt_probes:
+                probe_stats[extra_name]["checked"] += 1
+
+                async with CHEAP_PROBE_SEMAPHORE:
+                    extra_result = await curl_tls_probe(
+                        port,
+                        extra_name,
+                        extra_url,
+                    )
+
+                if not extra_result.ok:
+                    probe_stats[extra_name]["failed"] += 1
+                    return extra_result
+
+                probe_stats[extra_name]["passed"] += 1
+
+                if extra_result.latency_ms is not None:
+                    latencies.append(extra_result.latency_ms)
 
         if name == "max":
             probe_stats["youtube_204"]["checked"] += 1
@@ -902,17 +981,22 @@ async def main():
         }
 
     probe_stats = {
-        "apple": {
-            "checked": 0,
-            "passed": 0,
-            "failed": 0,
-        },
         "max": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
         },
         "chatgpt": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "chatgpt_auth_tls": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+        },
+        "chatgpt_android_tls": {
             "checked": 0,
             "passed": 0,
             "failed": 0,
