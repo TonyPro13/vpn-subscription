@@ -43,6 +43,7 @@ jobs:
           GEO_DNS_CONCURRENCY: "32"
           PROBE_TIMEOUT_SECONDS: "9"
           FAILURES_BEFORE_DELETE: "5"
+          MIHOMO_PROVIDER_URL: "https://vpn-subscription.tonypro0988.workers.dev/mihomo-provider.yaml"
         run: python main.py
 
       - name: Commit updated subscription
