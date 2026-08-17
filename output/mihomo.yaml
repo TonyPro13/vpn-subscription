@@ -8,7 +8,7 @@ proxy-providers:
     type: "http"
     url: "https://vpn-subscription.tonypro0988.workers.dev/mihomo-provider.yaml"
     path: "./providers/vpn.yaml"
-    interval: 3600
+    interval: 900
 proxy-groups:
   - name: "AUTO"
     type: "url-test"
@@ -17,7 +17,7 @@ proxy-groups:
     url: "https://www.gstatic.com/generate_204"
     interval: 60
     timeout: 5000
-    tolerance: 50
+    tolerance: 30
     lazy: false
 rules:
   - "MATCH,AUTO"
