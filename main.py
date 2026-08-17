@@ -1471,7 +1471,7 @@ def write_mihomo_files(ordered) -> tuple[int, int]:
                     "type": "http",
                     "url": provider_url,
                     "path": "./providers/vpn.yaml",
-                    "interval": 3600,
+                    "interval": 900,
                 }
             },
             "proxy-groups": [
@@ -1482,7 +1482,7 @@ def write_mihomo_files(ordered) -> tuple[int, int]:
                     "url": "https://www.gstatic.com/generate_204",
                     "interval": 60,
                     "timeout": 5000,
-                    "tolerance": 50,
+                    "tolerance": 30,
                     "lazy": False,
                 }
             ],
@@ -1510,7 +1510,7 @@ def write_mihomo_files(ordered) -> tuple[int, int]:
                     "url": "https://www.gstatic.com/generate_204",
                     "interval": 60,
                     "timeout": 5000,
-                    "tolerance": 50,
+                    "tolerance": 30,
                     "lazy": False,
                 }
             ],
