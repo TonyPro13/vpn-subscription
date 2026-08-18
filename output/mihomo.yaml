@@ -1,23 +1,2214 @@
 mixed-port: 7890
-allow-lan: false
-mode: "rule"
-log-level: "info"
-ipv6: true
-proxy-providers:
-  VPN:
-    type: "http"
-    url: "https://raw.githubusercontent.com/TonyPro13/vpn-subscription/main/output/mihomo-provider.yaml"
-    path: "./providers/vpn.yaml"
-    interval: 900
+mode: rule
+proxies:
+  -
+    name: node-1
+    type: vless
+    server: 107.151.201.59
+    port: 443
+    uuid: 44897c4d-b924-4315-a07e-a1124c029f9c
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-2
+    type: vless
+    server: 107.151.201.59
+    port: 443
+    uuid: 44897c4d-b924-4315-a07e-a1124c029f9c
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-3
+    type: vless
+    server: test.lte.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: us.srv.anti-zapret.com
+    udp: true
+  -
+    name: node-4
+    type: vless
+    server: test.lte.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: us.srv.anti-zapret.com
+    udp: true
+  -
+    name: node-5
+    type: vless
+    server: 34.124.166.13
+    port: 20843
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-6
+    type: vless
+    server: 34.124.166.13
+    port: 20843
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-7
+    type: vless
+    server: 34.124.166.13
+    port: 20843
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-8
+    type: vless
+    server: 35.200.86.178
+    port: 21143
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-9
+    type: vless
+    server: 35.200.86.178
+    port: 21143
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-10
+    type: vless
+    server: 35.200.86.178
+    port: 21143
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-11
+    type: vless
+    server: 35.200.86.178
+    port: 21143
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-12
+    type: vless
+    server: 34.124.166.13
+    port: 21443
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: djp01.ps5.update.playstation.net
+    udp: true
+  -
+    name: node-13
+    type: vless
+    server: 34.124.166.13
+    port: 21443
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: djp01.ps5.update.playstation.net
+    udp: true
+  -
+    name: node-14
+    type: vless
+    server: 199.189.253.213
+    port: 13443
+    uuid: 5238521b-c5dd-42af-870e-c174a2aaaafe
+    network: tcp
+    tls: false
+    servername: auto.cendora.ru
+    udp: true
+  -
+    name: node-15
+    type: vless
+    server: 199.189.253.213
+    port: 13443
+    uuid: 5238521b-c5dd-42af-870e-c174a2aaaafe
+    network: tcp
+    tls: false
+    servername: auto.cendora.ru
+    udp: true
+  -
+    name: node-16
+    type: vless
+    server: 150.251.114.43
+    port: 443
+    uuid: 851b2819-b359-40bc-ad61-a5d41027be2c
+    network: ws
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-17
+    type: vless
+    server: 94.183.157.66
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-18
+    type: vless
+    server: 94.183.157.66
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-19
+    type: vless
+    server: 94.183.157.67
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-20
+    type: vless
+    server: 94.183.157.68
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-21
+    type: vless
+    server: 94.183.157.68
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-22
+    type: vless
+    server: 94.183.157.69
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-23
+    type: vless
+    server: 94.183.157.69
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-24
+    type: vless
+    server: 94.183.157.70
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-25
+    type: vless
+    server: 94.183.157.70
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-26
+    type: vless
+    server: 94.183.157.72
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-27
+    type: vless
+    server: 94.183.157.72
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-28
+    type: vless
+    server: test.backup.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-29
+    type: vless
+    server: test.backup.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-30
+    type: vless
+    server: test.backup.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-31
+    type: vless
+    server: 36.151.187.225
+    port: 12885
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-32
+    type: vless
+    server: 163.128.98.110
+    port: 443
+    uuid: f67e149c-e1f4-4162-876b-a34591b8349f
+    network: tcp
+    tls: false
+    servername: www.apple.com
+    udp: true
+  -
+    name: node-33
+    type: vless
+    server: 163.128.98.110
+    port: 443
+    uuid: f67e149c-e1f4-4162-876b-a34591b8349f
+    network: tcp
+    tls: false
+    servername: www.apple.com
+    udp: true
+  -
+    name: node-34
+    type: vless
+    server: 34.124.166.13
+    port: 21843
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-35
+    type: vless
+    server: 34.124.166.13
+    port: 21843
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-36
+    type: vless
+    server: 31.77.141.65
+    port: 13443
+    uuid: 423b1d79-08c4-403f-9d5e-c541f791b55f
+    network: tcp
+    tls: false
+    servername: auto.cendora.ru
+    udp: true
+  -
+    name: node-37
+    type: vless
+    server: hys40.wba-pn.ru
+    port: 443
+    uuid: ae2e0637-5c9d-422b-93ac-70bd3fceeb81
+    network: ws
+    tls: true
+    servername: hys40.wba-pn.ru
+    udp: true
+  -
+    name: node-38
+    type: vless
+    server: hys40.wba-pn.ru
+    port: 443
+    uuid: ae2e0637-5c9d-422b-93ac-70bd3fceeb81
+    network: ws
+    tls: true
+    servername: hys40.wba-pn.ru
+    udp: true
+  -
+    name: node-39
+    type: vless
+    server: hys40.wba-pn.ru
+    port: 443
+    uuid: ae2e0637-5c9d-422b-93ac-70bd3fceeb81
+    network: ws
+    tls: true
+    servername: hys40.wba-pn.ru
+    udp: true
+  -
+    name: node-40
+    type: vless
+    server: 103.112.71.83
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-41
+    type: vless
+    server: 103.112.71.84
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-42
+    type: vless
+    server: 103.112.71.84
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-43
+    type: vless
+    server: 103.112.71.85
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-44
+    type: vless
+    server: 103.112.71.85
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-45
+    type: vless
+    server: 103.112.71.86
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-46
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-47
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-48
+    type: vless
+    server: 194.93.61.30
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-49
+    type: vless
+    server: 194.93.61.30
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-50
+    type: vless
+    server: 194.93.61.35
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-51
+    type: vless
+    server: 194.93.61.38
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-52
+    type: vless
+    server: 194.93.61.39
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-53
+    type: vless
+    server: 194.93.61.39
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-54
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-55
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-56
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-57
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-58
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-59
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-60
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-61
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-62
+    type: vless
+    server: 36.151.187.225
+    port: 12889
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.tidal.com
+    udp: true
+  -
+    name: node-63
+    type: vless
+    server: 180.178.60.254
+    port: 10000
+    uuid: 431fe973-a43a-4fac-bf83-2a772e0d0625
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-64
+    type: vless
+    server: 2.27.201.57
+    port: 2053
+    uuid: 16ab4d4a-fd81-4535-9b7b-346677226ce8
+    network: grpc
+    tls: false
+    servername: ni.cryptoofarm.com
+    udp: true
+  -
+    name: node-65
+    type: vless
+    server: 2.27.201.57
+    port: 2053
+    uuid: 16ab4d4a-fd81-4535-9b7b-346677226ce8
+    network: grpc
+    tls: false
+    servername: ni.cryptoofarm.com
+    udp: true
+  -
+    name: node-66
+    type: vless
+    server: 162.35.231.68
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-67
+    type: vless
+    server: 162.35.231.68
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-68
+    type: vless
+    server: 162.35.231.69
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-69
+    type: vless
+    server: 162.35.231.69
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-70
+    type: vless
+    server: 162.35.231.70
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-71
+    type: vless
+    server: 162.35.231.70
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-72
+    type: vless
+    server: 172.96.121.6
+    port: 443
+    uuid: 83c18ff2-0565-4b53-89ad-57357fef153b
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-73
+    type: vless
+    server: 172.96.121.6
+    port: 443
+    uuid: 83c18ff2-0565-4b53-89ad-57357fef153b
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-74
+    type: vless
+    server: rssm-1btto92.joxenly.com
+    port: 443
+    uuid: 83c18ff2-0565-4b53-89ad-57357fef153b
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-75
+    type: vless
+    server: rssm-1btto92.joxenly.com
+    port: 443
+    uuid: 83c18ff2-0565-4b53-89ad-57357fef153b
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-76
+    type: vless
+    server: 107.151.201.59
+    port: 443
+    uuid: 44897c4d-b924-4315-a07e-a1124c029f9c
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-77
+    type: vless
+    server: 107.151.201.59
+    port: 443
+    uuid: 44897c4d-b924-4315-a07e-a1124c029f9c
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-78
+    type: vless
+    server: test.lte.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: us.srv.anti-zapret.com
+    udp: true
+  -
+    name: node-79
+    type: vless
+    server: 201.24.49.130
+    port: 9871
+    uuid: fd94a343-cb11-45e6-9882-72352d0a2b8f
+    network: grpc
+    tls: false
+    servername: dl.google.com
+    udp: true
+  -
+    name: node-80
+    type: vless
+    server: 201.24.49.130
+    port: 9871
+    uuid: fd94a343-cb11-45e6-9882-72352d0a2b8f
+    network: grpc
+    tls: false
+    servername: dl.google.com
+    udp: true
+  -
+    name: node-81
+    type: vless
+    server: 34.124.166.13
+    port: 20843
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-82
+    type: vless
+    server: 35.200.86.178
+    port: 21143
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-83
+    type: vless
+    server: 35.200.86.178
+    port: 21143
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-84
+    type: vless
+    server: 34.124.166.13
+    port: 21443
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: djp01.ps5.update.playstation.net
+    udp: true
+  -
+    name: node-85
+    type: vless
+    server: 36.151.187.225
+    port: 12887
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-86
+    type: vless
+    server: 94.183.157.66
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-87
+    type: vless
+    server: 36.151.187.225
+    port: 12885
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-88
+    type: vless
+    server: 163.128.98.110
+    port: 443
+    uuid: f67e149c-e1f4-4162-876b-a34591b8349f
+    network: tcp
+    tls: false
+    servername: www.apple.com
+    udp: true
+  -
+    name: node-89
+    type: vless
+    server: 163.128.98.110
+    port: 443
+    uuid: f67e149c-e1f4-4162-876b-a34591b8349f
+    network: tcp
+    tls: false
+    servername: www.apple.com
+    udp: true
+  -
+    name: node-90
+    type: vless
+    server: 113.30.149.18
+    port: 13443
+    uuid: 5238521b-c5dd-42af-870e-c174a2aaaafe
+    network: tcp
+    tls: false
+    servername: auto.cendora.ru
+    udp: true
+  -
+    name: node-91
+    type: vless
+    server: 34.124.166.13
+    port: 21843
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-92
+    type: vless
+    server: 103.112.71.85
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-93
+    type: vless
+    server: 103.112.71.86
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-94
+    type: vless
+    server: test.bridge.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-95
+    type: vless
+    server: 194.93.61.30
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-96
+    type: vless
+    server: 194.93.61.35
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-97
+    type: vless
+    server: 194.93.61.38
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-98
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-99
+    type: vless
+    server: savesafe.co
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-100
+    type: vless
+    server: 36.151.187.225
+    port: 12878
+    uuid: 16b3793b-3335-4832-b1fd-877b2c5e15d6
+    network: tcp
+    tls: false
+    servername: www.spotify.com
+    udp: true
+  -
+    name: node-101
+    type: vless
+    server: 162.35.231.68
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-102
+    type: vless
+    server: 162.35.231.70
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: tcp
+    tls: false
+    servername: savesafe.co
+    udp: true
+  -
+    name: node-103
+    type: vless
+    server: rssm-1btto92.joxenly.com
+    port: 443
+    uuid: 83c18ff2-0565-4b53-89ad-57357fef153b
+    network: tcp
+    tls: false
+    servername: www.bing.com
+    udp: true
+  -
+    name: node-104
+    type: hysteria2
+    server: fin1.apexvpn.space
+    port: 443
+    password: 81378ef7-89a1-43b5-9a9d-a04a8af25b7c
+    sni: fin1.apexvpn.space
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-105
+    type: hysteria2
+    server: 2.27.42.66
+    port: 43327
+    password: N41uhuAvUwokxUCReDCn8Et-QcixLzBy
+    sni: gate-v1.not-a-projects.xyz
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-106
+    type: hysteria2
+    server: hys9.wba-pn.ru
+    port: 443
+    password: wrSuBorIlf
+    sni: hys9.wba-pn.ru
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-107
+    type: hysteria2
+    server: nl.prisma-access.club
+    port: 8445
+    password: 085178e12d2211ec
+    sni: nl.prisma-access.club
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-108
+    type: vmess
+    server: 61.245.11.60
+    port: 80
+    uuid: a3e3a710-79f8-4ae0-b83c-607aab40d197
+    alterId: 0
+    cipher: auto
+    network: ws
+    tls: false
+    servername: 61.245.11.60
+    udp: true
+  -
+    name: node-109
+    type: vmess
+    server: 61.245.11.60
+    port: 80
+    uuid: a3e3a710-79f8-4ae0-b83c-607aab40d197
+    alterId: 0
+    cipher: auto
+    network: ws
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-110
+    type: hysteria2
+    server: 177.3.212.103
+    port: 443
+    password: 042a1881-44e4-4781-bd40-bf75164faf4f
+    sni: nl1.noesissite.ru
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-111
+    type: hysteria2
+    server: nl1.noesissite.ru
+    port: 443
+    password: 042a1881-44e4-4781-bd40-bf75164faf4f
+    sni: nl1.noesissite.ru
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-112
+    type: hysteria2
+    server: nl1.noesissite.ru
+    port: 443
+    password: 042a1881-44e4-4781-bd40-bf75164faf4f
+    sni: nl1.noesissite.ru
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-113
+    type: hysteria2
+    server: 151.242.164.204
+    port: 26001
+    password: AMnTye4y6Jjxc0J0
+    sni: jp-akile-6.nebulacloud.win
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-114
+    type: hysteria2
+    server: 210.216.173.110
+    port: 56001
+    password: 3JdcAYVWhBbZrVNi
+    sni: kor-akile-a3.nebulacloud.win
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-115
+    type: hysteria2
+    server: 82.152.90.46
+    port: 36001
+    password: eKUjiNGWdzBL1ngu
+    sni: tw-akile-2.apcwjtnmuwembbfzmxqx.cc
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-116
+    type: hysteria2
+    server: nl.prisma-access.club
+    port: 8445
+    password: 085178e12d2211ec
+    sni: nl.prisma-access.club
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-117
+    type: hysteria2
+    server: 38.60.255.241
+    port: 26001
+    password: ffOrA22ZuCrQz3uK
+    sni: tk4.czzhkractqqakfzdmrgd.cc
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-118
+    type: hysteria2
+    server: 23.158.136.54
+    port: 26001
+    password: kOKLGCC1dhMpmQE9
+    sni: us-akile-a9.nebulacloud.win
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-119
+    type: hysteria2
+    server: 166.0.188.67
+    port: 26001
+    password: WCKIE6DkItMdW6mJ
+    sni: us-akile-ax.nebulacloud.win
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-120
+    type: hysteria2
+    server: 23.158.136.73
+    port: 46001
+    password: y1v9BqP1j0Axg8Im
+    sni: us-akile-b1.nebulacloud.win
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-121
+    type: vless
+    server: test.backup.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-122
+    type: vless
+    server: test.backup.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-123
+    type: vless
+    server: test.bridge.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.bridge.anti-zapret.com
+    udp: true
+  -
+    name: node-124
+    type: vless
+    server: 72.56.78.50
+    port: 443
+    uuid: fee2cdd8-55d1-4c5b-a67a-cfde8d45eed0
+    network: grpc
+    tls: false
+    servername: sun6-21.userapi.com
+    udp: true
+  -
+    name: node-125
+    type: vless
+    server: 72.56.78.50
+    port: 443
+    uuid: fee2cdd8-55d1-4c5b-a67a-cfde8d45eed0
+    network: grpc
+    tls: false
+    servername: sun6-21.userapi.com
+    udp: true
+  -
+    name: node-126
+    type: vless
+    server: 72.56.78.50
+    port: 443
+    uuid: fee2cdd8-55d1-4c5b-a67a-cfde8d45eed0
+    network: grpc
+    tls: false
+    servername: sun6-21.userapi.com
+    udp: true
+  -
+    name: node-127
+    type: vless
+    server: 72.56.78.50
+    port: 443
+    uuid: fee2cdd8-55d1-4c5b-a67a-cfde8d45eed0
+    network: grpc
+    tls: false
+    servername: sun6-21.userapi.com
+    udp: true
+  -
+    name: node-128
+    type: vless
+    server: 72.56.78.50
+    port: 443
+    uuid: fee2cdd8-55d1-4c5b-a67a-cfde8d45eed0
+    network: grpc
+    tls: false
+    servername: sun6-21.userapi.com
+    udp: true
+  -
+    name: node-129
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-130
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-131
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-132
+    type: vless
+    server: test.api.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: cdnjs.com
+    udp: true
+  -
+    name: node-133
+    type: vless
+    server: test.lte.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: us.srv.anti-zapret.com
+    udp: true
+  -
+    name: node-134
+    type: vless
+    server: test.backup.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: test.backup.anti-zapret.com
+    udp: true
+  -
+    name: node-135
+    type: vless
+    server: hys40.wba-pn.ru
+    port: 443
+    uuid: ae2e0637-5c9d-422b-93ac-70bd3fceeb81
+    network: ws
+    tls: true
+    servername: hys40.wba-pn.ru
+    udp: true
+  -
+    name: node-136
+    type: vless
+    server: test.lte.anti-zapret.com
+    port: 443
+    uuid: f82332b2-dc8c-4196-ac12-f276e37e278a
+    network: tcp
+    tls: false
+    servername: us.srv.anti-zapret.com
+    udp: true
+  -
+    name: node-137
+    type: vless
+    server: 141.193.213.21
+    port: 8443
+    uuid: 4c8c4763-d69a-44d0-bb77-ae22c6b9e150
+    network: ws
+    tls: true
+    servername: zero.csmaster.ggff.net
+    udp: true
+  -
+    name: node-138
+    type: vless
+    server: 220.130.75.248
+    port: 10000
+    uuid: 431fe973-a43a-4fac-bf83-2a772e0d0625
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-139
+    type: vless
+    server: 220.130.75.248
+    port: 10000
+    uuid: 431fe973-a43a-4fac-bf83-2a772e0d0625
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-140
+    type: vless
+    server: 220.130.75.248
+    port: 10000
+    uuid: 431fe973-a43a-4fac-bf83-2a772e0d0625
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-141
+    type: vless
+    server: 220.130.75.248
+    port: 10000
+    uuid: 431fe973-a43a-4fac-bf83-2a772e0d0625
+    network: tcp
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-142
+    type: vless
+    server: 130.12.242.24
+    port: 443
+    uuid: b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb
+    network: xhttp
+    tls: false
+    servername: savesafe.info
+    udp: true
+  -
+    name: node-143
+    type: hysteria2
+    server: 113.30.152.25
+    port: 1935
+    password: "belgium_hysteria2_fastlane_a118d9y0r:mbZQuQoMqSphFg1FAhfonbRpduFn69k8"
+    sni: be1.h.fastlanehosting.ru
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-144
+    type: hysteria2
+    server: 31.76.70.78
+    port: 8443
+    password: 74fbbe74-906d-45a8-a27c-a85fc758bc9f
+    sni: quic.tyr-agentstvo.tech
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-145
+    type: hysteria2
+    server: nl174.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: nl174.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-146
+    type: hysteria2
+    server: nl174.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: nl174.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-147
+    type: hysteria2
+    server: nl8.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: nl8.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-148
+    type: hysteria2
+    server: nl8.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: nl8.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-149
+    type: hysteria2
+    server: nl174.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: nl174.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-150
+    type: hysteria2
+    server: nl174.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: nl174.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-151
+    type: vless
+    server: 83.168.108.179
+    port: 443
+    uuid: fbb74aa8-b89a-4f20-9504-6b25aadf6681
+    network: tcp
+    tls: false
+    servername: pol3.freeinternat.com
+    udp: true
+  -
+    name: node-152
+    type: vless
+    server: pol3.freeinternat.com
+    port: 443
+    uuid: fbb74aa8-b89a-4f20-9504-6b25aadf6681
+    network: tcp
+    tls: false
+    servername: pol3.freeinternat.com
+    udp: true
+  -
+    name: node-153
+    type: vless
+    server: pol3.freeinternat.com
+    port: 443
+    uuid: fbb74aa8-b89a-4f20-9504-6b25aadf6681
+    network: tcp
+    tls: false
+    servername: pol3.freeinternat.com
+    udp: true
+  -
+    name: node-154
+    type: vless
+    server: pol3.freeinternat.com
+    port: 443
+    uuid: fbb74aa8-b89a-4f20-9504-6b25aadf6681
+    network: tcp
+    tls: false
+    servername: pol3.freeinternat.com
+    udp: true
+  -
+    name: node-155
+    type: vless
+    server: 94.183.221.174
+    port: 443
+    uuid: 682102a3-9731-4562-ad28-04dc62bc8dee
+    network: raw
+    tls: false
+    servername: www.amd.com
+    udp: true
+  -
+    name: node-156
+    type: hysteria2
+    server: nl174.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: nl174.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-157
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: 
+    udp: true
+  -
+    name: node-158
+    type: vless
+    server: 94.183.170.135
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: estproxy4.lockdwn.com
+    udp: true
+  -
+    name: node-159
+    type: vless
+    server: 94.183.170.135
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: estproxy4.lockdwn.com
+    udp: true
+  -
+    name: node-160
+    type: vless
+    server: 94.183.170.135
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: estproxy4.lockdwn.com
+    udp: true
+  -
+    name: node-161
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: ws
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-162
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: ws
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-163
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: ws
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-164
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: ws
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-165
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: ws
+    tls: false
+    servername: estproxy4.lockdwn.com
+    udp: true
+  -
+    name: node-166
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: estproxy4.lockdwn.com
+    udp: true
+  -
+    name: node-167
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: estproxy4.lockdwn.com
+    udp: true
+  -
+    name: node-168
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: 
+    udp: true
+  -
+    name: node-169
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: 
+    udp: true
+  -
+    name: node-170
+    type: vless
+    server: estproxy4.lockdwn.com
+    port: 8443
+    uuid: 06c4e938-2954-478f-a870-ca1b163e30e9
+    network: tcp
+    tls: true
+    servername: estproxy4.lockdwn.com
+    udp: true
+  -
+    name: node-171
+    type: vless
+    server: 82.38.4.126
+    port: 443
+    uuid: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    network: tcp
+    tls: true
+    servername: de126.mechvpn.online
+    udp: true
+  -
+    name: node-172
+    type: vless
+    server: 82.38.4.126
+    port: 443
+    uuid: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    network: tcp
+    tls: true
+    servername: de126.mechvpn.online
+    udp: true
+  -
+    name: node-173
+    type: vless
+    server: tutdesignstudio.site
+    port: 8443
+    uuid: 1f113ca6-7b95-4abb-9348-adfb2187e399
+    network: tcp
+    tls: true
+    servername: 
+    udp: true
+  -
+    name: node-174
+    type: vless
+    server: tutdesignstudio.site
+    port: 8443
+    uuid: 1f113ca6-7b95-4abb-9348-adfb2187e399
+    network: tcp
+    tls: true
+    servername: tutdesignstudio.site
+    udp: true
+  -
+    name: node-175
+    type: vless
+    server: 38.180.50.4
+    port: 8443
+    uuid: 38cc34e9-9973-439c-b61b-3d89b798d571
+    network: tcp
+    tls: true
+    servername: tutdesignstudio.site
+    udp: true
+  -
+    name: node-176
+    type: vless
+    server: 94.183.221.190
+    port: 443
+    uuid: 682102a3-9731-4562-ad28-04dc62bc8dee
+    network: raw
+    tls: false
+    servername: www.amd.com
+    udp: true
+  -
+    name: node-177
+    type: hysteria2
+    server: at188.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at188.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-178
+    type: hysteria2
+    server: at188.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at188.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-179
+    type: hysteria2
+    server: fr131.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: fr131.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-180
+    type: hysteria2
+    server: fr131.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: fr131.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-181
+    type: hysteria2
+    server: fr194.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: fr194.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-182
+    type: hysteria2
+    server: de104.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: de104.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-183
+    type: hysteria2
+    server: pl10.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: pl10.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-184
+    type: hysteria2
+    server: us63.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: us63.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-185
+    type: hysteria2
+    server: at133.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at133.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-186
+    type: hysteria2
+    server: at133.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at133.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-187
+    type: hysteria2
+    server: at133.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at133.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-188
+    type: hysteria2
+    server: at164.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at164.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-189
+    type: hysteria2
+    server: at188.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at188.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-190
+    type: hysteria2
+    server: fr131.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: fr131.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-191
+    type: hysteria2
+    server: fr194.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: fr194.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-192
+    type: hysteria2
+    server: de104.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: de104.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-193
+    type: hysteria2
+    server: 82.38.60.122
+    port: 8080
+    password: VB92_Ka9qwef143K_L23K1hz3_bF_Hz62uT_Bn1_sC
+    sni: hopp-us.yyuyy.com
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-194
+    type: hysteria2
+    server: cabinet.wwwinternetvideo.click
+    port: 443
+    password: sOiWCQ2AdIV0OWNuqQVyWp4JZnRxdyLROSjX
+    sni: cabinet.wwwinternetvideo.click
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-195
+    type: vless
+    server: 195.123.226.21
+    port: 443
+    uuid: 33851d53-ede0-45f7-9eb8-9aa961f7d200
+    network: ws
+    tls: false
+    servername: 
+    udp: true
+  -
+    name: node-196
+    type: vless
+    server: tutdesignstudio.site
+    port: 8443
+    uuid: 38cc34e9-9973-439c-b61b-3d89b798d571
+    network: tcp
+    tls: true
+    servername: 
+    udp: true
+  -
+    name: node-197
+    type: vless
+    server: 94.183.221.190
+    port: 443
+    uuid: 682102a3-9731-4562-ad28-04dc62bc8dee
+    network: tcp
+    tls: false
+    servername: www.amd.com
+    udp: true
+  -
+    name: node-198
+    type: vless
+    server: 94.183.221.190
+    port: 443
+    uuid: 682102a3-9731-4562-ad28-04dc62bc8dee
+    network: raw
+    tls: false
+    servername: www.amd.com
+    udp: true
+  -
+    name: node-199
+    type: hysteria2
+    server: fr131.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: fr131.mechvpn.online
+    skip-cert-verify: false
+    udp: true
+  -
+    name: node-200
+    type: vless
+    server: 82.38.4.126
+    port: 443
+    uuid: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    network: tcp
+    tls: true
+    servername: de126.mechvpn.online
+    udp: true
+  -
+    name: node-201
+    type: vless
+    server: tutdesignstudio.site
+    port: 8443
+    uuid: 1f113ca6-7b95-4abb-9348-adfb2187e399
+    network: tcp
+    tls: true
+    servername: 
+    udp: true
+  -
+    name: node-202
+    type: vless
+    server: 94.241.174.157
+    port: 40443
+    uuid: 8ac637bf-554e-4902-94d7-baf01780a83c
+    network: tcp
+    tls: false
+    servername: deepl.com
+    udp: true
+  -
+    name: node-203
+    type: vless
+    server: edge.netraidly.ru
+    port: 40443
+    uuid: 8ac637bf-554e-4902-94d7-baf01780a83c
+    network: tcp
+    tls: false
+    servername: deepl.com
+    udp: true
+  -
+    name: node-204
+    type: hysteria2
+    server: at133.mechvpn.online
+    port: 443
+    password: 53c76647-14d1-4df5-99cb-be99ad2e6bd9
+    sni: at133.mechvpn.online
+    skip-cert-verify: false
+    udp: true
 proxy-groups:
-  - name: "AUTO"
-    type: "url-test"
-    use:
-      - "VPN"
+  -
+    name: AUTO
+    type: url-test
+    proxies:
+      - node-1
+      - node-2
+      - node-3
+      - node-4
+      - node-5
+      - node-6
+      - node-7
+      - node-8
+      - node-9
+      - node-10
+      - node-11
+      - node-12
+      - node-13
+      - node-14
+      - node-15
+      - node-16
+      - node-17
+      - node-18
+      - node-19
+      - node-20
+      - node-21
+      - node-22
+      - node-23
+      - node-24
+      - node-25
+      - node-26
+      - node-27
+      - node-28
+      - node-29
+      - node-30
+      - node-31
+      - node-32
+      - node-33
+      - node-34
+      - node-35
+      - node-36
+      - node-37
+      - node-38
+      - node-39
+      - node-40
+      - node-41
+      - node-42
+      - node-43
+      - node-44
+      - node-45
+      - node-46
+      - node-47
+      - node-48
+      - node-49
+      - node-50
+      - node-51
+      - node-52
+      - node-53
+      - node-54
+      - node-55
+      - node-56
+      - node-57
+      - node-58
+      - node-59
+      - node-60
+      - node-61
+      - node-62
+      - node-63
+      - node-64
+      - node-65
+      - node-66
+      - node-67
+      - node-68
+      - node-69
+      - node-70
+      - node-71
+      - node-72
+      - node-73
+      - node-74
+      - node-75
+      - node-76
+      - node-77
+      - node-78
+      - node-79
+      - node-80
+      - node-81
+      - node-82
+      - node-83
+      - node-84
+      - node-85
+      - node-86
+      - node-87
+      - node-88
+      - node-89
+      - node-90
+      - node-91
+      - node-92
+      - node-93
+      - node-94
+      - node-95
+      - node-96
+      - node-97
+      - node-98
+      - node-99
+      - node-100
+      - node-101
+      - node-102
+      - node-103
+      - node-104
+      - node-105
+      - node-106
+      - node-107
+      - node-108
+      - node-109
+      - node-110
+      - node-111
+      - node-112
+      - node-113
+      - node-114
+      - node-115
+      - node-116
+      - node-117
+      - node-118
+      - node-119
+      - node-120
+      - node-121
+      - node-122
+      - node-123
+      - node-124
+      - node-125
+      - node-126
+      - node-127
+      - node-128
+      - node-129
+      - node-130
+      - node-131
+      - node-132
+      - node-133
+      - node-134
+      - node-135
+      - node-136
+      - node-137
+      - node-138
+      - node-139
+      - node-140
+      - node-141
+      - node-142
+      - node-143
+      - node-144
+      - node-145
+      - node-146
+      - node-147
+      - node-148
+      - node-149
+      - node-150
+      - node-151
+      - node-152
+      - node-153
+      - node-154
+      - node-155
+      - node-156
+      - node-157
+      - node-158
+      - node-159
+      - node-160
+      - node-161
+      - node-162
+      - node-163
+      - node-164
+      - node-165
+      - node-166
+      - node-167
+      - node-168
+      - node-169
+      - node-170
+      - node-171
+      - node-172
+      - node-173
+      - node-174
+      - node-175
+      - node-176
+      - node-177
+      - node-178
+      - node-179
+      - node-180
+      - node-181
+      - node-182
+      - node-183
+      - node-184
+      - node-185
+      - node-186
+      - node-187
+      - node-188
+      - node-189
+      - node-190
+      - node-191
+      - node-192
+      - node-193
+      - node-194
+      - node-195
+      - node-196
+      - node-197
+      - node-198
+      - node-199
+      - node-200
+      - node-201
+      - node-202
+      - node-203
+      - node-204
     url: "https://www.gstatic.com/generate_204"
     interval: 60
-    timeout: 5000
-    tolerance: 30
-    lazy: false
-rules:
-  - "MATCH,AUTO"

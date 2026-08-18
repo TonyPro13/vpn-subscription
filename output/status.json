@@ -1,62 +1,47 @@
 {
-  "updated_at": 1787083005,
-  "source_nodes_unique": 248,
-  "source_duplicates_removed": 98,
-  "source_stats": {
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt": 138,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt": 147,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt": 61
-  },
-  "geo_checked": 253,
-  "geo_passed": 248,
-  "geo_failed": 5,
-  "checked_this_run": 339,
-  "successful_this_run": 236,
-  "failed_this_run": 103,
-  "newly_established_this_run": 141,
-  "rejected_new_this_run": 91,
-  "rejected_this_run": 103,
-  "published_nodes": 236,
-  "mihomo_nodes": 236,
+  "updated_at": 1787087093,
+  "source_nodes_unique": 253,
+  "source_duplicates_removed": 99,
+  "merged_candidates_after_dedup": 339,
+  "checked_this_run": 334,
+  "successful_this_run": 204,
+  "failed_this_run": 130,
+  "rejected_this_run": 130,
+  "published_nodes": 204,
+  "mihomo_nodes": 204,
   "mihomo_skipped": 0,
   "probe_stats": {
-    "max": {
-      "checked": 0,
-      "passed": 0,
-      "failed": 0
-    },
     "chatgpt": {
-      "checked": 337,
-      "passed": 240,
-      "failed": 97
+      "checked": 332,
+      "passed": 238,
+      "failed": 94
     },
     "chatgpt_auth_tls": {
-      "checked": 240,
+      "checked": 238,
       "passed": 236,
-      "failed": 4
+      "failed": 2
     },
     "chatgpt_android_tls": {
       "checked": 236,
-      "passed": 236,
-      "failed": 0
+      "passed": 234,
+      "failed": 2
     },
     "youtube_204": {
-      "checked": 0,
-      "passed": 0,
-      "failed": 0
+      "checked": 234,
+      "passed": 220,
+      "failed": 14
     },
     "telegram_https": {
-      "checked": 0,
-      "passed": 0,
-      "failed": 0
+      "checked": 220,
+      "passed": 204,
+      "failed": 16
     },
     "telegram_mtproto": {
-      "checked": 0,
-      "passed": 0,
+      "checked": 204,
+      "passed": 204,
       "failed": 0
     }
   },
-  "admission_rule": "A key is published only if it passes all filters and probes in the current run. Failed keys are removed immediately.",
-  "server_check_period_minutes": 5,
-  "note": "Final per-device AUTO/failover is intentionally delegated to the VPN client."
+  "admission_rule": "Only nodes that pass geography and all mandatory service probes are published. Any failed check removes the node immediately.",
+  "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run."
 }
