@@ -1,1 +1,58 @@
+name: Refresh VPN subscription
 
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/20 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vpn-subscription-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install curl and unzip
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip jq
+
+      - name: Install Xray and sing-box
+        run: bash scripts/install_engines.sh
+
+      - name: Refresh and verify pool
+        env:
+          CHECK_CONCURRENCY: "20"
+          VPN_PROCESS_CONCURRENCY: "40"
+          GEO_DNS_CONCURRENCY: "32"
+          PROBE_TIMEOUT_SECONDS: "9"
+          FAILURES_BEFORE_DELETE: "5"
+        run: python main.py
+
+      - name: Commit updated subscription
+        run: |
+          git config user.name "vpn-subscription-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/state.json output/subscription.txt output/status.json output/mihomo-provider.yaml output/mihomo.yaml
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Auto-refresh VPN subscription"
+            git push
+          fi
