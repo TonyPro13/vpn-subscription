@@ -3,7 +3,7 @@ name: Refresh VPN subscription
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/20 * * * *"
+    - cron: "7,27,47 * * * *"
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -36,13 +36,19 @@ jobs:
       - name: Install Xray and sing-box
         run: bash scripts/install_engines.sh
 
+      - name: Check installed engines
+        run: |
+          test -f bin/xray
+          test -f bin/sing-box
+          ./bin/xray version
+          ./bin/sing-box version
+
       - name: Refresh and verify pool
         env:
           CHECK_CONCURRENCY: "20"
           VPN_PROCESS_CONCURRENCY: "40"
           GEO_DNS_CONCURRENCY: "32"
           PROBE_TIMEOUT_SECONDS: "9"
-          FAILURES_BEFORE_DELETE: "5"
         run: python main.py
 
       - name: Commit updated subscription
