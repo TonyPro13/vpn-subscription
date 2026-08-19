@@ -97,6 +97,163 @@ def _inject_controller(config_text: str, port: int) -> str:
     return f'external-controller: "127.0.0.1:{port}"\n' + config_text
 
 
+def _disable_provider_health_check_for_runtime(config_text: str) -> str:
+    """
+    Disable provider health-check only in the temporary runtime-validation copy.
+
+    The published mihomo.yaml is left untouched and still checks nodes every
+    60 seconds. Runtime validation only needs to prove provider loading and
+    provider -> AUTO wiring; it must not launch a second CI reachability sweep.
+    """
+    lines = config_text.splitlines()
+    in_proxy_providers = False
+    providers_indent = None
+    in_health_check = False
+    health_indent = None
+
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        indent = len(line) - len(line.lstrip(" "))
+
+        if stripped == "proxy-providers:":
+            in_proxy_providers = True
+            providers_indent = indent
+            continue
+
+        if in_proxy_providers and stripped and indent <= providers_indent:
+            break
+
+        if in_proxy_providers and stripped == "health-check:":
+            in_health_check = True
+            health_indent = indent
+            continue
+
+        if in_health_check:
+            if stripped and indent <= health_indent:
+                in_health_check = False
+                health_indent = None
+                continue
+            if stripped.startswith("enable:"):
+                lines[index] = f'{" " * indent}enable: false'
+                return "\n".join(lines) + "\n"
+
+    raise ValidationError("Could not find provider health-check enable flag in output/mihomo.yaml")
+
+
+def _wait_provider_nodes(
+    controller_port: int,
+    expected_nodes: int,
+    proc: subprocess.Popen,
+    timeout: float = 20.0,
+):
+    """
+    Mihomo starts the REST API before HTTP providers are guaranteed to finish
+    their initial asynchronous load. Poll until the freshly served provider is
+    actually populated instead of treating the first empty API response as a
+    failure.
+    """
+    deadline = time.monotonic() + timeout
+    last_count = None
+    last_error = None
+    refresh_requested = False
+
+    while time.monotonic() < deadline:
+        if proc.poll() is not None:
+            raise ValidationError(
+                f"Mihomo exited while waiting for provider initialization "
+                f"with code {proc.returncode}"
+            )
+
+        try:
+            provider = _api_json(
+                controller_port,
+                "/providers/proxies/VPN",
+                timeout=2.0,
+            )
+            provider_proxies = provider.get("proxies") or []
+            provider_names = {
+                str(item.get("name"))
+                for item in provider_proxies
+                if isinstance(item, dict) and item.get("name")
+            }
+            last_count = len(provider_names)
+
+            if last_count == expected_nodes:
+                return provider_names
+
+            # If the provider object already exists but is still empty, request
+            # one explicit refresh. Mihomo's provider update API is asynchronous,
+            # so we keep polling afterwards.
+            if not refresh_requested:
+                try:
+                    _api_request(
+                        controller_port,
+                        "/providers/proxies/VPN",
+                        method="PUT",
+                        timeout=2.0,
+                    )
+                    refresh_requested = True
+                except Exception as exc:
+                    last_error = exc
+
+        except Exception as exc:
+            last_error = exc
+
+        time.sleep(0.2)
+
+    detail = f"last_loaded={last_count}"
+    if last_error is not None:
+        detail += f", last_error={type(last_error).__name__}: {last_error}"
+    raise ValidationError(
+        "Timed out waiting for Mihomo to load the fresh VPN provider: "
+        f"expected={expected_nodes}, {detail}"
+    )
+
+
+def _wait_auto_membership(
+    controller_port: int,
+    provider_names: set[str],
+    proc: subprocess.Popen,
+    timeout: float = 10.0,
+):
+    """
+    Provider-backed proxy groups can become visible slightly after the provider
+    itself is populated. Poll AUTO until it contains the provider nodes.
+    """
+    deadline = time.monotonic() + timeout
+    last_missing = set(provider_names)
+    last_error = None
+
+    while time.monotonic() < deadline:
+        if proc.poll() is not None:
+            raise ValidationError(
+                f"Mihomo exited while waiting for AUTO membership "
+                f"with code {proc.returncode}"
+            )
+
+        try:
+            auto = _api_json(controller_port, "/proxies/AUTO", timeout=2.0)
+            auto_names = {str(name) for name in (auto.get("all") or [])}
+            last_missing = provider_names - auto_names
+            if not last_missing:
+                return
+        except Exception as exc:
+            last_error = exc
+
+        time.sleep(0.2)
+
+    sample = ", ".join(sorted(last_missing)[:10])
+    detail = f"missing={len(last_missing)}"
+    if sample:
+        detail += f", sample={sample}"
+    if last_error is not None:
+        detail += f", last_error={type(last_error).__name__}: {last_error}"
+    raise ValidationError(
+        "AUTO did not receive all VPN provider nodes via use: [VPN] "
+        f"within the initialization window: {detail}"
+    )
+
+
 class _QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass
@@ -106,6 +263,13 @@ def _api_json(controller_port: int, path: str, timeout: float = 3.0):
     url = f"http://127.0.0.1:{controller_port}{path}"
     with urllib.request.urlopen(url, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def _api_request(controller_port: int, path: str, method: str = "GET", timeout: float = 3.0):
+    url = f"http://127.0.0.1:{controller_port}{path}"
+    request = urllib.request.Request(url, method=method)
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return response.status
 
 
 def _wait_api(controller_port: int, proc: subprocess.Popen, timeout: float = 12.0):
@@ -136,6 +300,7 @@ def _runtime_provider_validation(config_text: str, expected_nodes: int) -> None:
 
         local_provider_url = f"http://127.0.0.1:{http_port}/{PROVIDER_FILE.name}"
         runtime_config = _replace_remote_provider_url(config_text, local_provider_url)
+        runtime_config = _disable_provider_health_check_for_runtime(runtime_config)
         runtime_config = _replace_mixed_port(runtime_config, mixed_port)
         runtime_config = _inject_controller(runtime_config, controller_port)
 
@@ -154,29 +319,19 @@ def _runtime_provider_validation(config_text: str, expected_nodes: int) -> None:
         try:
             _wait_api(controller_port, proc)
 
-            provider = _api_json(controller_port, "/providers/proxies/VPN", timeout=5.0)
-            provider_proxies = provider.get("proxies") or []
-            provider_names = {
-                str(item.get("name"))
-                for item in provider_proxies
-                if isinstance(item, dict) and item.get("name")
-            }
+            provider_names = _wait_provider_nodes(
+                controller_port,
+                expected_nodes,
+                proc,
+                timeout=20.0,
+            )
 
-            if len(provider_names) != expected_nodes:
-                raise ValidationError(
-                    "Mihomo loaded a different number of provider nodes: "
-                    f"expected={expected_nodes}, loaded={len(provider_names)}"
-                )
-
-            auto = _api_json(controller_port, "/proxies/AUTO", timeout=5.0)
-            auto_names = {str(name) for name in (auto.get("all") or [])}
-            missing = sorted(provider_names - auto_names)
-            if missing:
-                sample = ", ".join(missing[:10])
-                raise ValidationError(
-                    "AUTO did not receive all VPN provider nodes via use: [VPN]. "
-                    f"Missing {len(missing)} node(s); sample: {sample}"
-                )
+            _wait_auto_membership(
+                controller_port,
+                provider_names,
+                proc,
+                timeout=10.0,
+            )
         finally:
             if proc.poll() is None:
                 proc.terminate()
@@ -234,9 +389,11 @@ def main() -> int:
         httpd.server_close()
 
     # 3) Start the real Mihomo core and verify that the provider is loaded and that
-    #    AUTO actually receives all nodes through `use: [VPN]`. This specifically
-    #    tests the wiring/runtime relationship without adding a second CI quality
-    #    filter; per-node reachability remains Mihomo's 60-second client health-check.
+    #    AUTO actually receives all nodes through `use: [VPN]`. Provider startup is
+    #    asynchronous, so this step waits for initialization instead of checking the
+    #    first API response. The temporary runtime copy disables health-check to avoid
+    #    a second CI reachability sweep; the published config still health-checks every
+    #    60 seconds on the user's Mihomo client.
     _runtime_provider_validation(config_text, expected_nodes)
 
     print(json.dumps({
