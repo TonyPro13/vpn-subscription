@@ -22,9 +22,6 @@ SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
 ]
 
-RU_IPV4_URL = "https://www.ipdeny.com/ipblocks/data/aggregated/ru-aggregated.zone"
-RU_IPV6_URL = "https://www.ipdeny.com/ipv6/ipaddresses/aggregated/ru-aggregated.zone"
-
 SUPPORTED = {"vless", "vmess", "trojan", "ss", "hysteria2", "hy2"}
 STATE_FILE = Path("data/state.json")
 OUT_DIR = Path("output")
@@ -38,7 +35,6 @@ VPN_PROCESS_SEMAPHORE = None
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
-GEO_DNS_CONCURRENCY = int(os.getenv("GEO_DNS_CONCURRENCY", "32"))
 PROBE_TIMEOUT = float(os.getenv("PROBE_TIMEOUT_SECONDS", "9"))
 
 CHATGPT_PROBE_URL = os.getenv(
@@ -65,8 +61,6 @@ YOUTUBE_PROBE_TIMEOUT = float(
     os.getenv("YOUTUBE_PROBE_TIMEOUT_SECONDS", "5")
 )
 
-GOOGLE_204_PROBE_URL = os.getenv("GOOGLE_204_PROBE_URL", "https://www.gstatic.com/generate_204")
-
 TELEGRAM_HTTPS_PROBE_URL = os.getenv(
     "TELEGRAM_HTTPS_PROBE_URL",
     "https://venus.web.telegram.org/api",
@@ -80,6 +74,8 @@ TELEGRAM_MTPROTO_ENDPOINTS = (
     ("149.154.167.50", 443),
     ("149.154.167.51", 443),
 )
+
+MIHOMO_AUTO_TEST_URL = "https://cp.cloudflare.com"
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
@@ -217,12 +213,39 @@ def canonical(uri: str) -> str:
     """
     Conservative semantic key used only for deduplication.
 
-    It removes display-only fragments and normalizes query order, while preserving
-    endpoint, credentials and all connection parameters. Different credentials,
-    hosts, ports, transports, TLS/REALITY parameters or fingerprints remain
-    distinct nodes.
+    It removes display-only fragments and normalizes query order. For VLESS,
+    only protocol defaults that are explicitly defined by the share-link
+    specification and already match our Xray/Mihomo behavior are normalized:
+    omitted encryption/security are treated as "none".
+
+    Endpoint, credentials, transports, TLS/REALITY fields, fingerprints and
+    unknown parameters remain significant. If a URI repeats the same query
+    field, semantic normalization is intentionally skipped because such input
+    is ambiguous/non-standard and must not be collapsed aggressively.
     """
     uri = uri.strip()
+
+    def raw_key():
+        return "raw-uri:" + uri.split("#", 1)[0].strip()
+
+    def normalized_query_pairs(query: str, *, vless_defaults: bool = False):
+        pairs = parse_qsl(query, keep_blank_values=True)
+        names = [key for key, _ in pairs]
+
+        # Repeated URL fields are non-standard/ambiguous. Preserve their raw
+        # order instead of sorting them into a potentially false duplicate.
+        if len(names) != len(set(names)):
+            return None
+
+        if vless_defaults:
+            present = set(names)
+            if "encryption" not in present:
+                pairs.append(("encryption", "none"))
+            if "security" not in present:
+                pairs.append(("security", "none"))
+
+        return sorted(pairs)
+
     try:
         scheme = uri.split("://", 1)[0].lower()
         canonical_scheme = "hysteria2" if scheme == "hy2" else scheme
@@ -245,17 +268,27 @@ def canonical(uri: str) -> str:
         if scheme == "ss":
             method, password, host, port = parse_ss_uri(uri)
             p = urlsplit(uri)
+            query_pairs = normalized_query_pairs(p.query)
+            if query_pairs is None:
+                return raw_key()
             payload = {
                 "scheme": "ss",
                 "method": method,
                 "password": password,
                 "host": host.lower().rstrip("."),
                 "port": port,
-                "query": sorted(parse_qsl(p.query, keep_blank_values=True)),
+                "query": query_pairs,
             }
             return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
         p = urlsplit(uri)
+        query_pairs = normalized_query_pairs(
+            p.query,
+            vless_defaults=(scheme == "vless"),
+        )
+        if query_pairs is None:
+            return raw_key()
+
         host = (p.hostname or "").lower().rstrip(".")
         payload = {
             "scheme": canonical_scheme,
@@ -263,12 +296,13 @@ def canonical(uri: str) -> str:
             "host": host,
             "port": p.port,
             "path": p.path,
-            "query": sorted(parse_qsl(p.query, keep_blank_values=True)),
+            "query": query_pairs,
         }
         return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     except Exception:
         # Fall back to the raw URI without its display fragment.
-        return uri.split("#", 1)[0].strip()
+        return raw_key()
+
 
 
 
@@ -276,44 +310,6 @@ def fetch(url: str) -> str:
     req = Request(url, headers={"User-Agent": "VPN-Subscription-Builder/0.3"})
     with urlopen(req, timeout=30) as r:
         return r.read().decode("utf-8", errors="replace")
-
-
-
-def load_ru_networks():
-    """
-    Load Russian IPv4/IPv6 ranges separately.
-
-    Missing data for an IP version is treated as unknown later, never as
-    "definitely non-Russian".
-    """
-    networks = {4: [], 6: []}
-
-    for version, url in ((4, RU_IPV4_URL), (6, RU_IPV6_URL)):
-        try:
-            raw = fetch(url)
-            for line in raw.splitlines():
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                try:
-                    network = ipaddress.ip_network(line, strict=False)
-                    if network.version == version:
-                        networks[version].append(network)
-                except ValueError:
-                    pass
-        except Exception as e:
-            print(f"WARNING: failed to load RU IPv{version} ranges from {url}: {e}")
-
-    print(
-        "Loaded Russian IP networks:",
-        f"IPv4={len(networks[4])}",
-        f"IPv6={len(networks[6])}",
-    )
-
-    if not networks[4] and not networks[6]:
-        raise RuntimeError("Russian IP range data is unavailable; refusing to publish unverified geography")
-
-    return networks
 
 
 
@@ -410,33 +406,6 @@ def geo_country_label(host: str):
 def detect_country_label_from_host(host: str):
     return geo_country_label(host)
 
-
-
-
-def is_russian_host(host: str, ru_networks):
-    """
-    True  -> at least one resolved endpoint is Russian.
-    False -> all resolved endpoint IPs were verifiably non-Russian.
-    None  -> DNS failed or RU range data for any resolved IP version is missing.
-    """
-    ips = _resolve_host_ips(host)
-    if not ips:
-        return None
-
-    for ip in ips:
-        # A VPN endpoint must resolve to a publicly routable address. Private,
-        # loopback, link-local, multicast and other special-use addresses are
-        # treated as unverifiable and therefore rejected by the caller.
-        if not ip.is_global:
-            return None
-
-        version_networks = ru_networks.get(ip.version) or []
-        if not version_networks:
-            return None
-        if any(ip in network for network in version_networks):
-            return True
-
-    return False
 
 
 
@@ -1135,14 +1104,6 @@ async def quality_probe(
             latencies.append(result.latency_ms)
         return None
 
-    # Google connectivity check before service probes
-    probe_stats["google_204"]["checked"] += 1
-    async with CHEAP_PROBE_SEMAPHORE:
-        result = await curl_url_probe(port, "google_204", GOOGLE_204_PROBE_URL, {"204"})
-    failed = await count_probe("google_204", result)
-    if failed:
-        return failed
-
     # ChatGPT main check
     name, url, ok_codes = QUALITY_PROBES[0]
     probe_stats[name]["checked"] += 1
@@ -1607,7 +1568,16 @@ def _sanitize_proxy_name(name: str):
 
 def write_mihomo_files(nodes):
     """
-    Create Mihomo provider and standalone config.
+    Create the Mihomo proxy-provider and client configuration.
+
+    In GitHub Actions (or when MIHOMO_PROVIDER_URL is explicitly supplied),
+    mihomo.yaml uses the remote HTTP provider. The provider refreshes every
+    5 minutes, while Mihomo itself health-checks provider nodes every 60 seconds
+    through Cloudflare. AUTO selects among those provider nodes with 30 ms
+    switching tolerance.
+
+    For local runs without a provider URL, keep a directly usable embedded
+    config instead of emitting a broken remote-provider reference.
     Source-provided names are preserved first; country lookup is fallback-only.
     """
     OUT_DIR.mkdir(exist_ok=True)
@@ -1647,19 +1617,65 @@ def write_mihomo_files(nodes):
         encoding="utf-8",
     )
 
-    mihomo_config = {
-        "mixed-port": 7890,
-        "mode": "rule",
-        "proxies": proxies,
-        "proxy-groups": [{
-            "name": "AUTO",
-            "type": "url-test",
-            "proxies": [x["name"] for x in proxies],
-            "url": GOOGLE_204_PROBE_URL,
-            "interval": 60,
-        }],
-        "rules": ["MATCH,AUTO"],
-    }
+    repository = os.getenv("GITHUB_REPOSITORY", "").strip()
+    branch = os.getenv("GITHUB_REF_NAME", "main").strip() or "main"
+    provider_url = os.getenv("MIHOMO_PROVIDER_URL", "").strip()
+
+    if not provider_url and repository:
+        provider_url = (
+            f"https://raw.githubusercontent.com/{repository}/{branch}/"
+            "output/mihomo-provider.yaml"
+        )
+
+    if provider_url:
+        # Remote/provider mode used by the published GitHub configuration.
+        # Provider download cadence and node health-check cadence are separate.
+        mihomo_config = {
+            "mixed-port": 7890,
+            "mode": "rule",
+            "proxy-providers": {
+                "VPN": {
+                    "type": "http",
+                    "url": provider_url,
+                    "path": "./providers/vpn.yaml",
+                    "interval": 300,
+                    "health-check": {
+                        "enable": True,
+                        "url": MIHOMO_AUTO_TEST_URL,
+                        "interval": 60,
+                        "timeout": 5000,
+                        "lazy": False,
+                    },
+                },
+            },
+            "proxy-groups": [{
+                "name": "AUTO",
+                "type": "url-test",
+                "use": ["VPN"],
+                "tolerance": 30,
+            }],
+            "rules": ["MATCH,AUTO"],
+        }
+    else:
+        # Local fallback: no remote provider URL exists, so test the embedded
+        # proxies directly. This preserves the same 60-second client-side AUTO
+        # behavior without inventing a URL that cannot work locally.
+        mihomo_config = {
+            "mixed-port": 7890,
+            "mode": "rule",
+            "proxies": proxies,
+            "proxy-groups": [{
+                "name": "AUTO",
+                "type": "url-test",
+                "proxies": [x["name"] for x in proxies],
+                "url": MIHOMO_AUTO_TEST_URL,
+                "interval": 60,
+                "timeout": 5000,
+                "tolerance": 30,
+                "lazy": False,
+            }],
+            "rules": ["MATCH,AUTO"],
+        }
 
     (OUT_DIR / "mihomo.yaml").write_text(
         yaml_dump(mihomo_config),
@@ -1799,35 +1815,10 @@ async def main():
         scheme = uri.split("://", 1)[0].lower()
         merged_protocol_stats[scheme] = merged_protocol_stats.get(scheme, 0) + 1
 
-    # Geography is mandatory and happens before all service probes.
-    ru_networks = load_ru_networks()
-    geo_sem = asyncio.Semaphore(GEO_DNS_CONCURRENCY)
-
-    async def geo_one(key, uri):
-        host = extract_server_host(uri)
-        if not host:
-            return key, uri, None
-        async with geo_sem:
-            result = await asyncio.to_thread(is_russian_host, host, ru_networks)
-        return key, uri, result
-
-    geo_results = await asyncio.gather(
-        *(geo_one(key, uri) for key, uri in merged.items())
-    )
-
-    geo_passed_nodes = {}
-    for key, uri, country_check in geo_results:
-        # True = Russian; None = unknown/unverifiable. Both are rejected.
-        if country_check is False:
-            geo_passed_nodes[key] = uri
-
-    geo_protocol_stats = {}
-    for uri in geo_passed_nodes.values():
-        scheme = uri.split("://", 1)[0].lower()
-        geo_protocol_stats[scheme] = geo_protocol_stats.get(scheme, 0) + 1
-
+    # Geography is informational only and never affects admission.
+    # Every deduplicated candidate proceeds directly to the real VPN/service checks.
     current = {}
-    for key, uri in geo_passed_nodes.items():
+    for key, uri in merged.items():
         country = None
         if not _source_display_name(uri):
             country = detect_country_label_from_host(extract_server_host(uri))
@@ -1841,7 +1832,6 @@ async def main():
     probe_stats = {
         name: {"checked": 0, "passed": 0, "failed": 0}
         for name in (
-            "google_204",
             "chatgpt",
             "chatgpt_auth_tls",
             "chatgpt_android_tls",
@@ -1905,7 +1895,7 @@ async def main():
         protocol_stats[scheme] = protocol_stats.get(scheme, 0) + 1
 
     duration = round(time.monotonic() - run_started, 2)
-    engine_failed_before_checks = len(keys) - probe_stats["google_204"]["checked"]
+    engine_failed_before_checks = len(keys) - probe_stats["chatgpt"]["checked"]
 
     status = {
         "updated_at": now,
@@ -1917,12 +1907,9 @@ async def main():
         "merged_candidates_before_dedup": merged_candidates_before_dedup,
         "merged_candidates_after_dedup": len(merged),
         "merged_duplicates_removed": merged_candidates_before_dedup - len(merged),
-        "candidate_dedup_policy": "full operational configuration; fp/fingerprint is significant; display name/fragment and query order are cosmetic",
+        "candidate_dedup_policy": "conservative effective configuration; fp/fingerprint and unknown operational fields are significant; display name/fragment and query order are cosmetic; VLESS omitted encryption/security normalize to none; repeated query fields are kept conservatively distinct",
+        "geography_policy": "informational only; geography never rejects a candidate",
         "merged_protocol_stats": merged_protocol_stats,
-        "geo_candidates_checked": len(merged),
-        "geo_passed_nodes": len(geo_passed_nodes),
-        "geo_rejected_nodes": len(merged) - len(geo_passed_nodes),
-        "geo_protocol_stats": geo_protocol_stats,
         "checked_this_run": len(keys),
         "vpn_engine_failed_before_checks": engine_failed_before_checks,
         "successful_this_run": successes,
@@ -1946,7 +1933,6 @@ async def main():
         "protocol_stats": protocol_stats,
         "probe_stats": probe_stats,
         "probe_policy": {
-            "google_204": "exact HTTP 204; normal probe timeout only; no 5s quality gate",
             "chatgpt": f"exact HTTP 200; quality <= {QUALITY_MAX_SECONDS:g}s",
         },
         "failure_samples": failure_samples,
@@ -1956,7 +1942,7 @@ async def main():
             "duration_seconds": duration,
         },
         "run_duration_seconds": duration,
-        "admission_rule": "Only nodes that pass geography and all mandatory service probes are published. Any failed check removes the node immediately.",
+        "admission_rule": "Only nodes that pass all mandatory service probes are published. Geography is informational only and never affects admission. Any failed mandatory check removes the node immediately.",
         "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run.",
     }
 
