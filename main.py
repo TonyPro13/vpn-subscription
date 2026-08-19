@@ -32,6 +32,7 @@ GEOIP_COUNTRY_DB = Path("data/GeoLite2-Country.mmdb")
 
 CHEAP_PROBE_SEMAPHORE = None
 VPN_PROCESS_SEMAPHORE = None
+THROUGHPUT_SEMAPHORE = None
 
 CHECK_CONCURRENCY = int(os.getenv("CHECK_CONCURRENCY", "20"))
 VPN_PROCESS_CONCURRENCY = int(os.getenv("VPN_PROCESS_CONCURRENCY", "40"))
@@ -78,6 +79,17 @@ TELEGRAM_MTPROTO_ENDPOINTS = (
 MIHOMO_AUTO_TEST_URL = "http://captive.apple.com/hotspot-detect.html"
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
+MAX_PUBLISHED_NODES = 100
+
+THROUGHPUT_TEST_URL = os.getenv(
+    "THROUGHPUT_TEST_URL",
+    "https://speed.cloudflare.com/__down",
+)
+THROUGHPUT_WARMUP_BYTES = 100_000
+THROUGHPUT_MEASURE_BYTES = 10_000_000
+THROUGHPUT_WARMUP_TIMEOUT = 3.0
+THROUGHPUT_MEASURE_TIMEOUT = 5.0
+THROUGHPUT_CONCURRENCY = 2
 
 async def curl_tls_probe(port: int, name: str, url: str):
     proc = await asyncio.create_subprocess_exec(
@@ -143,6 +155,15 @@ QUALITY_PROBES = (
 class Probe:
     ok: bool
     latency_ms: float | None = None
+    error: str | None = None
+
+
+@dataclass
+class ThroughputProbe:
+    ok: bool
+    mbps: float | None = None
+    downloaded_bytes: int = 0
+    transfer_seconds: float | None = None
     error: str | None = None
 
 
@@ -1085,6 +1106,147 @@ async def curl_url_probe(port: int, name: str, url: str, ok_codes, quality_max_s
     )
 
 
+def _throughput_url(byte_count: int):
+    separator = "&" if "?" in THROUGHPUT_TEST_URL else "?"
+    return f"{THROUGHPUT_TEST_URL}{separator}bytes={byte_count}"
+
+
+async def _curl_download_probe(port: int, byte_count: int, timeout: float):
+    """Download through one node SOCKS tunnel and return curl transfer stats."""
+    proc = await asyncio.create_subprocess_exec(
+        "curl",
+        "-sS",
+        "--max-time",
+        str(timeout),
+        "--proxy",
+        f"socks5h://127.0.0.1:{port}",
+        "-H",
+        "Accept-Encoding: identity",
+        "-o",
+        os.devnull,
+        "-w",
+        "%{http_code} %{size_download} %{time_starttransfer} %{time_total}",
+        _throughput_url(byte_count),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    try:
+        out, err = await asyncio.wait_for(
+            proc.communicate(),
+            timeout=timeout + 2,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+        return None, "python hard timeout"
+
+    output = out.decode(errors="replace").strip()
+    parts = output.split()
+    if len(parts) < 4:
+        error_text = err.decode(errors="replace").strip()
+        return None, error_text[-300:] or "curl returned no transfer stats"
+
+    try:
+        http_code = parts[0]
+        size_download = float(parts[1])
+        time_starttransfer = float(parts[2])
+        time_total = float(parts[3])
+    except (ValueError, IndexError):
+        return None, f"invalid curl transfer stats: {output[-300:]}"
+
+    error_text = err.decode(errors="replace").strip()
+    stats = {
+        "returncode": proc.returncode,
+        "http_code": http_code,
+        "size_download": size_download,
+        "time_starttransfer": time_starttransfer,
+        "time_total": time_total,
+    }
+    return stats, error_text[-300:]
+
+
+async def throughput_probe(port: int):
+    """
+    Final download-throughput measurement for an already VERIFIED node.
+
+    A small 100 KB request warms the path first. Then up to 10 MB is downloaded
+    with a 5 second wall-clock limit. Connection/TLS/TTFB time is excluded from
+    the Mbps calculation; only body-transfer time is used.
+    """
+    warmup, warmup_error = await _curl_download_probe(
+        port,
+        THROUGHPUT_WARMUP_BYTES,
+        THROUGHPUT_WARMUP_TIMEOUT,
+    )
+    if (
+        warmup is None
+        or warmup["returncode"] != 0
+        or warmup["http_code"] != "200"
+        or warmup["size_download"] <= 0
+    ):
+        return ThroughputProbe(
+            False,
+            error=(
+                "throughput warm-up failed: "
+                + (warmup_error or "no successful HTTP 200 download")
+            ),
+        )
+
+    measurement, measurement_error = await _curl_download_probe(
+        port,
+        THROUGHPUT_MEASURE_BYTES,
+        THROUGHPUT_MEASURE_TIMEOUT,
+    )
+    if measurement is None:
+        return ThroughputProbe(
+            False,
+            error=f"throughput measurement failed: {measurement_error}",
+        )
+
+    # curl return code 28 means the fixed 5 second measurement window expired.
+    # Partial bytes are still useful for throughput as long as body transfer
+    # actually started. Other curl failures are not used as speed samples.
+    if measurement["returncode"] not in (0, 28):
+        return ThroughputProbe(
+            False,
+            downloaded_bytes=int(measurement["size_download"]),
+            error=(
+                "throughput measurement failed: "
+                + (measurement_error or f"curl rc={measurement['returncode']}")
+            ),
+        )
+
+    if measurement["http_code"] != "200":
+        return ThroughputProbe(
+            False,
+            downloaded_bytes=int(measurement["size_download"]),
+            error=(
+                "throughput measurement unexpected HTTP status "
+                f"{measurement['http_code']}"
+            ),
+        )
+
+    transfer_seconds = (
+        measurement["time_total"] - measurement["time_starttransfer"]
+    )
+    downloaded_bytes = int(measurement["size_download"])
+    if downloaded_bytes <= 0 or transfer_seconds <= 0:
+        return ThroughputProbe(
+            False,
+            downloaded_bytes=downloaded_bytes,
+            error="throughput measurement transferred no measurable body data",
+        )
+
+    mbps = downloaded_bytes * 8.0 / transfer_seconds / 1_000_000.0
+    return ThroughputProbe(
+        True,
+        mbps=round(mbps, 2),
+        downloaded_bytes=downloaded_bytes,
+        transfer_seconds=round(transfer_seconds, 3),
+    )
+
+
 async def quality_probe(
     port: int,
     probe_stats: dict,
@@ -1206,6 +1368,71 @@ async def run_probe(uri: str, probe_stats: dict):
 
     except Exception as e:
         return Probe(False, error=f"{type(e).__name__}: {e}")
+
+    finally:
+        if process is not None:
+            try:
+                process.terminate()
+                await asyncio.wait_for(process.wait(), timeout=2)
+            except Exception:
+                try:
+                    process.kill()
+                except Exception:
+                    pass
+
+        if cfg_file:
+            try:
+                Path(cfg_file).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+
+
+
+async def run_throughput_probe(uri: str):
+    """Second-pass VPN tunnel used only for final throughput ranking."""
+    process = None
+    port = free_port()
+    cfg_file = None
+
+    try:
+        scheme = uri.split("://", 1)[0].lower()
+
+        if scheme in {"hysteria2", "hy2"}:
+            engine = str(SINGBOX)
+            config = singbox_config(uri, port)
+        else:
+            engine = str(XRAY)
+            config = xray_config(uri, port)
+
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".json",
+            delete=False,
+            encoding="utf-8",
+        ) as f:
+            json.dump(config, f, ensure_ascii=False)
+            cfg_file = f.name
+
+        process = await asyncio.create_subprocess_exec(
+            engine,
+            "run",
+            "-c",
+            cfg_file,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+
+        if not await wait_port(port):
+            return ThroughputProbe(
+                False,
+                error=f"{scheme}: socks port not opened for throughput test",
+            )
+
+        return await throughput_probe(port)
+
+    except Exception as e:
+        return ThroughputProbe(False, error=f"{type(e).__name__}: {e}")
 
     finally:
         if process is not None:
@@ -1770,6 +1997,32 @@ async def safe_probe(uri: str, probe_stats: dict):
 
 
 
+async def safe_throughput_probe(uri: str):
+    """Run at most two second-pass throughput tests at the same time."""
+    async with THROUGHPUT_SEMAPHORE:
+        try:
+            return await run_throughput_probe(uri)
+        except Exception as e:
+            return ThroughputProbe(False, error=f"{type(e).__name__}: {e}")
+
+
+def _average_tie_ranks(pairs, *, reverse=False):
+    """Return 1-based average ranks; equal values receive the same rank."""
+    ordered = sorted(pairs, key=lambda x: x[1], reverse=reverse)
+    ranks = {}
+    index = 0
+    while index < len(ordered):
+        end = index + 1
+        value = ordered[index][1]
+        while end < len(ordered) and ordered[end][1] == value:
+            end += 1
+        average_rank = ((index + 1) + end) / 2.0
+        for key, _ in ordered[index:end]:
+            ranks[key] = average_rank
+        index = end
+    return ranks
+
+
 
 async def main():
     run_started = time.monotonic()
@@ -1778,9 +2031,11 @@ async def main():
 
     global CHEAP_PROBE_SEMAPHORE
     global VPN_PROCESS_SEMAPHORE
+    global THROUGHPUT_SEMAPHORE
 
     CHEAP_PROBE_SEMAPHORE = asyncio.Semaphore(CHECK_CONCURRENCY)
     VPN_PROCESS_SEMAPHORE = asyncio.Semaphore(VPN_PROCESS_CONCURRENCY)
+    THROUGHPUT_SEMAPHORE = asyncio.Semaphore(THROUGHPUT_CONCURRENCY)
 
     source_nodes, source_stats, duplicates = collect_sources()
     old = load_state()
@@ -1826,6 +2081,8 @@ async def main():
             "uri": uri,
             "country": country,
             "last_latency_ms": None,
+            "last_throughput_mbps": None,
+            "throughput_error": None,
             "last_error": None,
         }
 
@@ -1866,31 +2123,93 @@ async def main():
             del current[key]
             deleted += 1
 
-    # Put the fastest successfully verified nodes first.
-    # This changes only output order; admission checks and the published pool
-    # remain exactly the same.
-    ordered = sorted(
-        current.values(),
-        key=lambda x: (
-            x["last_latency_ms"] is None,
-            x["last_latency_ms"] if x["last_latency_ms"] is not None else float("inf"),
-        ),
-    )
+    # Every node still in `current` has passed the complete mandatory service
+    # cascade. A second-pass throughput test is needed only when more than 100
+    # fully verified nodes are competing for the client publication slots.
+    verified_count = len(current)
+    throughput_triggered = verified_count > MAX_PUBLISHED_NODES
+    throughput_results = []
+    throughput_failure_samples = []
+
+    if throughput_triggered:
+        verified_keys = list(current.keys())
+        throughput_results = await asyncio.gather(
+            *(safe_throughput_probe(current[k]["uri"]) for k in verified_keys)
+        )
+
+        for key, result in zip(verified_keys, throughput_results):
+            if result.ok:
+                current[key]["last_throughput_mbps"] = result.mbps
+                current[key]["throughput_error"] = None
+            else:
+                current[key]["last_throughput_mbps"] = None
+                current[key]["throughput_error"] = result.error
+                if len(throughput_failure_samples) < 20:
+                    throughput_failure_samples.append({
+                        "protocol": current[key]["uri"].split("://", 1)[0].lower(),
+                        "error": result.error,
+                    })
+
+        latency_pairs = [
+            (key, item["last_latency_ms"])
+            for key, item in current.items()
+            if item["last_latency_ms"] is not None
+        ]
+        latency_ranks = _average_tie_ranks(latency_pairs)
+
+        throughput_pairs = [
+            (key, item["last_throughput_mbps"])
+            for key, item in current.items()
+            if item["last_throughput_mbps"] is not None
+        ]
+        throughput_ranks = _average_tie_ranks(throughput_pairs, reverse=True)
+        worst_speed_rank = float(verified_count + 1)
+
+        ranked_keys = sorted(
+            current.keys(),
+            key=lambda key: (
+                0.5 * latency_ranks.get(key, float(verified_count + 1))
+                + 0.5 * throughput_ranks.get(key, worst_speed_rank),
+                latency_ranks.get(key, float(verified_count + 1)),
+                -float(current[key]["last_throughput_mbps"] or 0.0),
+            ),
+        )
+        verified_ordered = [current[key] for key in ranked_keys]
+    else:
+        # If 100 or fewer nodes are verified, all of them are published and
+        # there is no reason to spend traffic/time on a throughput contest.
+        verified_ordered = sorted(
+            current.values(),
+            key=lambda x: (
+                x["last_latency_ms"] is None,
+                x["last_latency_ms"]
+                if x["last_latency_ms"] is not None
+                else float("inf"),
+            ),
+        )
+
+    published_ordered = verified_ordered[:MAX_PUBLISHED_NODES]
 
     (OUT_DIR / "subscription.txt").write_text(
-        "\n".join(x["uri"] for x in ordered) + ("\n" if ordered else ""),
+        "\n".join(x["uri"] for x in published_ordered)
+        + ("\n" if published_ordered else ""),
         encoding="utf-8",
     )
 
-    mihomo_nodes, mihomo_skipped, conversion_errors = write_mihomo_files(ordered)
+    mihomo_nodes, mihomo_skipped, conversion_errors = write_mihomo_files(
+        published_ordered
+    )
 
+    # Keep ALL nodes that passed the mandatory checks in state.json, including
+    # verified nodes ranked below the client publication cap and nodes whose
+    # throughput measurement failed. They compete again from scratch next run.
     STATE_FILE.write_text(
         json.dumps({"updated_at": now, "nodes": current}, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
 
     protocol_stats = {}
-    for item in ordered:
+    for item in published_ordered:
         scheme = item["uri"].split("://", 1)[0].lower()
         protocol_stats[scheme] = protocol_stats.get(scheme, 0) + 1
 
@@ -1899,6 +2218,35 @@ async def main():
     # Candidates that never reached ChatGPT failed while starting the VPN
     # engine/config/SOCKS tunnel.
     engine_failed_before_checks = len(keys) - probe_stats["chatgpt"]["checked"]
+
+    throughput_mbps_values = sorted(
+        item["last_throughput_mbps"]
+        for item in current.values()
+        if item["last_throughput_mbps"] is not None
+    )
+    throughput_successful = len(throughput_mbps_values)
+    throughput_failed = (
+        verified_count - throughput_successful if throughput_triggered else 0
+    )
+    if throughput_mbps_values:
+        midpoint = len(throughput_mbps_values) // 2
+        if len(throughput_mbps_values) % 2:
+            throughput_median = throughput_mbps_values[midpoint]
+        else:
+            throughput_median = round(
+                (throughput_mbps_values[midpoint - 1] + throughput_mbps_values[midpoint])
+                / 2.0,
+                2,
+            )
+        throughput_average = round(
+            sum(throughput_mbps_values) / len(throughput_mbps_values),
+            2,
+        )
+        throughput_fastest = throughput_mbps_values[-1]
+    else:
+        throughput_median = None
+        throughput_average = None
+        throughput_fastest = None
 
     status = {
         "updated_at": now,
@@ -1918,18 +2266,47 @@ async def main():
         "successful_this_run": successes,
         "failed_this_run": failures,
         "rejected_this_run": deleted,
-        "published_nodes": len(current),
+        "verified_nodes_before_publish_cap": len(verified_ordered),
+        "publish_limit": MAX_PUBLISHED_NODES,
+        "not_published_due_to_limit": max(
+            0,
+            len(verified_ordered) - len(published_ordered),
+        ),
+        "throughput_test": {
+            "triggered": throughput_triggered,
+            "trigger_condition": "verified nodes > 100",
+            "checked": verified_count if throughput_triggered else 0,
+            "successful": throughput_successful,
+            "failed": throughput_failed,
+            "url": THROUGHPUT_TEST_URL,
+            "warmup_bytes": THROUGHPUT_WARMUP_BYTES,
+            "measurement_bytes_max": THROUGHPUT_MEASURE_BYTES,
+            "measurement_timeout_seconds": THROUGHPUT_MEASURE_TIMEOUT,
+            "concurrency": THROUGHPUT_CONCURRENCY,
+            "average_mbps": throughput_average,
+            "median_mbps": throughput_median,
+            "fastest_mbps": throughput_fastest,
+            "failure_samples": throughput_failure_samples,
+        },
+        "ranking_policy": (
+            "all nodes must first pass every mandatory service probe; if more "
+            "than 100 are verified, each verified node gets a second-pass "
+            "Cloudflare download-throughput measurement and final ranking is "
+            "50% service-latency rank + 50% throughput rank; throughput failure "
+            "ranks worst for speed but never removes the node from state.json"
+        ),
+        "published_nodes": len(published_ordered),
         "mihomo_nodes": mihomo_nodes,
         "mihomo_skipped": mihomo_skipped,
         "mihomo_output_warning": (
             "Mihomo output differs from published nodes"
-            if mihomo_nodes != len(ordered)
+            if mihomo_nodes != len(published_ordered)
             else None
         ),
         "output_validation": {
-            "published_nodes": len(ordered),
+            "published_nodes": len(published_ordered),
             "mihomo_nodes": mihomo_nodes,
-            "published_equals_mihomo": mihomo_nodes == len(ordered),
+            "published_equals_mihomo": mihomo_nodes == len(published_ordered),
             "conversion_failed": mihomo_skipped,
             "conversion_errors": conversion_errors,
         },
@@ -1941,12 +2318,14 @@ async def main():
         "failure_samples": failure_samples,
         "run_statistics": {
             "checked_nodes": len(keys),
-            "published_nodes": len(current),
+            "verified_nodes": len(verified_ordered),
+            "throughput_test_triggered": throughput_triggered,
+            "published_nodes": len(published_ordered),
             "duration_seconds": duration,
         },
         "run_duration_seconds": duration,
-        "admission_rule": "Geography and preliminary DNS latency filters are disabled. A node is published only if it passes every existing mandatory service probe. Failure at any active service check rejects the node immediately.",
-        "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run.",
+        "admission_rule": "Geography and preliminary DNS latency filters are disabled. A node becomes verified only if it passes every existing mandatory service probe. Failure at any active service check rejects the node immediately. Throughput is measured only after verification and never rejects a node. If more than 100 nodes are verified, only the top 100 by the combined 50% service-latency rank and 50% throughput rank are published to clients.",
+        "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. If 100 or fewer nodes are verified, throughput testing is skipped and all verified nodes are published. Verified nodes below the top-100 publication cutoff remain in state.json and compete again on the next refresh.",
     }
 
     (OUT_DIR / "status.json").write_text(
