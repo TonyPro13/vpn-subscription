@@ -83,8 +83,9 @@ MIHOMO_AUTO_TEST_URL = "https://cp.cloudflare.com"
 # request/response after the SOCKS CONNECT has succeeded, which is the closest
 # SOCKS-compatible analogue of endpoint RTT.
 NETWORK_PREFILTER_MAX_MS = 200.0
-NETWORK_PREFILTER_CONNECT_TIMEOUT = 5.0
-NETWORK_PREFILTER_RESPONSE_TIMEOUT = 1.0
+NETWORK_PREFILTER_CONNECT_TIMEOUT = 0.5
+NETWORK_PREFILTER_RESPONSE_TIMEOUT = 0.25
+NETWORK_PREFILTER_HARD_TIMEOUT = 0.5
 NETWORK_PREFILTER_QUERY_NAME = "example.com"
 NETWORK_PREFILTER_TARGETS = (
     ("cloudflare_1111", "1.1.1.1"),
@@ -1255,9 +1256,12 @@ async def network_prefilter_probe(
 
         try:
             async with CHEAP_PROBE_SEMAPHORE:
-                latency_ms = await dns_tcp_latency_via_socks(
-                    port,
-                    resolver_ip,
+                latency_ms = await asyncio.wait_for(
+                    dns_tcp_latency_via_socks(
+                        port,
+                        resolver_ip,
+                    ),
+                    timeout=NETWORK_PREFILTER_HARD_TIMEOUT,
                 )
         except Exception as e:
             stats["failed"] += 1
