@@ -28,6 +28,18 @@ tar -xzf /tmp/sing-box.tar.gz -C /tmp/sing-box --strip-components=1
 cp /tmp/sing-box/sing-box bin/sing-box
 chmod +x bin/sing-box
 
+echo "Installing Mihomo..."
+MIHOMO_URL="$(curl -fsSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest \
+  | jq -r '.assets[] | select(.name | test("^mihomo-linux-amd64-v1-v[0-9]+\\.[0-9]+\\.[0-9]+\\.gz$")) | .browser_download_url' | head -n1)"
+if [ -z "$MIHOMO_URL" ] || [ "$MIHOMO_URL" = "null" ]; then
+  echo "Could not find Mihomo linux-amd64-v1 archive"
+  exit 1
+fi
+curl -fsSL "$MIHOMO_URL" -o /tmp/mihomo.gz
+gzip -dc /tmp/mihomo.gz > bin/mihomo
+chmod +x bin/mihomo
+
 echo "Engines installed:"
 bin/xray version | head -n1 || true
 bin/sing-box version | head -n1 || true
+bin/mihomo -v | head -n2 || true
