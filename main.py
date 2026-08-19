@@ -86,6 +86,20 @@ EXIT_GEO_PROBE_URL = os.getenv(
 )
 EXIT_GEO_PROBE_TIMEOUT = float(os.getenv("EXIT_GEO_PROBE_TIMEOUT_SECONDS", "5"))
 
+# Mandatory pre-service network quality filter.
+# Each resolver is tested with a real DNS-over-TCP query through the already
+# established local SOCKS5 tunnel. The measured latency covers only the DNS
+# request/response after the SOCKS CONNECT has succeeded, which is the closest
+# SOCKS-compatible analogue of endpoint RTT.
+NETWORK_PREFILTER_MAX_MS = 200.0
+NETWORK_PREFILTER_CONNECT_TIMEOUT = 5.0
+NETWORK_PREFILTER_RESPONSE_TIMEOUT = 1.0
+NETWORK_PREFILTER_QUERY_NAME = "example.com"
+NETWORK_PREFILTER_TARGETS = (
+    ("cloudflare_1111", "1.1.1.1"),
+    ("google_8888", "8.8.8.8"),
+)
+
 # Europe plus transcontinental / near-European border countries accepted by
 # project policy. This is deliberately broader than EU membership.
 EUROPE_EXIT_COUNTRY_CODES = frozenset({
@@ -1217,6 +1231,195 @@ async def exit_geo_probe(port: int, exit_geo_stats: dict):
     )
 
 
+def _build_dns_query(name: str):
+    labels = [label.encode("idna") for label in name.rstrip(".").split(".") if label]
+    if not labels:
+        raise ValueError("DNS query name is empty")
+
+    qname = bytearray()
+    for label in labels:
+        if len(label) > 63:
+            raise ValueError("DNS label is too long")
+        qname.append(len(label))
+        qname.extend(label)
+    qname.append(0)
+
+    txid = secrets.randbits(16)
+    header = struct.pack("!HHHHHH", txid, 0x0100, 1, 0, 0, 0)
+    question = bytes(qname) + struct.pack("!HH", 1, 1)  # A / IN
+    return txid, header + question
+
+
+async def _read_socks5_address(reader: asyncio.StreamReader, atyp: int, timeout: float):
+    if atyp == 0x01:  # IPv4
+        await asyncio.wait_for(reader.readexactly(4), timeout=timeout)
+    elif atyp == 0x03:  # domain
+        size = (await asyncio.wait_for(reader.readexactly(1), timeout=timeout))[0]
+        await asyncio.wait_for(reader.readexactly(size), timeout=timeout)
+    elif atyp == 0x04:  # IPv6
+        await asyncio.wait_for(reader.readexactly(16), timeout=timeout)
+    else:
+        raise ValueError(f"SOCKS5 returned unsupported address type: {atyp}")
+
+    await asyncio.wait_for(reader.readexactly(2), timeout=timeout)
+
+
+async def dns_tcp_latency_via_socks(
+    socks_port: int,
+    resolver_ip: str,
+):
+    """
+    Run one real DNS-over-TCP A query through the node's local SOCKS5 tunnel.
+
+    Connection establishment is required to succeed but is intentionally not
+    included in the latency value. Timing starts immediately before the DNS
+    query is sent and stops after the complete DNS response is received.
+    """
+    reader = None
+    writer = None
+
+    try:
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection("127.0.0.1", socks_port),
+            timeout=NETWORK_PREFILTER_CONNECT_TIMEOUT,
+        )
+
+        writer.write(b"\x05\x01\x00")
+        await writer.drain()
+        greeting = await asyncio.wait_for(
+            reader.readexactly(2),
+            timeout=NETWORK_PREFILTER_CONNECT_TIMEOUT,
+        )
+        if greeting != b"\x05\x00":
+            raise ConnectionError(
+                f"SOCKS5 greeting failed: {greeting.hex()}"
+            )
+
+        target = ipaddress.ip_address(resolver_ip)
+        atyp = b"\x01" if target.version == 4 else b"\x04"
+
+        request = (
+            b"\x05\x01\x00"
+            + atyp
+            + target.packed
+            + struct.pack("!H", 53)
+        )
+        writer.write(request)
+        await writer.drain()
+
+        reply = await asyncio.wait_for(
+            reader.readexactly(4),
+            timeout=NETWORK_PREFILTER_CONNECT_TIMEOUT,
+        )
+        if reply[0] != 0x05:
+            raise ConnectionError(
+                f"SOCKS5 invalid reply version: {reply[0]}"
+            )
+        if reply[1] != 0x00:
+            raise ConnectionError(
+                f"SOCKS5 CONNECT failed with code 0x{reply[1]:02x}"
+            )
+        await _read_socks5_address(
+            reader,
+            reply[3],
+            NETWORK_PREFILTER_CONNECT_TIMEOUT,
+        )
+
+        txid, query = _build_dns_query(NETWORK_PREFILTER_QUERY_NAME)
+        framed_query = struct.pack("!H", len(query)) + query
+
+        started = time.perf_counter()
+        writer.write(framed_query)
+        await writer.drain()
+
+        length_raw = await asyncio.wait_for(
+            reader.readexactly(2),
+            timeout=NETWORK_PREFILTER_RESPONSE_TIMEOUT,
+        )
+        response_length = struct.unpack("!H", length_raw)[0]
+        if response_length < 12:
+            raise ValueError(
+                f"DNS response is too short: {response_length} bytes"
+            )
+
+        response = await asyncio.wait_for(
+            reader.readexactly(response_length),
+            timeout=NETWORK_PREFILTER_RESPONSE_TIMEOUT,
+        )
+        latency_ms = (time.perf_counter() - started) * 1000.0
+
+        response_txid, flags = struct.unpack("!HH", response[:4])
+        if response_txid != txid:
+            raise ValueError("DNS response transaction ID mismatch")
+        if not (flags & 0x8000):
+            raise ValueError("DNS packet is not a response")
+
+        rcode = flags & 0x000F
+        if rcode != 0:
+            raise ValueError(f"DNS resolver returned RCODE={rcode}")
+
+        return round(latency_ms, 1)
+
+    finally:
+        if writer is not None:
+            writer.close()
+            try:
+                await writer.wait_closed()
+            except Exception:
+                pass
+
+
+async def network_prefilter_probe(
+    port: int,
+    network_prefilter_stats: dict,
+):
+    """
+    Mandatory cascade before the existing service cascade:
+
+      1.1.1.1 DNS-over-TCP latency <= 200 ms
+      8.8.8.8 DNS-over-TCP latency <= 200 ms
+
+    The second target is checked only if the first target passes.
+    """
+    for name, resolver_ip in NETWORK_PREFILTER_TARGETS:
+        stats = network_prefilter_stats[name]
+        stats["checked"] += 1
+
+        try:
+            async with CHEAP_PROBE_SEMAPHORE:
+                latency_ms = await dns_tcp_latency_via_socks(
+                    port,
+                    resolver_ip,
+                )
+        except Exception as e:
+            stats["failed"] += 1
+            return Probe(
+                False,
+                error=(
+                    f"{name}: DNS-over-TCP check failed: "
+                    f"{type(e).__name__}: {e}"
+                ),
+            )
+
+        if latency_ms > NETWORK_PREFILTER_MAX_MS:
+            stats["failed"] += 1
+            return Probe(
+                False,
+                latency_ms=latency_ms,
+                error=(
+                    f"{name}: too slow "
+                    f"({latency_ms:.1f}ms > {NETWORK_PREFILTER_MAX_MS:.0f}ms)"
+                ),
+            )
+
+        stats["passed"] += 1
+        stats["latency_sum_ms"] += latency_ms
+        stats["latency_samples"] += 1
+
+    network_prefilter_stats["passed_both"] += 1
+    return Probe(True)
+
+
 async def quality_probe(
     port: int,
     probe_stats: dict,
@@ -1293,11 +1496,16 @@ async def quality_probe(
 
 
 
-async def run_probe(uri: str, probe_stats: dict, exit_geo_stats: dict):
+async def run_probe(
+    uri: str,
+    probe_stats: dict,
+    exit_geo_stats: dict,
+    network_prefilter_stats: dict,
+):
     """
-    Creates a temporary VPN tunnel, verifies that its observed EXIT is in the
-    accepted European/transcontinental set, then runs the mandatory service
-    quality cascade. Supports Xray based protocols and sing-box Hysteria2.
+    Creates a temporary VPN tunnel, verifies the observed EXIT geography,
+    requires both global DNS directions to respond within 200 ms, and only then
+    runs the existing mandatory service cascade.
     """
     engine = None
     process = None
@@ -1340,6 +1548,17 @@ async def run_probe(uri: str, probe_stats: dict, exit_geo_stats: dict):
         geo_result = await exit_geo_probe(port, exit_geo_stats)
         if not geo_result.ok:
             return geo_result
+
+        # Two mandatory global network directions, both <= 200 ms.
+        # They run before the existing ChatGPT/YouTube/Telegram cascade.
+        network_result = await network_prefilter_probe(
+            port,
+            network_prefilter_stats,
+        )
+        if not network_result.ok:
+            network_result.exit_ip = geo_result.exit_ip
+            network_result.exit_country = geo_result.exit_country
+            return network_result
 
         result = await quality_probe(port, probe_stats)
         result.exit_ip = geo_result.exit_ip
@@ -1894,17 +2113,27 @@ def yaml_dump(data):
     return dump(data) + "\n"
 
 
-async def safe_probe(uri: str, probe_stats: dict, exit_geo_stats: dict):
+async def safe_probe(
+    uri: str,
+    probe_stats: dict,
+    exit_geo_stats: dict,
+    network_prefilter_stats: dict,
+):
     """
     Full VPN probe wrapper.
 
-    Starts the temporary Xray/sing-box tunnel, checks the observed exit
-    geography, and only then runs the mandatory service cascade. Any exception
-    means the node fails immediately.
+    Starts the temporary Xray/sing-box tunnel, checks exit geography, runs the
+    mandatory 1.1.1.1 / 8.8.8.8 network prefilter, and only then runs the
+    existing service cascade. Any exception means the node fails immediately.
     """
     async with VPN_PROCESS_SEMAPHORE:
         try:
-            return await run_probe(uri, probe_stats, exit_geo_stats)
+            return await run_probe(
+                uri,
+                probe_stats,
+                exit_geo_stats,
+                network_prefilter_stats,
+            )
         except Exception as e:
             return Probe(
                 False,
@@ -1957,8 +2186,8 @@ async def main():
         scheme = uri.split("://", 1)[0].lower()
         merged_protocol_stats[scheme] = merged_protocol_stats.get(scheme, 0) + 1
 
-    # Geography is informational only and never affects admission.
-    # Every deduplicated candidate proceeds directly to the real VPN/service checks.
+    # Every deduplicated candidate gets a real VPN tunnel. Admission is then:
+    # exit geography -> 1.1.1.1 <= 200 ms -> 8.8.8.8 <= 200 ms -> service cascade.
     current = {}
     for key, uri in merged.items():
         country = None
@@ -1991,10 +2220,33 @@ async def main():
         "country_stats": {},
     }
 
+    network_prefilter_stats = {
+        "cloudflare_1111": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+            "latency_sum_ms": 0.0,
+            "latency_samples": 0,
+        },
+        "google_8888": {
+            "checked": 0,
+            "passed": 0,
+            "failed": 0,
+            "latency_sum_ms": 0.0,
+            "latency_samples": 0,
+        },
+        "passed_both": 0,
+    }
+
     keys = list(current.keys())
     results = await asyncio.gather(
         *(
-            safe_probe(current[k]["uri"], probe_stats, exit_geo_stats)
+            safe_probe(
+                current[k]["uri"],
+                probe_stats,
+                exit_geo_stats,
+                network_prefilter_stats,
+            )
             for k in keys
         )
     )
@@ -2050,6 +2302,17 @@ async def main():
         protocol_stats[scheme] = protocol_stats.get(scheme, 0) + 1
 
     duration = round(time.monotonic() - run_started, 2)
+
+    for target_name in ("cloudflare_1111", "google_8888"):
+        target_stats = network_prefilter_stats[target_name]
+        samples = target_stats.pop("latency_samples")
+        latency_sum = target_stats.pop("latency_sum_ms")
+        target_stats["average_latency_ms"] = (
+            round(latency_sum / samples, 1)
+            if samples
+            else None
+        )
+
     # Only candidates that never reached the exit-geo request failed before
     # geography (normally VPN engine/config/startup failures).
     engine_failed_before_exit_geo = len(keys) - exit_geo_stats["checked"]
@@ -2072,6 +2335,15 @@ async def main():
         "vpn_engine_failed_before_exit_geo": engine_failed_before_exit_geo,
         "exit_geo_stats": exit_geo_stats,
         "service_candidates_after_exit_geo": exit_geo_stats["european"],
+        "network_prefilter_policy": {
+            "transport": "real DNS-over-TCP via the node SOCKS5 tunnel",
+            "query": NETWORK_PREFILTER_QUERY_NAME,
+            "targets": ["1.1.1.1", "8.8.8.8"],
+            "max_latency_ms_each": NETWORK_PREFILTER_MAX_MS,
+            "requirement": "both targets must pass; cascade order 1.1.1.1 then 8.8.8.8",
+        },
+        "network_prefilter_stats": network_prefilter_stats,
+        "service_candidates_after_network_prefilter": network_prefilter_stats["passed_both"],
         "successful_this_run": successes,
         "failed_this_run": failures,
         "rejected_this_run": deleted,
@@ -2102,7 +2374,7 @@ async def main():
             "duration_seconds": duration,
         },
         "run_duration_seconds": duration,
-        "admission_rule": "A node must first expose an accepted European/transcontinental VPN exit country, then pass every mandatory service probe. Unknown or non-European exits are rejected before the service cascade.",
+        "admission_rule": "A node must first expose an accepted European/transcontinental VPN exit country, then pass DNS-over-TCP latency checks to both 1.1.1.1 and 8.8.8.8 at <=200 ms each, then pass every existing mandatory service probe. Failure at any stage rejects the node immediately.",
         "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run.",
     }
 
