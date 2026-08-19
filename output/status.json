@@ -1,91 +1,92 @@
 {
-  "updated_at": 1787144486,
-  "source_nodes_unique": 284,
-  "source_duplicates_removed": 150,
+  "updated_at": 1787146060,
+  "source_nodes_unique": 230,
+  "source_duplicates_removed": 204,
   "source_stats": {
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt": 205,
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt": 155,
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt": 17,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt": 62
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt": 58
   },
   "source_protocol_stats": {
-    "vless": 205,
+    "vless": 155,
     "hysteria2": 70,
-    "trojan": 8,
+    "trojan": 4,
     "vmess": 1
   },
-  "state_nodes_loaded": 226,
-  "merged_candidates_before_dedup": 510,
-  "merged_candidates_after_dedup": 315,
-  "merged_duplicates_removed": 195,
+  "state_nodes_loaded": 225,
+  "merged_candidates_before_dedup": 455,
+  "merged_candidates_after_dedup": 261,
+  "merged_duplicates_removed": 194,
+  "candidate_dedup_policy": "same endpoint/config collapsed only across client fp/fingerprint variants; first current-source URI wins",
   "merged_protocol_stats": {
-    "vless": 220,
+    "vless": 170,
     "hysteria2": 86,
-    "trojan": 8,
+    "trojan": 4,
     "vmess": 1
   },
-  "geo_candidates_checked": 315,
-  "geo_passed_nodes": 310,
-  "geo_rejected_nodes": 5,
+  "geo_candidates_checked": 261,
+  "geo_passed_nodes": 257,
+  "geo_rejected_nodes": 4,
   "geo_protocol_stats": {
-    "vless": 216,
+    "vless": 167,
     "hysteria2": 85,
-    "trojan": 8,
+    "trojan": 4,
     "vmess": 1
   },
-  "checked_this_run": 310,
-  "vpn_engine_failed_before_checks": 2,
-  "successful_this_run": 225,
+  "checked_this_run": 257,
+  "vpn_engine_failed_before_checks": 1,
+  "successful_this_run": 172,
   "failed_this_run": 85,
   "rejected_this_run": 85,
-  "published_nodes": 225,
-  "mihomo_nodes": 225,
+  "published_nodes": 172,
+  "mihomo_nodes": 172,
   "mihomo_skipped": 0,
   "mihomo_output_warning": null,
   "output_validation": {
-    "published_nodes": 225,
-    "mihomo_nodes": 225,
+    "published_nodes": 172,
+    "mihomo_nodes": 172,
     "published_equals_mihomo": true,
     "conversion_failed": 0,
     "conversion_errors": []
   },
   "protocol_stats": {
-    "vless": 158,
-    "hysteria2": 67
+    "vless": 107,
+    "hysteria2": 65
   },
   "probe_stats": {
     "google_204": {
-      "checked": 308,
-      "passed": 250,
+      "checked": 256,
+      "passed": 198,
       "failed": 58
     },
     "chatgpt": {
-      "checked": 250,
-      "passed": 238,
-      "failed": 12
+      "checked": 198,
+      "passed": 192,
+      "failed": 6
     },
     "chatgpt_auth_tls": {
-      "checked": 238,
-      "passed": 235,
-      "failed": 3
+      "checked": 192,
+      "passed": 192,
+      "failed": 0
     },
     "chatgpt_android_tls": {
-      "checked": 235,
-      "passed": 233,
-      "failed": 2
+      "checked": 192,
+      "passed": 191,
+      "failed": 1
     },
     "youtube_204": {
-      "checked": 233,
-      "passed": 230,
-      "failed": 3
+      "checked": 191,
+      "passed": 187,
+      "failed": 4
     },
     "telegram_https": {
-      "checked": 230,
-      "passed": 225,
-      "failed": 5
+      "checked": 187,
+      "passed": 172,
+      "failed": 15
     },
     "telegram_mtproto": {
-      "checked": 225,
-      "passed": 225,
+      "checked": 172,
+      "passed": 172,
       "failed": 0
     }
   },
@@ -104,14 +105,6 @@
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: too slow (5.48s)"
-    },
-    {
-      "protocol": "vless",
-      "error": "google_204: curl: (35) Recv failure: Connection reset by peer\n"
-    },
-    {
-      "protocol": "vless",
       "error": "google_204: curl: (35) Recv failure: Connection reset by peer\n"
     },
     {
@@ -136,31 +129,39 @@
     },
     {
       "protocol": "vless",
-      "error": "google_204: curl: (28) Connection timed out after 9002 milliseconds\n"
+      "error": "google_204: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to www.gstatic.com:443 \n"
     },
     {
       "protocol": "vless",
-      "error": "google_204: curl: (28) Connection timed out after 9002 milliseconds\n"
+      "error": "google_204: too slow (5.99s)"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "error": "google_204: too slow (5.77s)"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "error": "google_204: too slow (5.84s)"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "error": "google_204: too slow (5.54s)"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "error": "google_204: too slow (5.82s)"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
+    },
+    {
+      "protocol": "vless",
+      "error": "google_204: curl: (35) Recv failure: Connection reset by peer\n"
+    },
+    {
+      "protocol": "vless",
+      "error": "google_204: curl: (35) Recv failure: Connection reset by peer\n"
     },
     {
       "protocol": "vless",
@@ -172,11 +173,11 @@
     }
   ],
   "run_statistics": {
-    "checked_nodes": 310,
-    "published_nodes": 225,
-    "duration_seconds": 85.93
+    "checked_nodes": 257,
+    "published_nodes": 172,
+    "duration_seconds": 63.92
   },
-  "run_duration_seconds": 85.93,
+  "run_duration_seconds": 63.92,
   "admission_rule": "Only nodes that pass geography and all mandatory service probes are published. Any failed check removes the node immediately.",
   "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run."
 }
