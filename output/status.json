@@ -1,5 +1,5 @@
 {
-  "updated_at": 1787169236,
+  "updated_at": 1787170699,
   "source_nodes_unique": 267,
   "source_duplicates_removed": 110,
   "source_stats": {
@@ -13,111 +13,20 @@
     "vmess": 9,
     "trojan": 11
   },
-  "state_nodes_loaded": 173,
-  "merged_candidates_before_dedup": 440,
-  "merged_candidates_after_dedup": 402,
-  "merged_duplicates_removed": 38,
+  "state_nodes_loaded": 38,
+  "merged_candidates_before_dedup": 305,
+  "merged_candidates_after_dedup": 296,
+  "merged_duplicates_removed": 9,
   "candidate_dedup_policy": "conservative effective configuration; fp/fingerprint and unknown operational fields are significant; display name/fragment and query order are cosmetic; VLESS omitted encryption/security normalize to none; repeated query fields are kept conservatively distinct",
-  "geography_policy": "mandatory observed VPN exit-country filter before service probes; Europe plus transcontinental/border countries are accepted",
-  "accepted_exit_country_codes": [
-    "AD",
-    "AL",
-    "AM",
-    "AT",
-    "AX",
-    "AZ",
-    "BA",
-    "BE",
-    "BG",
-    "BY",
-    "CH",
-    "CY",
-    "CZ",
-    "DE",
-    "DK",
-    "EE",
-    "ES",
-    "FI",
-    "FO",
-    "FR",
-    "GB",
-    "GE",
-    "GG",
-    "GI",
-    "GR",
-    "HR",
-    "HU",
-    "IE",
-    "IM",
-    "IS",
-    "IT",
-    "JE",
-    "KZ",
-    "LI",
-    "LT",
-    "LU",
-    "LV",
-    "MC",
-    "MD",
-    "ME",
-    "MK",
-    "MT",
-    "NL",
-    "NO",
-    "PL",
-    "PT",
-    "RO",
-    "RS",
-    "RU",
-    "SE",
-    "SI",
-    "SJ",
-    "SK",
-    "SM",
-    "TR",
-    "UA",
-    "VA",
-    "XK"
-  ],
+  "geography_policy": "disabled; geography is not checked and never affects admission",
   "merged_protocol_stats": {
-    "vless": 307,
-    "hysteria2": 75,
+    "vless": 211,
+    "hysteria2": 65,
     "vmess": 9,
     "trojan": 11
   },
-  "checked_this_run": 402,
-  "vpn_engine_failed_before_exit_geo": 12,
-  "exit_geo_stats": {
-    "checked": 390,
-    "european": 197,
-    "non_european": 42,
-    "lookup_failed": 151,
-    "country_stats": {
-      "JP": 5,
-      "PL": 14,
-      "KZ": 6,
-      "ES": 10,
-      "KR": 6,
-      "SE": 8,
-      "NO": 10,
-      "BR": 1,
-      "NL": 59,
-      "GB": 29,
-      "US": 13,
-      "DE": 32,
-      "TR": 1,
-      "CH": 1,
-      "FR": 17,
-      "CA": 3,
-      "RO": 4,
-      "SG": 2,
-      "TW": 8,
-      "HK": 4,
-      "FI": 2,
-      "EE": 4
-    }
-  },
-  "service_candidates_after_exit_geo": 197,
+  "checked_this_run": 296,
+  "vpn_engine_failed_before_network_prefilter": 12,
   "network_prefilter_policy": {
     "transport": "real DNS-over-TCP via the node SOCKS5 tunnel",
     "query": "example.com",
@@ -130,67 +39,68 @@
   },
   "network_prefilter_stats": {
     "cloudflare_1111": {
-      "checked": 197,
-      "passed": 42,
-      "failed": 155,
-      "average_latency_ms": 117.5
+      "checked": 284,
+      "passed": 24,
+      "failed": 260,
+      "average_latency_ms": 124.0
     },
     "google_8888": {
-      "checked": 42,
-      "passed": 39,
+      "checked": 24,
+      "passed": 21,
       "failed": 3,
-      "average_latency_ms": 126.1
+      "average_latency_ms": 135.2
     },
-    "passed_both": 39
+    "passed_both": 21
   },
-  "service_candidates_after_network_prefilter": 39,
-  "successful_this_run": 38,
-  "failed_this_run": 364,
-  "rejected_this_run": 364,
-  "published_nodes": 38,
-  "mihomo_nodes": 38,
+  "service_candidates_after_network_prefilter": 21,
+  "successful_this_run": 21,
+  "failed_this_run": 275,
+  "rejected_this_run": 275,
+  "published_nodes": 21,
+  "mihomo_nodes": 21,
   "mihomo_skipped": 0,
   "mihomo_output_warning": null,
   "output_validation": {
-    "published_nodes": 38,
-    "mihomo_nodes": 38,
+    "published_nodes": 21,
+    "mihomo_nodes": 21,
     "published_equals_mihomo": true,
     "conversion_failed": 0,
     "conversion_errors": []
   },
   "protocol_stats": {
-    "hysteria2": 28,
-    "vless": 10
+    "vless": 5,
+    "hysteria2": 15,
+    "vmess": 1
   },
   "probe_stats": {
     "chatgpt": {
-      "checked": 39,
-      "passed": 39,
+      "checked": 21,
+      "passed": 21,
       "failed": 0
     },
     "chatgpt_auth_tls": {
-      "checked": 39,
-      "passed": 39,
+      "checked": 21,
+      "passed": 21,
       "failed": 0
     },
     "chatgpt_android_tls": {
-      "checked": 39,
-      "passed": 39,
+      "checked": 21,
+      "passed": 21,
       "failed": 0
     },
     "youtube_204": {
-      "checked": 39,
-      "passed": 38,
-      "failed": 1
+      "checked": 21,
+      "passed": 21,
+      "failed": 0
     },
     "telegram_https": {
-      "checked": 38,
-      "passed": 38,
+      "checked": 21,
+      "passed": 21,
       "failed": 0
     },
     "telegram_mtproto": {
-      "checked": 38,
-      "passed": 38,
+      "checked": 21,
+      "passed": 21,
       "failed": 0
     }
   },
@@ -200,91 +110,91 @@
   "failure_samples": [
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (28) Connection timed out after 5000 milliseconds"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (28) Connection timed out after 5000 milliseconds"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (28) Connection timed out after 5001 milliseconds"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (28) Connection timed out after 5000 milliseconds"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (28) Connection timed out after 5001 milliseconds"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (28) Connection timed out after 5001 milliseconds"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: Cloudflare trace failed: curl: (35) Recv failure: Connection reset by peer"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: non-European exit country JP (185.18.222.128)"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: non-European exit country JP (185.18.222.128)"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     },
     {
       "protocol": "vless",
-      "error": "exit_geo: non-European exit country JP (185.18.222.128)"
+      "error": "cloudflare_1111: DNS-over-TCP check failed: TimeoutError: "
     }
   ],
   "run_statistics": {
-    "checked_nodes": 402,
-    "published_nodes": 38,
-    "duration_seconds": 28.44
+    "checked_nodes": 296,
+    "published_nodes": 21,
+    "duration_seconds": 9.22
   },
-  "run_duration_seconds": 28.44,
-  "admission_rule": "A node must first expose an accepted European/transcontinental VPN exit country, then pass DNS-over-TCP latency checks to both 1.1.1.1 and 8.8.8.8 at <=200 ms each, then pass every existing mandatory service probe. Failure at any stage rejects the node immediately.",
+  "run_duration_seconds": 9.22,
+  "admission_rule": "Geography is not checked. A node must pass DNS-over-TCP latency checks to both 1.1.1.1 and 8.8.8.8 at <=200 ms each, then pass every existing mandatory service probe. Failure at any active stage rejects the node immediately.",
   "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run."
 }
