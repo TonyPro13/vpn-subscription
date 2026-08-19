@@ -77,15 +77,6 @@ TELEGRAM_MTPROTO_ENDPOINTS = (
 
 MIHOMO_AUTO_TEST_URL = "https://cp.cloudflare.com"
 
-# Exit geography is determined through the already-established VPN tunnel.
-# Cloudflare trace returns the apparent public IP and a two-letter country code
-# for the request source, so this measures the VPN EXIT rather than the URI host.
-EXIT_GEO_PROBE_URL = os.getenv(
-    "EXIT_GEO_PROBE_URL",
-    "https://cloudflare.com/cdn-cgi/trace",
-)
-EXIT_GEO_PROBE_TIMEOUT = float(os.getenv("EXIT_GEO_PROBE_TIMEOUT_SECONDS", "5"))
-
 # Mandatory pre-service network quality filter.
 # Each resolver is tested with a real DNS-over-TCP query through the already
 # established local SOCKS5 tunnel. The measured latency covers only the DNS
@@ -99,19 +90,6 @@ NETWORK_PREFILTER_TARGETS = (
     ("cloudflare_1111", "1.1.1.1"),
     ("google_8888", "8.8.8.8"),
 )
-
-# Europe plus transcontinental / near-European border countries accepted by
-# project policy. This is deliberately broader than EU membership.
-EUROPE_EXIT_COUNTRY_CODES = frozenset({
-    # Europe
-    "AD", "AL", "AT", "AX", "BA", "BE", "BG", "BY", "CH", "CY", "CZ",
-    "DE", "DK", "EE", "ES", "FI", "FO", "FR", "GB", "GG", "GI", "GR",
-    "HR", "HU", "IE", "IM", "IS", "IT", "JE", "LI", "LT", "LU", "LV",
-    "MC", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS",
-    "RU", "SE", "SI", "SJ", "SK", "SM", "UA", "VA", "XK",
-    # Transcontinental / border countries accepted as "near Europe"
-    "AM", "AZ", "GE", "KZ", "TR",
-})
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 
@@ -180,8 +158,6 @@ class Probe:
     ok: bool
     latency_ms: float | None = None
     error: str | None = None
-    exit_ip: str | None = None
-    exit_country: str | None = None
 
 
 def q1(q, key, default=""):
@@ -1123,114 +1099,6 @@ async def curl_url_probe(port: int, name: str, url: str, ok_codes, quality_max_s
     )
 
 
-def parse_cloudflare_trace(text: str):
-    """
-    Parse Cloudflare /cdn-cgi/trace response and return (exit_ip, country_code).
-
-    Both values must be present and valid. Unknown/non-standard locations are
-    rejected rather than guessed.
-    """
-    fields = {}
-    for raw_line in (text or "").splitlines():
-        if "=" not in raw_line:
-            continue
-        key, value = raw_line.split("=", 1)
-        fields[key.strip().lower()] = value.strip()
-
-    exit_ip = fields.get("ip", "")
-    country = fields.get("loc", "").upper()
-
-    try:
-        parsed_ip = ipaddress.ip_address(exit_ip)
-    except ValueError:
-        raise ValueError("Cloudflare trace did not return a valid exit IP")
-
-    if not parsed_ip.is_global:
-        raise ValueError(f"Cloudflare trace returned non-global exit IP: {exit_ip}")
-
-    if len(country) != 2 or not country.isalpha():
-        raise ValueError(
-            f"Cloudflare trace did not return a valid 2-letter country code: {country!r}"
-        )
-
-    return str(parsed_ip), country
-
-
-async def exit_geo_probe(port: int, exit_geo_stats: dict):
-    """
-    Mandatory pre-cascade filter based on the VPN's observed EXIT.
-
-    The request itself goes through the temporary VPN SOCKS tunnel. Therefore
-    `ip`/`loc` describe the public egress seen by Cloudflare, not the server
-    address embedded in the source URI.
-
-    Unknown/unverifiable geography is rejected. Non-European exits are rejected
-    before the expensive service cascade.
-    """
-    exit_geo_stats["checked"] += 1
-
-    proc = await asyncio.create_subprocess_exec(
-        "curl",
-        "-sS",
-        "--max-time",
-        str(max(1, int(EXIT_GEO_PROBE_TIMEOUT))),
-        "--proxy",
-        f"socks5h://127.0.0.1:{port}",
-        EXIT_GEO_PROBE_URL,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-
-    try:
-        out, err = await asyncio.wait_for(
-            proc.communicate(),
-            timeout=EXIT_GEO_PROBE_TIMEOUT + 2,
-        )
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.communicate()
-        exit_geo_stats["lookup_failed"] += 1
-        return Probe(False, error="exit_geo: timeout")
-
-    if proc.returncode != 0:
-        exit_geo_stats["lookup_failed"] += 1
-        error_text = err.decode(errors="replace").strip()
-        return Probe(
-            False,
-            error=f"exit_geo: Cloudflare trace failed: {error_text[-300:]}",
-        )
-
-    try:
-        exit_ip, country = parse_cloudflare_trace(
-            out.decode(errors="replace")
-        )
-    except Exception as e:
-        exit_geo_stats["lookup_failed"] += 1
-        return Probe(
-            False,
-            error=f"exit_geo: {type(e).__name__}: {e}",
-        )
-
-    country_stats = exit_geo_stats["country_stats"]
-    country_stats[country] = country_stats.get(country, 0) + 1
-
-    if country not in EUROPE_EXIT_COUNTRY_CODES:
-        exit_geo_stats["non_european"] += 1
-        return Probe(
-            False,
-            error=f"exit_geo: non-European exit country {country} ({exit_ip})",
-            exit_ip=exit_ip,
-            exit_country=country,
-        )
-
-    exit_geo_stats["european"] += 1
-    return Probe(
-        True,
-        exit_ip=exit_ip,
-        exit_country=country,
-    )
-
-
 def _build_dns_query(name: str):
     labels = [label.encode("idna") for label in name.rstrip(".").split(".") if label]
     if not labels:
@@ -1499,13 +1367,12 @@ async def quality_probe(
 async def run_probe(
     uri: str,
     probe_stats: dict,
-    exit_geo_stats: dict,
     network_prefilter_stats: dict,
 ):
     """
-    Creates a temporary VPN tunnel, verifies the observed EXIT geography,
-    requires both global DNS directions to respond within 200 ms, and only then
-    runs the existing mandatory service cascade.
+    Creates a temporary VPN tunnel, requires both global DNS directions to
+    respond within 200 ms, and only then runs the existing mandatory service
+    cascade. Geography is not checked and never affects admission.
     """
     engine = None
     process = None
@@ -1543,12 +1410,6 @@ async def run_probe(
         if not await wait_port(port):
             return Probe(False, error=f"{scheme}: socks port not opened")
 
-        # Geography is a mandatory pre-cascade filter, but it is based on the
-        # actual VPN EXIT observed through the tunnel rather than on URI host/IP.
-        geo_result = await exit_geo_probe(port, exit_geo_stats)
-        if not geo_result.ok:
-            return geo_result
-
         # Two mandatory global network directions, both <= 200 ms.
         # They run before the existing ChatGPT/YouTube/Telegram cascade.
         network_result = await network_prefilter_probe(
@@ -1556,15 +1417,9 @@ async def run_probe(
             network_prefilter_stats,
         )
         if not network_result.ok:
-            network_result.exit_ip = geo_result.exit_ip
-            network_result.exit_country = geo_result.exit_country
             return network_result
 
-        result = await quality_probe(port, probe_stats)
-        result.exit_ip = geo_result.exit_ip
-        result.exit_country = geo_result.exit_country
-
-        return result
+        return await quality_probe(port, probe_stats)
 
     except Exception as e:
         return Probe(False, error=f"{type(e).__name__}: {e}")
@@ -2116,22 +1971,21 @@ def yaml_dump(data):
 async def safe_probe(
     uri: str,
     probe_stats: dict,
-    exit_geo_stats: dict,
     network_prefilter_stats: dict,
 ):
     """
     Full VPN probe wrapper.
 
-    Starts the temporary Xray/sing-box tunnel, checks exit geography, runs the
-    mandatory 1.1.1.1 / 8.8.8.8 network prefilter, and only then runs the
-    existing service cascade. Any exception means the node fails immediately.
+    Starts the temporary Xray/sing-box tunnel, runs the mandatory
+    1.1.1.1 / 8.8.8.8 network prefilter, and only then runs the existing
+    service cascade. Geography is not checked. Any exception means the node
+    fails immediately.
     """
     async with VPN_PROCESS_SEMAPHORE:
         try:
             return await run_probe(
                 uri,
                 probe_stats,
-                exit_geo_stats,
                 network_prefilter_stats,
             )
         except Exception as e:
@@ -2186,8 +2040,9 @@ async def main():
         scheme = uri.split("://", 1)[0].lower()
         merged_protocol_stats[scheme] = merged_protocol_stats.get(scheme, 0) + 1
 
-    # Every deduplicated candidate gets a real VPN tunnel. Admission is then:
-    # exit geography -> 1.1.1.1 <= 200 ms -> 8.8.8.8 <= 200 ms -> service cascade.
+    # Every deduplicated candidate gets a real VPN tunnel. Admission is:
+    # 1.1.1.1 <= 200 ms -> 8.8.8.8 <= 200 ms -> existing service cascade.
+    # Geography is not checked and never rejects a candidate.
     current = {}
     for key, uri in merged.items():
         country = None
@@ -2210,14 +2065,6 @@ async def main():
             "telegram_https",
             "telegram_mtproto",
         )
-    }
-
-    exit_geo_stats = {
-        "checked": 0,
-        "european": 0,
-        "non_european": 0,
-        "lookup_failed": 0,
-        "country_stats": {},
     }
 
     network_prefilter_stats = {
@@ -2244,7 +2091,6 @@ async def main():
             safe_probe(
                 current[k]["uri"],
                 probe_stats,
-                exit_geo_stats,
                 network_prefilter_stats,
             )
             for k in keys
@@ -2261,8 +2107,6 @@ async def main():
             successes += 1
             current[key]["last_latency_ms"] = result.latency_ms
             current[key]["last_error"] = None
-            current[key]["exit_ip"] = result.exit_ip
-            current[key]["exit_country"] = result.exit_country
         else:
             failures += 1
             if len(failure_samples) < 20:
@@ -2313,9 +2157,11 @@ async def main():
             else None
         )
 
-    # Only candidates that never reached the exit-geo request failed before
-    # geography (normally VPN engine/config/startup failures).
-    engine_failed_before_exit_geo = len(keys) - exit_geo_stats["checked"]
+    # Candidates that never reached the first network probe failed while
+    # starting the VPN engine/config/SOCKS tunnel.
+    engine_failed_before_network_prefilter = (
+        len(keys) - network_prefilter_stats["cloudflare_1111"]["checked"]
+    )
 
     status = {
         "updated_at": now,
@@ -2328,13 +2174,10 @@ async def main():
         "merged_candidates_after_dedup": len(merged),
         "merged_duplicates_removed": merged_candidates_before_dedup - len(merged),
         "candidate_dedup_policy": "conservative effective configuration; fp/fingerprint and unknown operational fields are significant; display name/fragment and query order are cosmetic; VLESS omitted encryption/security normalize to none; repeated query fields are kept conservatively distinct",
-        "geography_policy": "mandatory observed VPN exit-country filter before service probes; Europe plus transcontinental/border countries are accepted",
-        "accepted_exit_country_codes": sorted(EUROPE_EXIT_COUNTRY_CODES),
+        "geography_policy": "disabled; geography is not checked and never affects admission",
         "merged_protocol_stats": merged_protocol_stats,
         "checked_this_run": len(keys),
-        "vpn_engine_failed_before_exit_geo": engine_failed_before_exit_geo,
-        "exit_geo_stats": exit_geo_stats,
-        "service_candidates_after_exit_geo": exit_geo_stats["european"],
+        "vpn_engine_failed_before_network_prefilter": engine_failed_before_network_prefilter,
         "network_prefilter_policy": {
             "transport": "real DNS-over-TCP via the node SOCKS5 tunnel",
             "query": NETWORK_PREFILTER_QUERY_NAME,
@@ -2374,7 +2217,7 @@ async def main():
             "duration_seconds": duration,
         },
         "run_duration_seconds": duration,
-        "admission_rule": "A node must first expose an accepted European/transcontinental VPN exit country, then pass DNS-over-TCP latency checks to both 1.1.1.1 and 8.8.8.8 at <=200 ms each, then pass every existing mandatory service probe. Failure at any stage rejects the node immediately.",
+        "admission_rule": "Geography is not checked. A node must pass DNS-over-TCP latency checks to both 1.1.1.1 and 8.8.8.8 at <=200 ms each, then pass every existing mandatory service probe. Failure at any active stage rejects the node immediately.",
         "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run.",
     }
 
