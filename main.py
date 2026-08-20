@@ -6,6 +6,7 @@ import ipaddress
 import json
 import os
 import re
+import shutil
 import socket
 import struct
 import tempfile
@@ -13,17 +14,13 @@ import time
 import secrets
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import parse_qs, parse_qsl, unquote, urlsplit
-from urllib.request import Request, urlopen
+from urllib.parse import parse_qs, parse_qsl, quote, unquote, urlencode, urlsplit
+from urllib.request import ProxyHandler, Request, build_opener, urlopen
 
 SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
-    "https://raw.githubusercontent.com/3inker/v2ray-subscription/refs/heads/main/subs/all_not_ru.txt",
-    "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/super-sub.txt",
-    "https://raw.githubusercontent.com/luxxuria/harvester/refs/heads/main/top_600.txt",
-    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/refs/heads/main/Best-Results/proxies.txt",
 ]
 
 SUPPORTED = {"vless", "vmess", "trojan", "ss", "hysteria2", "hy2"}
@@ -32,7 +29,6 @@ OUT_DIR = Path("output")
 BIN_DIR = Path("bin")
 XRAY = BIN_DIR / "xray"
 SINGBOX = BIN_DIR / "sing-box"
-MIHOMO = Path(os.getenv("MIHOMO_BIN", str(BIN_DIR / "mihomo")))
 GEOIP_COUNTRY_DB = Path("data/GeoLite2-Country.mmdb")
 
 CHEAP_PROBE_SEMAPHORE = None
@@ -92,17 +88,29 @@ WHATSAPP_PROBE_ENDPOINTS = (
 
 WHATSAPP_PROBE_PORTS = (443, 5222)
 
-INSTAGRAM_PROBE_TIMEOUT = float(
-    os.getenv("INSTAGRAM_PROBE_TIMEOUT_SECONDS", "3")
+INSTAGRAM_PROBE_URL = os.getenv(
+    "INSTAGRAM_PROBE_URL",
+    "https://www.instagram.com/",
 )
 
-INSTAGRAM_PROBE_URLS = (
-    ("instagram_web", "https://www.instagram.com/"),
-    ("instagram_app_api", "https://i.instagram.com/api/v1/"),
+# One Cloudflare target is used everywhere Mihomo measures node latency:
+# - preliminary dead-node filter before the service cascade;
+# - final delay measurement used for TOP-100 ordering;
+# - client-side provider/AUTO health checks.
+MIHOMO_AUTO_TEST_URL = "https://cp.cloudflare.com"
+
+MIHOMO_PING_TEST_URL = os.getenv(
+    "MIHOMO_PING_TEST_URL",
+    MIHOMO_AUTO_TEST_URL,
 )
 
-MIHOMO_AUTO_TEST_URL = "https://www.gstatic.com/generate_204"
-MIHOMO_PROBE_TIMEOUT = float(os.getenv("MIHOMO_PROBE_TIMEOUT_SECONDS", "5"))
+MIHOMO_PING_TIMEOUT_MS = int(
+    os.getenv("MIHOMO_PING_TIMEOUT_MS", "5000")
+)
+
+MIHOMO_START_TIMEOUT = float(
+    os.getenv("MIHOMO_START_TIMEOUT_SECONDS", "5")
+)
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 MAX_PUBLISHED_NODES = 100
@@ -1116,91 +1124,6 @@ async def whatsapp_core_probe(local_port: int):
     )
 
 
-async def _instagram_https_probe(local_port: int, name: str, url: str):
-    """Require a real HTTPS response through the node, regardless of status code."""
-    proc = await asyncio.create_subprocess_exec(
-        "curl",
-        "-sS",
-        "--max-time",
-        str(INSTAGRAM_PROBE_TIMEOUT),
-        "--proxy",
-        f"socks5h://127.0.0.1:{local_port}",
-        "-o",
-        os.devnull,
-        "-w",
-        "%{http_code}",
-        url,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-
-    try:
-        out, err = await asyncio.wait_for(
-            proc.communicate(),
-            timeout=INSTAGRAM_PROBE_TIMEOUT + 2,
-        )
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.communicate()
-        return Probe(False, error=f"{name}: timeout")
-
-    code = out.decode(errors="replace").strip()
-
-    if proc.returncode != 0:
-        error_text = err.decode(errors="replace").strip()
-        return Probe(
-            False,
-            error=f"{name}: TLS/HTTPS failed: {error_text[-300:]}",
-        )
-
-    if not code or code == "000":
-        return Probe(False, error=f"{name}: no HTTP response")
-
-    return Probe(True)
-
-
-async def instagram_core_probe(local_port: int):
-    """
-    Fast mandatory Instagram reachability gate.
-
-    The web frontend and the mobile-app API are checked in parallel. Both must
-    return a real HTTP response within the dedicated timeout. Any actual HTTP
-    status is accepted, so redirects/rate limits/auth responses still prove
-    that the Instagram endpoint is reachable through the VPN.
-    """
-    tasks = {
-        asyncio.create_task(_instagram_https_probe(local_port, name, url)): name
-        for name, url in INSTAGRAM_PROBE_URLS
-    }
-    pending = set(tasks)
-
-    try:
-        while pending:
-            done, pending = await asyncio.wait(
-                pending,
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-
-            for task in done:
-                result = await task
-                if not result.ok:
-                    for other in pending:
-                        other.cancel()
-                    if pending:
-                        await asyncio.gather(*pending, return_exceptions=True)
-                    return Probe(False, error=f"instagram_core: {result.error}")
-
-        # Availability gate only: do not change the existing TOP-100 latency
-        # ranking with Instagram timing.
-        return Probe(True)
-
-    finally:
-        for task in pending:
-            task.cancel()
-        if pending:
-            await asyncio.gather(*pending, return_exceptions=True)
-
-
 def _mtproto_message_id() -> int:
     return int(time.time() * (1 << 32)) & ~3
 
@@ -1369,13 +1292,27 @@ async def curl_url_probe(port: int, name: str, url: str, ok_codes, quality_max_s
     )
 
 
+async def instagram_https_probe(port: int):
+    """Mandatory Instagram availability gate through the node SOCKS tunnel.
+
+    A real HTTPS response from www.instagram.com is enough to prove reachability.
+    The exact HTTP status is intentionally not restricted because Instagram may
+    legitimately return redirects or access-control responses to unauthenticated
+    clients. This probe is availability-only and does not affect TOP-100 ranking.
+    """
+    result = await curl_tls_probe(port, "instagram_https", INSTAGRAM_PROBE_URL)
+    if not result.ok:
+        return result
+    return Probe(True)
+
+
 async def quality_probe(
     port: int,
     probe_stats: dict,
 ):
     """Full mandatory cascade:
     ChatGPT (3 checks), YouTube, Telegram HTTPS, Telegram MTProto, WhatsApp core,
-    Instagram core. Any failure rejects the node immediately.
+    Instagram HTTPS. Any failure rejects the node immediately.
     """
     latencies = []
 
@@ -1446,11 +1383,12 @@ async def quality_probe(
     if failed:
         return failed
 
-    # Instagram core check: web frontend + mobile app API in parallel; both required.
-    probe_stats["instagram_core"]["checked"] += 1
+    # Instagram availability check. This is a gate only and does not contribute
+    # latency to the TOP-100 ranking.
+    probe_stats["instagram_https"]["checked"] += 1
     async with CHEAP_PROBE_SEMAPHORE:
-        result = await instagram_core_probe(port)
-    failed = await count_probe("instagram_core", result)
+        result = await instagram_https_probe(port)
+    failed = await count_probe("instagram_https", result)
     if failed:
         return failed
 
@@ -1820,6 +1758,217 @@ def mihomo_proxy_from_uri(uri: str, name: str):
     raise ValueError(f"unsupported mihomo protocol: {scheme}")
 
 
+def resolve_mihomo_binary() -> str:
+    """Resolve the Mihomo executable used for both native delay-test stages."""
+    explicit = os.getenv("MIHOMO_BINARY", "").strip()
+    candidates = []
+    if explicit:
+        candidates.append(Path(explicit))
+    candidates.extend((BIN_DIR / "mihomo", BIN_DIR / "mihomo.exe"))
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+
+    path_binary = shutil.which("mihomo")
+    if path_binary:
+        return path_binary
+
+    raise FileNotFoundError(
+        "Mihomo binary not found. Put it at bin/mihomo (or bin/mihomo.exe) "
+        "or set MIHOMO_BINARY. Preliminary filtering and TOP-100 ranking "
+        "require real Mihomo delay tests."
+    )
+
+
+def _read_mihomo_group_delay(controller_port: int, group_name: str):
+    params = urlencode({
+        "url": MIHOMO_PING_TEST_URL,
+        "timeout": MIHOMO_PING_TIMEOUT_MS,
+    })
+    endpoint = (
+        f"http://127.0.0.1:{controller_port}/group/"
+        f"{quote(group_name, safe='')}/delay?{params}"
+    )
+    request = Request(
+        endpoint,
+        headers={"Accept": "application/json", "User-Agent": "VPN-Subscription-Builder/0.3"},
+    )
+    http_timeout = max(10.0, MIHOMO_PING_TIMEOUT_MS / 1000 + 10.0)
+    # Do not let HTTP_PROXY/HTTPS_PROXY environment variables intercept the
+    # localhost Mihomo controller request.
+    opener = build_opener(ProxyHandler({}))
+    with opener.open(request, timeout=http_timeout) as response:
+        payload = json.loads(response.read().decode("utf-8", errors="strict"))
+    if not isinstance(payload, dict):
+        raise RuntimeError("Mihomo group delay API returned a non-object response")
+    return payload
+
+
+async def measure_nodes_with_mihomo(
+    nodes,
+    *,
+    stage: str,
+    latency_key: str,
+    error_key: str,
+    sort_by_delay: bool = False,
+):
+    """Run one native Mihomo group delay-test over the supplied nodes.
+
+    A node passes this stage only when Mihomo itself returns a positive delay.
+    The same Cloudflare URL and timeout are used by the preliminary and final
+    stages. The preliminary stage is an admission filter; the final stage is
+    also the sole source of the TOP-100 ordering metric.
+    """
+    nodes = list(nodes)
+    stage_slug = re.sub(r"[^A-Za-z0-9_-]+", "-", stage).strip("-") or "ping"
+    stats = {
+        "stage": stage,
+        "test_url": MIHOMO_PING_TEST_URL,
+        "timeout_ms": MIHOMO_PING_TIMEOUT_MS,
+        "candidates": len(nodes),
+        "converted": 0,
+        "conversion_failed": 0,
+        "measured": 0,
+        "measurement_failed": 0,
+    }
+    if not nodes:
+        return [], stats, []
+
+    mihomo_binary = resolve_mihomo_binary()
+    stats["binary"] = mihomo_binary
+    controller_port = free_port()
+    mixed_port = free_port()
+    group_name = f"MIHOMO-{stage_slug.upper()}"
+
+    proxies = []
+    name_to_item = {}
+    errors = []
+
+    for index, item in enumerate(nodes, start=1):
+        node_name = f"{stage_slug}-{index:06d}"
+        item[latency_key] = None
+        item[error_key] = None
+        try:
+            proxy = mihomo_proxy_from_uri(item["uri"], node_name)
+        except Exception as e:
+            error = f"conversion: {type(e).__name__}: {e}"
+            item[error_key] = error
+            errors.append({
+                "name": node_name,
+                "protocol": item["uri"].split("://", 1)[0].lower(),
+                "error": error,
+            })
+            continue
+        proxies.append(proxy)
+        name_to_item[node_name] = item
+
+    stats["converted"] = len(proxies)
+    stats["conversion_failed"] = len(nodes) - len(proxies)
+
+    if not proxies:
+        return [], stats, errors
+
+    config = {
+        "mixed-port": mixed_port,
+        "allow-lan": False,
+        "mode": "rule",
+        "log-level": "warning",
+        "external-controller": f"127.0.0.1:{controller_port}",
+        "proxies": proxies,
+        "proxy-groups": [{
+            "name": group_name,
+            "type": "select",
+            "proxies": [proxy["name"] for proxy in proxies],
+        }],
+        "rules": [f"MATCH,{group_name}"],
+    }
+
+    process = None
+    delays = {}
+    with tempfile.TemporaryDirectory(prefix=f"mihomo-{stage_slug}-") as tmpdir:
+        cfg_file = Path(tmpdir) / "config.yaml"
+        stderr_file = Path(tmpdir) / "mihomo.stderr.log"
+        cfg_file.write_text(yaml_dump(config), encoding="utf-8")
+
+        try:
+            with stderr_file.open("wb") as stderr_stream:
+                process = await asyncio.create_subprocess_exec(
+                    mihomo_binary,
+                    "-d",
+                    tmpdir,
+                    "-f",
+                    str(cfg_file),
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=stderr_stream,
+                )
+
+            if not await wait_port(controller_port, timeout=MIHOMO_START_TIMEOUT):
+                if process.returncode is None:
+                    process.terminate()
+                    try:
+                        await asyncio.wait_for(process.wait(), timeout=2)
+                    except Exception:
+                        process.kill()
+                        await process.wait()
+                try:
+                    stderr_text = stderr_file.read_text(encoding="utf-8", errors="replace")[-1200:]
+                except Exception:
+                    stderr_text = ""
+                raise RuntimeError(
+                    f"Mihomo controller did not start for {stage}"
+                    + (f": {stderr_text}" if stderr_text else "")
+                )
+
+            delays = await asyncio.to_thread(
+                _read_mihomo_group_delay,
+                controller_port,
+                group_name,
+            )
+
+        finally:
+            if process is not None and process.returncode is None:
+                try:
+                    process.terminate()
+                    await asyncio.wait_for(process.wait(), timeout=2)
+                except Exception:
+                    try:
+                        process.kill()
+                        await process.wait()
+                    except Exception:
+                        pass
+
+    passed = []
+    for node_name, item in name_to_item.items():
+        raw_delay = delays.get(node_name)
+        try:
+            delay = float(raw_delay)
+        except (TypeError, ValueError):
+            delay = 0.0
+
+        if delay <= 0:
+            error = "measurement: Mihomo returned no positive delay"
+            item[error_key] = error
+            errors.append({
+                "name": node_name,
+                "protocol": item["uri"].split("://", 1)[0].lower(),
+                "error": error,
+            })
+            continue
+
+        rounded_delay = round(delay, 1)
+        item[latency_key] = rounded_delay
+        item[error_key] = None
+        passed.append(item)
+
+    if sort_by_delay:
+        passed.sort(key=lambda item: item[latency_key])
+
+    stats["measured"] = len(passed)
+    stats["measurement_failed"] = len(proxies) - len(passed)
+    return passed, stats, errors
+
+
 
 def _source_display_name(uri: str):
     scheme = uri.split("://", 1)[0].lower()
@@ -2051,136 +2200,6 @@ def yaml_dump(data):
     return dump(data) + "\n"
 
 
-async def mihomo_real_probe(uri: str):
-    """
-    Final mandatory compatibility gate executed with Mihomo itself.
-
-    It uses the same URI-to-Mihomo conversion as mihomo-provider.yaml, starts
-    a temporary one-node Mihomo instance, and sends a real HTTP 204 request
-    through its local SOCKS/mixed port. A pass therefore proves both that the
-    converted node starts in Mihomo and that it can forward real traffic.
-    """
-    process = None
-    cfg_file = None
-    port = free_port()
-
-    try:
-        proxy = mihomo_proxy_from_uri(uri, "MIHOMO_PROBE")
-        config = {
-            "mixed-port": port,
-            "mode": "rule",
-            "log-level": "silent",
-            "proxies": [proxy],
-            "proxy-groups": [{
-                "name": "MIHOMO_PROBE_GROUP",
-                "type": "select",
-                "proxies": ["MIHOMO_PROBE"],
-            }],
-            "rules": ["MATCH,MIHOMO_PROBE_GROUP"],
-        }
-
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            suffix=".yaml",
-            delete=False,
-            encoding="utf-8",
-        ) as f:
-            f.write(yaml_dump(config))
-            cfg_file = f.name
-
-        process = await asyncio.create_subprocess_exec(
-            str(MIHOMO),
-            "-f",
-            cfg_file,
-            stdout=asyncio.subprocess.DEVNULL,
-            stderr=asyncio.subprocess.DEVNULL,
-        )
-
-        if not await wait_port(port):
-            return Probe(False, error="mihomo: mixed port not opened")
-
-        proc = await asyncio.create_subprocess_exec(
-            "curl",
-            "-sS",
-            "--max-time",
-            str(max(1, int(MIHOMO_PROBE_TIMEOUT))),
-            "--proxy",
-            f"socks5h://127.0.0.1:{port}",
-            "-o",
-            os.devnull,
-            "-w",
-            "%{http_code} %{time_total}",
-            MIHOMO_AUTO_TEST_URL,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-
-        try:
-            out, err = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=MIHOMO_PROBE_TIMEOUT + 2,
-            )
-        except asyncio.TimeoutError:
-            proc.kill()
-            await proc.communicate()
-            return Probe(False, error="mihomo: delay probe timeout")
-
-        result_text = out.decode(errors="replace").strip()
-        parts = result_text.split()
-        code = parts[0] if parts else ""
-
-        try:
-            total_seconds = float(parts[1])
-        except (IndexError, ValueError):
-            total_seconds = MIHOMO_PROBE_TIMEOUT + 1
-
-        if proc.returncode != 0:
-            error_text = err.decode(errors="replace").strip()
-            return Probe(
-                False,
-                error=f"mihomo: HTTP probe failed: {error_text[-300:]}",
-            )
-
-        if code != "204":
-            return Probe(
-                False,
-                latency_ms=round(total_seconds * 1000, 1),
-                error=f"mihomo: unexpected HTTP status {code or '000'}",
-            )
-
-        return Probe(
-            True,
-            latency_ms=round(total_seconds * 1000, 1),
-        )
-
-    except Exception as e:
-        return Probe(False, error=f"mihomo: {type(e).__name__}: {e}")
-
-    finally:
-        if process is not None:
-            try:
-                process.terminate()
-                await asyncio.wait_for(process.wait(), timeout=2)
-            except Exception:
-                try:
-                    process.kill()
-                    await process.wait()
-                except Exception:
-                    pass
-
-        if cfg_file:
-            try:
-                Path(cfg_file).unlink(missing_ok=True)
-            except Exception:
-                pass
-
-
-async def safe_mihomo_probe(uri: str):
-    """Run the final Mihomo gate under the existing VPN process limit."""
-    async with VPN_PROCESS_SEMAPHORE:
-        return await mihomo_real_probe(uri)
-
-
 async def safe_probe(uri: str, probe_stats: dict):
     """
     Full VPN probe wrapper.
@@ -2205,12 +2224,6 @@ async def main():
     run_started = time.monotonic()
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
-
-    if not MIHOMO.is_file() or not os.access(MIHOMO, os.X_OK):
-        raise FileNotFoundError(
-            f"Mandatory executable Mihomo binary not found: {MIHOMO}. "
-            "Set MIHOMO_BIN or place the executable at bin/mihomo."
-        )
 
     global CHEAP_PROBE_SEMAPHORE
     global VPN_PROCESS_SEMAPHORE
@@ -2250,9 +2263,9 @@ async def main():
         scheme = uri.split("://", 1)[0].lower()
         merged_protocol_stats[scheme] = merged_protocol_stats.get(scheme, 0) + 1
 
-    # Every deduplicated candidate gets a real VPN tunnel and proceeds directly
-    # to the existing service cascade. Geography and preliminary DNS latency
-    # filters are disabled.
+    # Every deduplicated candidate first enters the native Mihomo precheck.
+    # Only survivors get an Xray/sing-box tunnel and proceed to the service
+    # cascade. Geography and preliminary DNS latency filters remain disabled.
     current = {}
     for key, uri in merged.items():
         country = None
@@ -2261,9 +2274,33 @@ async def main():
         current[key] = {
             "uri": uri,
             "country": country,
+            "mihomo_precheck_latency_ms": None,
+            "mihomo_precheck_error": None,
+            "cascade_latency_ms": None,
+            "mihomo_final_latency_ms": None,
+            "mihomo_final_error": None,
             "last_latency_ms": None,
             "last_error": None,
         }
+
+    # First native Mihomo delay-test: remove dead/unmeasurable nodes before
+    # spending time on the expensive mandatory service cascade.
+    precheck_candidates = list(current.values())
+    mihomo_prepassed, mihomo_precheck_stats, mihomo_precheck_errors = (
+        await measure_nodes_with_mihomo(
+            precheck_candidates,
+            stage="precheck",
+            latency_key="mihomo_precheck_latency_ms",
+            error_key="mihomo_precheck_error",
+            sort_by_delay=False,
+        )
+    )
+    prepassed_keys = {canonical(item["uri"]) for item in mihomo_prepassed}
+    current = {
+        key: item
+        for key, item in current.items()
+        if key in prepassed_keys
+    }
 
     probe_stats = {
         name: {"checked": 0, "passed": 0, "failed": 0}
@@ -2275,8 +2312,7 @@ async def main():
             "telegram_https",
             "telegram_mtproto",
             "whatsapp_core",
-            "instagram_core",
-            "mihomo",
+            "instagram_https",
         )
     }
 
@@ -2293,7 +2329,7 @@ async def main():
     for key, result in zip(keys, results):
         if result.ok:
             successes += 1
-            current[key]["last_latency_ms"] = result.latency_ms
+            current[key]["cascade_latency_ms"] = result.latency_ms
             current[key]["last_error"] = None
         else:
             failures += 1
@@ -2305,43 +2341,22 @@ async def main():
             del current[key]
             deleted += 1
 
-    # Final mandatory Mihomo compatibility gate. It runs only for nodes that
-    # already passed the complete existing service cascade above.
-    mihomo_keys = list(current.keys())
-    mihomo_results = await asyncio.gather(
-        *(safe_mihomo_probe(current[k]["uri"]) for k in mihomo_keys)
+    # Second native Mihomo delay-test: every cascade-verified node is measured
+    # again from scratch. Only THIS final Mihomo delay determines TOP-100.
+    cascade_verified = list(current.values())
+    mihomo_final_ranked, mihomo_final_stats, mihomo_final_errors = (
+        await measure_nodes_with_mihomo(
+            cascade_verified,
+            stage="final",
+            latency_key="mihomo_final_latency_ms",
+            error_key="mihomo_final_error",
+            sort_by_delay=True,
+        )
     )
+    for item in mihomo_final_ranked:
+        item["last_latency_ms"] = item["mihomo_final_latency_ms"]
 
-    for key, result in zip(mihomo_keys, mihomo_results):
-        probe_stats["mihomo"]["checked"] += 1
-        if result.ok:
-            probe_stats["mihomo"]["passed"] += 1
-            continue
-
-        probe_stats["mihomo"]["failed"] += 1
-        successes -= 1
-        failures += 1
-        if len(failure_samples) < 20:
-            failure_samples.append({
-                "protocol": current[key]["uri"].split("://", 1)[0].lower(),
-                "error": result.error,
-            })
-        del current[key]
-        deleted += 1
-
-    # Rank every fully verified node by the average latency already collected
-    # from the existing mandatory service cascade. No new probe or admission
-    # rule is added here: this ranking only decides which verified nodes are
-    # published to clients when more than MAX_PUBLISHED_NODES pass.
-    verified_ordered = sorted(
-        current.values(),
-        key=lambda x: (
-            x["last_latency_ms"] is None,
-            x["last_latency_ms"] if x["last_latency_ms"] is not None else float("inf"),
-        ),
-    )
-
-    published_ordered = verified_ordered[:MAX_PUBLISHED_NODES]
+    published_ordered = mihomo_final_ranked[:MAX_PUBLISHED_NODES]
 
     (OUT_DIR / "subscription.txt").write_text(
         "\n".join(x["uri"] for x in published_ordered)
@@ -2353,9 +2368,9 @@ async def main():
         published_ordered
     )
 
-    # Keep ALL nodes that passed the mandatory checks in state.json, including
-    # verified nodes ranked below the client publication cap. They compete
-    # again from scratch on the next refresh.
+    # Keep all nodes that passed the preliminary Mihomo filter and mandatory
+    # service cascade in state.json. Nodes below TOP-100 and nodes whose final
+    # Mihomo ping failed can compete again from scratch on the next refresh.
     STATE_FILE.write_text(
         json.dumps({"updated_at": now, "nodes": current}, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -2368,8 +2383,8 @@ async def main():
 
     duration = round(time.monotonic() - run_started, 2)
 
-    # Candidates that never reached ChatGPT failed while starting the VPN
-    # engine/config/SOCKS tunnel.
+    # Precheck survivors that never reached ChatGPT failed while starting the
+    # Xray/sing-box engine/config/SOCKS tunnel.
     engine_failed_before_checks = len(keys) - probe_stats["chatgpt"]["checked"]
 
     status = {
@@ -2385,22 +2400,34 @@ async def main():
         "candidate_dedup_policy": "conservative effective configuration; fp/fingerprint and unknown operational fields are significant; display name/fragment and query order are cosmetic; VLESS omitted encryption/security normalize to none; repeated query fields are kept conservatively distinct",
         "geography_policy": "disabled; geography is not checked and never affects admission",
         "merged_protocol_stats": merged_protocol_stats,
+        "initial_mihomo_precheck_candidates": len(precheck_candidates),
+        "initial_mihomo_precheck_passed": len(mihomo_prepassed),
+        "initial_mihomo_precheck_rejected": len(precheck_candidates) - len(mihomo_prepassed),
         "checked_this_run": len(keys),
         "vpn_engine_failed_before_checks": engine_failed_before_checks,
         "successful_this_run": successes,
         "failed_this_run": failures,
         "rejected_this_run": deleted,
-        "verified_nodes_before_publish_cap": len(verified_ordered),
+        "cascade_verified_nodes": len(cascade_verified),
+        "verified_nodes_before_publish_cap": len(mihomo_final_ranked),
+        "mihomo_final_eligible_nodes": len(mihomo_final_ranked),
+        "mihomo_final_failed_nodes": len(cascade_verified) - len(mihomo_final_ranked),
         "publish_limit": MAX_PUBLISHED_NODES,
         "not_published_due_to_limit": max(
             0,
-            len(verified_ordered) - len(published_ordered),
+            len(mihomo_final_ranked) - len(published_ordered),
         ),
         "ranking_policy": (
-            "among nodes that pass every mandatory service probe, publish up to "
-            "100 with the lowest average successful service-probe latency; "
-            "ranking itself never rejects a node from state.json"
+            "Mihomo first removes nodes with no positive Cloudflare delay before "
+            "the service cascade. After every mandatory service probe has passed, "
+            "Mihomo measures the survivors again. Publish up to 100 nodes with the "
+            "lowest FINAL Mihomo delay; preliminary and service-probe latency are "
+            "not used for TOP-100 ordering"
         ),
+        "mihomo_precheck": mihomo_precheck_stats,
+        "mihomo_precheck_errors": mihomo_precheck_errors[:50],
+        "mihomo_final_ping": mihomo_final_stats,
+        "mihomo_final_ping_errors": mihomo_final_errors[:50],
         "published_nodes": len(published_ordered),
         "mihomo_nodes": mihomo_nodes,
         "mihomo_skipped": mihomo_skipped,
@@ -2425,26 +2452,36 @@ async def main():
                 f"per endpoint; e3 only if needed; require 2 of 3 endpoints; "
                 f"timeout {WHATSAPP_PROBE_TIMEOUT:g}s per endpoint stage"
             ),
-            "instagram_core": (
-                "www.instagram.com and i.instagram.com/api/v1/ checked in parallel; "
-                "both must return a real HTTP response; any HTTP status is accepted; "
-                f"timeout {INSTAGRAM_PROBE_TIMEOUT:g}s per request"
+            "instagram_https": (
+                "mandatory availability gate through VPN; any real HTTPS response "
+                "from www.instagram.com passes; TLS/connect/timeout/no HTTP response fails; "
+                "latency does not affect TOP-100 ranking"
             ),
-            "mihomo": (
-                "final mandatory real Mihomo startup + HTTP 204 through the converted "
-                f"node; url={MIHOMO_AUTO_TEST_URL}; timeout {MIHOMO_PROBE_TIMEOUT:g}s"
+            "mihomo_precheck": (
+                "pre-cascade native Mihomo group delay test; test URL "
+                f"{MIHOMO_PING_TEST_URL}; timeout {MIHOMO_PING_TIMEOUT_MS} ms; "
+                "nodes without a positive delay are rejected before the cascade"
+            ),
+            "mihomo_final_ping": (
+                "post-cascade native Mihomo group delay test against the same "
+                f"Cloudflare URL {MIHOMO_PING_TEST_URL}; timeout "
+                f"{MIHOMO_PING_TIMEOUT_MS} ms; ascending FINAL delay is the sole "
+                "TOP-100 ranking metric"
             ),
         },
         "failure_samples": failure_samples,
         "run_statistics": {
+            "precheck_candidates": len(precheck_candidates),
+            "precheck_passed_nodes": len(mihomo_prepassed),
             "checked_nodes": len(keys),
-            "verified_nodes": len(verified_ordered),
+            "cascade_verified_nodes": len(cascade_verified),
+            "final_mihomo_ranked_nodes": len(mihomo_final_ranked),
             "published_nodes": len(published_ordered),
             "duration_seconds": duration,
         },
         "run_duration_seconds": duration,
-        "admission_rule": "Geography and preliminary DNS latency filters are disabled. A node becomes verified only if it passes every existing mandatory service probe. Failure at any active service check rejects the node immediately. If more than 100 nodes are verified, only the 100 lowest-latency verified nodes are published to clients.",
-        "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. Verified nodes below the top-100 publication cutoff remain in state.json and compete again on the next refresh.",
+        "admission_rule": "Geography and preliminary DNS latency filters are disabled. Every deduplicated candidate is first tested by Mihomo itself against Cloudflare; no positive delay means immediate rejection before the service cascade. Survivors must then pass every mandatory service probe. After the cascade, Mihomo performs a second fresh Cloudflare delay test. Only nodes with a positive FINAL Mihomo delay are eligible for publication, and TOP-100 is ordered strictly by that final delay.",
+        "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. Preliminary Mihomo latency is only a dead-node filter. Service-probe latency is admission telemetry only. Final Mihomo latency is the sole TOP-100 ordering metric. Client AUTO uses the same Cloudflare test URL.",
     }
 
     (OUT_DIR / "status.json").write_text(
