@@ -20,6 +20,10 @@ SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
+    "https://raw.githubusercontent.com/3inker/v2ray-subscription/refs/heads/main/subs/all_not_ru.txt",
+    "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/super-sub.txt",
+    "https://raw.githubusercontent.com/luxxuria/harvester/refs/heads/main/top_600.txt",
+    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/refs/heads/main/Best-Results/proxies.txt",
 ]
 
 SUPPORTED = {"vless", "vmess", "trojan", "ss", "hysteria2", "hy2"}
