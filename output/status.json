@@ -1,99 +1,106 @@
 {
-  "updated_at": 1787248002,
-  "source_nodes_unique": 250,
-  "source_duplicates_removed": 98,
+  "updated_at": 1787248714,
+  "source_nodes_unique": 1678,
+  "source_duplicates_removed": 152,
   "source_stats": {
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt": 132,
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt": 74,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt": 44
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt": 44,
+    "https://raw.githubusercontent.com/3inker/v2ray-subscription/refs/heads/main/subs/all_not_ru.txt": 498,
+    "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/super-sub.txt": 198,
+    "https://raw.githubusercontent.com/luxxuria/harvester/refs/heads/main/top_600.txt": 158,
+    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/refs/heads/main/Best-Results/proxies.txt": 574
   },
   "source_protocol_stats": {
-    "vless": 184,
+    "vless": 1084,
     "hysteria2": 34,
-    "vmess": 11,
-    "trojan": 21
+    "vmess": 140,
+    "trojan": 223,
+    "ss": 197
   },
-  "state_nodes_loaded": 6,
-  "merged_candidates_before_dedup": 256,
-  "merged_candidates_after_dedup": 256,
-  "merged_duplicates_removed": 0,
+  "state_nodes_loaded": 1,
+  "merged_candidates_before_dedup": 1679,
+  "merged_candidates_after_dedup": 1678,
+  "merged_duplicates_removed": 1,
   "candidate_dedup_policy": "conservative effective configuration; fp/fingerprint and unknown operational fields are significant; display name/fragment and query order are cosmetic; VLESS omitted encryption/security normalize to none; repeated query fields are kept conservatively distinct",
   "geography_policy": "disabled; geography is not checked and never affects admission",
   "merged_protocol_stats": {
-    "vless": 187,
+    "vless": 1084,
     "hysteria2": 34,
-    "vmess": 11,
-    "trojan": 23,
-    "ss": 1
+    "vmess": 140,
+    "trojan": 223,
+    "ss": 197
   },
-  "checked_this_run": 256,
-  "vpn_engine_failed_before_checks": 23,
-  "successful_this_run": 1,
-  "failed_this_run": 255,
-  "rejected_this_run": 255,
-  "verified_nodes_before_publish_cap": 1,
+  "checked_this_run": 1678,
+  "vpn_engine_failed_before_checks": 73,
+  "successful_this_run": 7,
+  "failed_this_run": 1671,
+  "rejected_this_run": 1671,
+  "verified_nodes_before_publish_cap": 7,
   "publish_limit": 100,
   "not_published_due_to_limit": 0,
   "ranking_policy": "among nodes that pass every mandatory service probe, publish up to 100 with the lowest average successful service-probe latency; ranking itself never rejects a node from state.json",
-  "published_nodes": 1,
-  "mihomo_nodes": 1,
+  "published_nodes": 7,
+  "mihomo_nodes": 7,
   "mihomo_skipped": 0,
   "mihomo_output_warning": null,
   "output_validation": {
-    "published_nodes": 1,
-    "mihomo_nodes": 1,
+    "published_nodes": 7,
+    "mihomo_nodes": 7,
     "published_equals_mihomo": true,
     "conversion_failed": 0,
     "conversion_errors": []
   },
   "protocol_stats": {
-    "vless": 1
+    "ss": 1,
+    "vless": 5,
+    "trojan": 1
   },
   "probe_stats": {
     "chatgpt": {
-      "checked": 233,
-      "passed": 178,
-      "failed": 55
+      "checked": 1605,
+      "passed": 782,
+      "failed": 823
     },
     "chatgpt_auth_tls": {
-      "checked": 178,
-      "passed": 174,
-      "failed": 4
+      "checked": 782,
+      "passed": 760,
+      "failed": 22
     },
     "chatgpt_android_tls": {
-      "checked": 174,
-      "passed": 172,
-      "failed": 2
+      "checked": 760,
+      "passed": 753,
+      "failed": 7
     },
     "youtube_204": {
-      "checked": 172,
-      "passed": 164,
-      "failed": 8
+      "checked": 753,
+      "passed": 716,
+      "failed": 37
     },
     "telegram_https": {
-      "checked": 164,
-      "passed": 147,
-      "failed": 17
+      "checked": 716,
+      "passed": 672,
+      "failed": 44
     },
     "telegram_mtproto": {
-      "checked": 147,
-      "passed": 147,
-      "failed": 0
+      "checked": 672,
+      "passed": 671,
+      "failed": 1
     },
     "whatsapp_core": {
-      "checked": 147,
-      "passed": 147,
+      "checked": 671,
+      "passed": 671,
       "failed": 0
     },
     "instagram_core": {
-      "checked": 147,
-      "passed": 122,
-      "failed": 25
+      "checked": 671,
+      "passed": 580,
+      "failed": 91
     },
     "mihomo": {
-      "checked": 122,
-      "passed": 1,
-      "failed": 121
+      "checked": 580,
+      "passed": 7,
+      "failed": 573
     }
   },
   "probe_policy": {
@@ -105,23 +112,19 @@
   "failure_samples": [
     {
       "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
+      "error": "instagram_core: instagram_web: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "youtube_204: connection failed: curl: (28) Connection timed out after 5002 milliseconds"
+      "error": "instagram_core: instagram_web: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "youtube_204: connection failed: curl: (28) Operation timed out after 5000 milliseconds with 0 bytes received"
+      "error": "chatgpt: too slow (6.27s)"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: too slow (5.49s)"
-    },
-    {
-      "protocol": "vless",
-      "error": "chatgpt: too slow (6.55s)"
+      "error": "chatgpt: curl: (28) Connection timed out after 9001 milliseconds\n"
     },
     {
       "protocol": "vless",
@@ -129,15 +132,15 @@
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: too slow (8.46s)"
+      "error": "chatgpt_auth_tls: TLS/HTTPS failed: curl: (28) Connection timed out after 9002 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: too slow (7.34s)"
+      "error": "chatgpt_auth_tls: TLS/HTTPS failed: curl: (28) Connection timed out after 9001 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: curl: (28) Connection timed out after 9002 milliseconds\n"
+      "error": "chatgpt_auth_tls: TLS/HTTPS failed: curl: (28) Connection timed out after 9002 milliseconds"
     },
     {
       "protocol": "vless",
@@ -145,23 +148,19 @@
     },
     {
       "protocol": "vless",
-      "error": "instagram_core: instagram_app_api: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
+      "error": "instagram_core: instagram_web: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "instagram_core: instagram_app_api: TLS/HTTPS failed: curl: (28) Connection timed out after 3001 milliseconds"
+      "error": "instagram_core: instagram_web: TLS/HTTPS failed: curl: (28) Operation timed out after 3000 milliseconds with 65931 bytes received"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to chatgpt.com:443 \n"
+      "error": "instagram_core: instagram_web: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt_android_tls: TLS/HTTPS failed: curl: (28) Connection timed out after 9001 milliseconds"
-    },
-    {
-      "protocol": "vless",
-      "error": "chatgpt_auth_tls: TLS/HTTPS failed: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to auth.openai.com:443"
+      "error": "chatgpt_android_tls: TLS/HTTPS failed: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to android.chat.openai.com:443"
     },
     {
       "protocol": "vless",
@@ -169,11 +168,19 @@
     },
     {
       "protocol": "vless",
-      "error": "chatgpt_auth_tls: TLS/HTTPS failed: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to auth.openai.com:443"
+      "error": "chatgpt: too slow (5.47s)"
     },
     {
       "protocol": "vless",
-      "error": "youtube_204: connection failed: curl: (28) Connection timed out after 5002 milliseconds"
+      "error": "chatgpt_android_tls: TLS/HTTPS failed: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to android.chat.openai.com:443"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to chatgpt.com:443 \n"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt_auth_tls: TLS/HTTPS failed: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to auth.openai.com:443"
     },
     {
       "protocol": "vless",
@@ -185,12 +192,12 @@
     }
   ],
   "run_statistics": {
-    "checked_nodes": 256,
-    "verified_nodes": 1,
-    "published_nodes": 1,
-    "duration_seconds": 89.74
+    "checked_nodes": 1678,
+    "verified_nodes": 7,
+    "published_nodes": 7,
+    "duration_seconds": 427.74
   },
-  "run_duration_seconds": 89.74,
+  "run_duration_seconds": 427.74,
   "admission_rule": "Geography and preliminary DNS latency filters are disabled. A node becomes verified only if it passes every existing mandatory service probe. Failure at any active service check rejects the node immediately. If more than 100 nodes are verified, only the 100 lowest-latency verified nodes are published to clients.",
   "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. Verified nodes below the top-100 publication cutoff remain in state.json and compete again on the next refresh."
 }
