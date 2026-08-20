@@ -1,56 +1,80 @@
 {
-  "updated_at": 1787183667,
-  "source_nodes_unique": 212,
+  "updated_at": 1787195671,
+  "source_nodes_unique": 249,
   "source_duplicates_removed": 150,
   "source_stats": {
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt": 125,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt": 35,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt": 52
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt": 166,
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt": 36,
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt": 47
   },
   "source_protocol_stats": {
-    "vless": 125,
-    "hysteria2": 68,
-    "vmess": 10,
-    "trojan": 9
+    "vless": 166,
+    "hysteria2": 65,
+    "vmess": 4,
+    "trojan": 14
   },
-  "state_nodes_loaded": 192,
-  "merged_candidates_before_dedup": 404,
-  "merged_candidates_after_dedup": 258,
-  "merged_duplicates_removed": 146,
+  "state_nodes_loaded": 179,
+  "merged_candidates_before_dedup": 428,
+  "merged_candidates_after_dedup": 344,
+  "merged_duplicates_removed": 84,
   "candidate_dedup_policy": "conservative effective configuration; fp/fingerprint and unknown operational fields are significant; display name/fragment and query order are cosmetic; VLESS omitted encryption/security normalize to none; repeated query fields are kept conservatively distinct",
   "geography_policy": "disabled; geography is not checked and never affects admission",
   "merged_protocol_stats": {
-    "vless": 147,
-    "hysteria2": 91,
-    "vmess": 11,
-    "trojan": 9
+    "vless": 216,
+    "hysteria2": 108,
+    "vmess": 6,
+    "trojan": 14
   },
-  "checked_this_run": 258,
-  "vpn_engine_failed_before_checks": 11,
-  "successful_this_run": 179,
-  "failed_this_run": 79,
-  "rejected_this_run": 79,
-  "verified_nodes_before_publish_cap": 179,
+  "checked_this_run": 344,
+  "vpn_engine_failed_before_checks": 15,
+  "successful_this_run": 160,
+  "failed_this_run": 184,
+  "rejected_this_run": 184,
+  "verified_nodes_before_publish_cap": 160,
   "publish_limit": 100,
-  "not_published_due_to_limit": 79,
+  "not_published_due_to_limit": 60,
   "throughput_test": {
     "triggered": true,
     "trigger_condition": "verified nodes > 100",
-    "checked": 179,
-    "successful": 136,
-    "failed": 43,
+    "checked": 160,
+    "successful": 129,
+    "failed": 31,
     "url": "https://speed.cloudflare.com/__down",
     "warmup_bytes": 100000,
     "measurement_bytes_max": 10000000,
     "measurement_timeout_seconds": 5.0,
     "concurrency": 2,
-    "average_mbps": 52.07,
-    "median_mbps": 47.66,
-    "fastest_mbps": 224.79,
+    "average_mbps": 62.31,
+    "median_mbps": 49.09,
+    "fastest_mbps": 1718.14,
     "failure_samples": [
       {
         "protocol": "vless",
-        "error": "throughput warm-up failed: curl: (28) Operation timed out after 3000 milliseconds with 13711 out of 100000 bytes received"
+        "error": "throughput warm-up failed: curl: (28) Connection timed out after 3002 milliseconds"
+      },
+      {
+        "protocol": "vless",
+        "error": "throughput warm-up failed: curl: (28) Connection timed out after 3002 milliseconds"
+      },
+      {
+        "protocol": "vless",
+        "error": "throughput warm-up failed: curl: (28) Operation timed out after 3000 milliseconds with 29274 out of 100000 bytes received"
+      },
+      {
+        "protocol": "vless",
+        "error": "throughput warm-up failed: curl: (28) Connection timed out after 3002 milliseconds"
+      },
+      {
+        "protocol": "vless",
+        "error": "throughput measurement unexpected HTTP status 429"
+      },
+      {
+        "protocol": "vless",
+        "error": "throughput warm-up failed: curl: (28) Operation timed out after 3001 milliseconds with 62375 out of 100000 bytes received"
+      },
+      {
+        "protocol": "vless",
+        "error": "throughput warm-up failed: curl: (28) Operation timed out after 3002 milliseconds with 4151 out of 100000 bytes received"
       },
       {
         "protocol": "vless",
@@ -70,15 +94,7 @@
       },
       {
         "protocol": "vless",
-        "error": "throughput measurement unexpected HTTP status 429"
-      },
-      {
-        "protocol": "vless",
-        "error": "throughput measurement unexpected HTTP status 429"
-      },
-      {
-        "protocol": "vless",
-        "error": "throughput warm-up failed: curl: (28) Connection timed out after 3003 milliseconds"
+        "error": "throughput measurement unexpected HTTP status 000"
       },
       {
         "protocol": "vless",
@@ -102,10 +118,6 @@
       },
       {
         "protocol": "vless",
-        "error": "throughput warm-up failed: curl: (28) Connection timed out after 3002 milliseconds"
-      },
-      {
-        "protocol": "vless",
         "error": "throughput measurement unexpected HTTP status 429"
       },
       {
@@ -114,19 +126,7 @@
       },
       {
         "protocol": "vless",
-        "error": "throughput measurement unexpected HTTP status 429"
-      },
-      {
-        "protocol": "vless",
-        "error": "throughput measurement unexpected HTTP status 429"
-      },
-      {
-        "protocol": "vless",
-        "error": "throughput warm-up failed: curl: (28) Connection timed out after 3002 milliseconds"
-      },
-      {
-        "protocol": "vless",
-        "error": "throughput warm-up failed: curl: (28) Connection timed out after 3003 milliseconds"
+        "error": "throughput warm-up failed: curl: (28) Operation timed out after 3000 milliseconds with 5536 out of 100000 bytes received"
       }
     ]
   },
@@ -143,40 +143,40 @@
     "conversion_errors": []
   },
   "protocol_stats": {
-    "hysteria2": 49,
     "vmess": 1,
-    "vless": 50
+    "hysteria2": 67,
+    "vless": 32
   },
   "probe_stats": {
     "chatgpt": {
-      "checked": 247,
-      "passed": 197,
-      "failed": 50
+      "checked": 329,
+      "passed": 191,
+      "failed": 138
     },
     "chatgpt_auth_tls": {
-      "checked": 197,
-      "passed": 197,
-      "failed": 0
+      "checked": 191,
+      "passed": 187,
+      "failed": 4
     },
     "chatgpt_android_tls": {
-      "checked": 197,
-      "passed": 196,
+      "checked": 187,
+      "passed": 186,
       "failed": 1
     },
     "youtube_204": {
-      "checked": 196,
-      "passed": 193,
-      "failed": 3
+      "checked": 186,
+      "passed": 179,
+      "failed": 7
     },
     "telegram_https": {
-      "checked": 193,
-      "passed": 180,
-      "failed": 13
+      "checked": 179,
+      "passed": 163,
+      "failed": 16
     },
     "telegram_mtproto": {
-      "checked": 180,
-      "passed": 179,
-      "failed": 1
+      "checked": 163,
+      "passed": 160,
+      "failed": 3
     }
   },
   "probe_policy": {
@@ -185,11 +185,59 @@
   "failure_samples": [
     {
       "protocol": "vless",
+      "error": "youtube_204: connection failed: curl: (28) Connection timed out after 5002 milliseconds"
+    },
+    {
+      "protocol": "vless",
       "error": "telegram_https: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to venus.web.telegram.org:443"
+      "error": "chatgpt: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to chatgpt.com:443 \n"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to chatgpt.com:443 \n"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (8.97s)"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (5.35s)"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (8.89s)"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (7.17s)"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: curl: (28) Operation timed out after 9000 milliseconds with 1360 out of 4250 bytes received\n"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (6.84s)"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (5.28s)"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: curl: (28) Connection timed out after 9000 milliseconds\n"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (7.18s)"
+    },
+    {
+      "protocol": "vless",
+      "error": "chatgpt: too slow (6.11s)"
     },
     {
       "protocol": "vless",
@@ -197,7 +245,7 @@
     },
     {
       "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3000 milliseconds with 0 bytes received"
+      "error": "youtube_204: connection failed: curl: (28) Connection timed out after 5002 milliseconds"
     },
     {
       "protocol": "vless",
@@ -209,69 +257,21 @@
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to chatgpt.com:443 \n"
+      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
     },
     {
       "protocol": "vless",
-      "error": "chatgpt: curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to chatgpt.com:443 \n"
-    },
-    {
-      "protocol": "vless",
-      "error": "youtube_204: connection failed: curl: (28) Operation timed out after 5000 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "youtube_204: connection failed: curl: (28) Operation timed out after 5000 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3001 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3001 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3001 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3000 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3000 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3001 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3000 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3000 milliseconds with 0 bytes received"
-    },
-    {
-      "protocol": "vless",
-      "error": "chatgpt: curl: (28) Connection timed out after 9002 milliseconds\n"
-    },
-    {
-      "protocol": "vless",
-      "error": "chatgpt: curl: (28) Connection timed out after 9002 milliseconds\n"
+      "error": "chatgpt_auth_tls: TLS/HTTPS failed: curl: (28) Connection timed out after 9002 milliseconds"
     }
   ],
   "run_statistics": {
-    "checked_nodes": 258,
-    "verified_nodes": 179,
+    "checked_nodes": 344,
+    "verified_nodes": 160,
     "throughput_test_triggered": true,
     "published_nodes": 100,
-    "duration_seconds": 347.31
+    "duration_seconds": 349.35
   },
-  "run_duration_seconds": 347.31,
+  "run_duration_seconds": 349.35,
   "admission_rule": "Geography and preliminary DNS latency filters are disabled. A node becomes verified only if it passes every existing mandatory service probe. Failure at any active service check rejects the node immediately. Throughput is measured only after verification and never rejects a node. If more than 100 nodes are verified, only the top 100 by the combined 50% service-latency rank and 50% throughput rank are published to clients.",
   "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. If 100 or fewer nodes are verified, throughput testing is skipped and all verified nodes are published. Verified nodes below the top-100 publication cutoff remain in state.json and compete again on the next refresh."
 }
