@@ -96,7 +96,7 @@ INSTAGRAM_PROBE_URL = os.getenv(
 # One Cloudflare target is used everywhere Mihomo measures node latency:
 # - preliminary dead-node filter before the service cascade;
 # - final delay measurement used for TOP-100 ordering;
-# - client-side provider/AUTO health checks.
+# - client-side embedded AUTO health checks.
 MIHOMO_AUTO_TEST_URL = "https://cp.cloudflare.com"
 
 MIHOMO_PING_TEST_URL = os.getenv(
@@ -2015,16 +2015,15 @@ def _sanitize_proxy_name(name: str):
 
 def write_mihomo_files(nodes):
     """
-    Create the Mihomo proxy-provider and client configuration.
+    Create the standalone Mihomo client configuration and an auxiliary provider.
 
-    In GitHub Actions (or when MIHOMO_PROVIDER_URL is explicitly supplied),
-    mihomo.yaml uses the remote HTTP provider. The provider refreshes every
-    5 minutes, while Mihomo itself health-checks provider nodes every 60 seconds
-    through Cloudflare. AUTO selects among those provider nodes with 30 ms
-    switching tolerance.
+    mihomo.yaml always embeds the published TOP nodes directly under `proxies`.
+    AUTO tests those embedded nodes every 60 seconds through Cloudflare and
+    selects the best one with 30 ms switching tolerance. The client therefore
+    needs only mihomo.yaml and has no runtime dependency on mihomo-provider.yaml.
 
-    For local runs without a provider URL, keep a directly usable embedded
-    config instead of emitting a broken remote-provider reference.
+    mihomo-provider.yaml is still generated as a separate auxiliary artifact for
+    compatibility or manual use, but mihomo.yaml does not reference it.
     Source-provided names are preserved first; country lookup is fallback-only.
     """
     OUT_DIR.mkdir(exist_ok=True)
@@ -2058,71 +2057,30 @@ def write_mihomo_files(nodes):
                 "error": f"{type(e).__name__}: {e}",
             })
 
+    # Keep the provider artifact for compatibility/manual use, but the client
+    # configuration below is fully standalone and does not reference this file.
     mihomo_provider = {"proxies": proxies}
     (OUT_DIR / "mihomo-provider.yaml").write_text(
         yaml_dump(mihomo_provider),
         encoding="utf-8",
     )
 
-    repository = os.getenv("GITHUB_REPOSITORY", "").strip()
-    branch = os.getenv("GITHUB_REF_NAME", "main").strip() or "main"
-    provider_url = os.getenv("MIHOMO_PROVIDER_URL", "").strip()
-
-    if not provider_url and repository:
-        provider_url = (
-            f"https://raw.githubusercontent.com/{repository}/{branch}/"
-            "output/mihomo-provider.yaml"
-        )
-
-    if provider_url:
-        # Remote/provider mode used by the published GitHub configuration.
-        # Provider download cadence and node health-check cadence are separate.
-        mihomo_config = {
-            "mixed-port": 7890,
-            "mode": "rule",
-            "proxy-providers": {
-                "VPN": {
-                    "type": "http",
-                    "url": provider_url,
-                    "path": "./providers/vpn.yaml",
-                    "interval": 300,
-                    "health-check": {
-                        "enable": True,
-                        "url": MIHOMO_AUTO_TEST_URL,
-                        "interval": 60,
-                        "timeout": 5000,
-                        "lazy": False,
-                    },
-                },
-            },
-            "proxy-groups": [{
-                "name": "AUTO",
-                "type": "url-test",
-                "use": ["VPN"],
-                "tolerance": 30,
-            }],
-            "rules": ["MATCH,AUTO"],
-        }
-    else:
-        # Local fallback: no remote provider URL exists, so test the embedded
-        # proxies directly. This preserves the same 60-second client-side AUTO
-        # behavior without inventing a URL that cannot work locally.
-        mihomo_config = {
-            "mixed-port": 7890,
-            "mode": "rule",
-            "proxies": proxies,
-            "proxy-groups": [{
-                "name": "AUTO",
-                "type": "url-test",
-                "proxies": [x["name"] for x in proxies],
-                "url": MIHOMO_AUTO_TEST_URL,
-                "interval": 60,
-                "timeout": 5000,
-                "tolerance": 30,
-                "lazy": False,
-            }],
-            "rules": ["MATCH,AUTO"],
-        }
+    mihomo_config = {
+        "mixed-port": 7890,
+        "mode": "rule",
+        "proxies": proxies,
+        "proxy-groups": [{
+            "name": "AUTO",
+            "type": "url-test",
+            "proxies": [x["name"] for x in proxies],
+            "url": MIHOMO_AUTO_TEST_URL,
+            "interval": 60,
+            "timeout": 5000,
+            "tolerance": 30,
+            "lazy": False,
+        }],
+        "rules": ["MATCH,AUTO"],
+    }
 
     (OUT_DIR / "mihomo.yaml").write_text(
         yaml_dump(mihomo_config),
