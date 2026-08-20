@@ -1,14 +1,5 @@
 proxies:
   -
-    name: "🇺🇸 United States, New York | [BL]"
-    type: "hysteria2"
-    server: "82.39.214.83"
-    port: 8443
-    password: "VB92_Ka9qwef143K_L23K1hz3_bF_Hz62uT_Bn1_sC"
-    sni: "hopp-us.yyuyy.com"
-    skip-cert-verify: false
-    udp: true
-  -
     name: "🇺🇸 United States, North Bergen | [BL]"
     type: "vless"
     server: "89.116.243.205"
@@ -24,6 +15,17 @@ proxies:
       short-id: "e4f6a3446ac34a23"
     network: "tcp"
   -
+    name: "🇺🇸 United States, Piscataway | [BL]"
+    type: "hysteria2"
+    server: "usa0003rlbhy01.tcp-reset-club.net"
+    port: 443
+    password: "8fb328f0-d8e0-4b11-a6db-3dadfc4f02a3"
+    sni: "usa0003rlbhy01.tcp-reset-club.net"
+    skip-cert-verify: true
+    udp: true
+    alpn:
+      - "h3"
+  -
     name: "🇺🇸 United States | 🌐 | [BL]"
     type: "vless"
     server: "89.116.243.185"
@@ -33,13 +35,52 @@ proxies:
     flow: "xtls-rprx-vision"
     tls: true
     servername: "us.savesafe.cc"
-    client-fingerprint: "firefox"
+    client-fingerprint: "safari"
     reality-opts:
       public-key: "zDeF_twyyT7a7zKiURF-Q8f6kkj95rx7zQ_jar09Hi4"
       short-id: "e4f6a3446ac34a23"
     network: "tcp"
   -
     name: "🇺🇸 United States | 🌐 | [BL] [2]"
+    type: "vless"
+    server: "89.116.243.185"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "us.savesafe.cc"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "zDeF_twyyT7a7zKiURF-Q8f6kkj95rx7zQ_jar09Hi4"
+      short-id: "e4f6a3446ac34a23"
+    network: "tcp"
+  -
+    name: "🇺🇸 United States | 🌐 | [BL] [3]"
+    type: "vless"
+    server: "89.116.243.185"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "us.savesafe.cc"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "zDeF_twyyT7a7zKiURF-Q8f6kkj95rx7zQ_jar09Hi4"
+      short-id: "e4f6a3446ac34a23"
+    network: "tcp"
+  -
+    name: "🇺🇸 United States, New York | [BL]"
+    type: "hysteria2"
+    server: "82.39.214.83"
+    port: 8443
+    password: "VB92_Ka9qwef143K_L23K1hz3_bF_Hz62uT_Bn1_sC"
+    sni: "hopp-us.yyuyy.com"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇺🇸 United States | 🌐 | [BL] [4]"
     type: "vless"
     server: "us.opngtr.nl"
     port: 443
@@ -54,30 +95,12 @@ proxies:
       short-id: "e4f6a3446ac34a23"
     network: "tcp"
   -
-    name: "🇺🇸 United States, New Concord | [BL]"
+    name: "🇳🇱 The Netherlands, Amsterdam | [BL]"
     type: "hysteria2"
-    server: "iq5ny.pleiades.codes"
+    server: "46.229.243.138"
     port: 8443
-    password: "95e8532b-cc69-42d4-9553-e3c23292b15b"
-    sni: "127.0.0.1"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇺🇸 United States, New Concord | [BL] [2]"
-    type: "hysteria2"
-    server: "143.246.208.86"
-    port: 8443
-    password: "95e8532b-cc69-42d4-9553-e3c23292b15b"
-    sni: "iq5ny.pleiades.codes"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇺🇸 United States, New Concord | [BL] [3]"
-    type: "hysteria2"
-    server: "143.246.208.86"
-    port: 8443
-    password: "95e8532b-cc69-42d4-9553-e3c23292b15b"
-    sni: "iq5ny.pleiades.codes"
+    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
+    sni: "grape-turbo-fr.roxa.org"
     skip-cert-verify: false
     udp: true
   -
@@ -90,34 +113,123 @@ proxies:
     skip-cert-verify: false
     udp: true
   -
-    name: "🇺🇸 United States, New Concord | [BL] [4]"
+    name: "🇫🇷 France, Paris | 🌐 | [BL] [2]"
     type: "hysteria2"
-    server: "iq5ny.pleiades.codes"
+    server: "fr194.mechvpn.online"
+    port: 443
+    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    sni: "fr194.mechvpn.online"
+    skip-cert-verify: false
+    udp: true
+    alpn:
+      - "h3"
+  -
+    name: "🇺🇸 United States | 🌐 | [BL] [5]"
+    type: "vless"
+    server: "89.116.243.185"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "us.savesafe.cc"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "zDeF_twyyT7a7zKiURF-Q8f6kkj95rx7zQ_jar09Hi4"
+      short-id: "e4f6a3446ac34a23"
+    network: "tcp"
+  -
+    name: "🇺🇸 United States, West Miami | [BL]"
+    type: "vless"
+    server: "140.99.223.129"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "usa.savesafe.cc"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
+      short-id: "9f3df965329a8e7f"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇺🇸 United States, New Concord | [BL]"
+    type: "hysteria2"
+    server: "143.246.208.86"
     port: 8443
     password: "95e8532b-cc69-42d4-9553-e3c23292b15b"
     sni: "iq5ny.pleiades.codes"
     skip-cert-verify: true
     udp: true
   -
-    name: "🇺🇸 United States, New Concord | [BL] [5]"
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL]"
     type: "hysteria2"
-    server: "iq5ny.pleiades.codes"
+    server: "194.180.188.104"
     port: 8443
-    password: "95e8532b-cc69-42d4-9553-e3c23292b15b"
-    sni: "iq5ny.pleiades.codes"
+    password: "dsfa_k0123WFzerrf_kZ3490VNb03J_m30_s"
+    sni: "keyhop-offshore.roxa.org"
     skip-cert-verify: false
     udp: true
   -
-    name: "🇳🇱 The Netherlands, Amsterdam | 🌐 | [BL]"
-    type: "hysteria2"
-    server: "nl8.mechvpn.online"
+    name: "🇺🇸 United States, West Miami | [BL] [2]"
+    type: "vless"
+    server: "140.99.223.129"
     port: 443
-    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "nl8.mechvpn.online"
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "usa.savesafe.cc"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
+      short-id: "9f3df965329a8e7f"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇺🇸 United States, West Miami | [BL] [3]"
+    type: "vless"
+    server: "usa.opngtr.nl"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "usa.savesafe.cc"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
+      short-id: "9f3df965329a8e7f"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇩🇪 Germany, Delmenhorst | [BL]"
+    type: "hysteria2"
+    server: "deu0003ntrhy01.tcp-reset-club.net"
+    port: 443
+    password: "8fb328f0-d8e0-4b11-a6db-3dadfc4f02a3"
+    sni: "deu0003ntrhy01.tcp-reset-club.net"
     skip-cert-verify: false
     udp: true
   -
-    name: "🇺🇸 United States, New Concord | [BL] [6]"
+    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [2]"
+    type: "hysteria2"
+    server: "46.229.243.137"
+    port: 8443
+    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
+    sni: "grape-turbo-fr.roxa.org"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇺🇸 United States, New Concord | [BL] [2]"
     type: "hysteria2"
     server: "iq5ny.pleiades.codes"
     port: 8443
@@ -125,6 +237,53 @@ proxies:
     sni: "iq5ny.pleiades.codes"
     skip-cert-verify: false
     udp: true
+  -
+    name: "🇺🇸 United States, New Concord | [BL] [3]"
+    type: "hysteria2"
+    server: "iq5ny.pleiades.codes"
+    port: 8443
+    password: "95e8532b-cc69-42d4-9553-e3c23292b15b"
+    sni: "iq5ny.pleiades.codes"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇺🇸 United States, New Concord | [BL] [4]"
+    type: "hysteria2"
+    server: "143.246.208.86"
+    port: 8443
+    password: "95e8532b-cc69-42d4-9553-e3c23292b15b"
+    sni: "iq5ny.pleiades.codes"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇳🇱 The Netherlands, Amsterdam (Amsterdam-Zuidoost) | [BL]"
+    type: "hysteria2"
+    server: "nl01ntrhy01.tcp-reset-club.net"
+    port: 443
+    password: "8fb328f0-d8e0-4b11-a6db-3dadfc4f02a3"
+    sni: "nl01ntrhy01.tcp-reset-club.net"
+    skip-cert-verify: true
+    udp: true
+    alpn:
+      - "h3"
+  -
+    name: "🇺🇸 United States, West Miami | [BL] [4]"
+    type: "vless"
+    server: "usa.opngtr.nl"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "usa.savesafe.cc"
+    client-fingerprint: "ios"
+    reality-opts:
+      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
+      short-id: "9f3df965329a8e7f"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
   -
     name: "🇪🇸 Spain | 🌐 | [BL]"
     type: "vless"
@@ -144,21 +303,32 @@ proxies:
       host: ""
       mode: "auto"
   -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL]"
+    name: "🇳🇱 The Netherlands, Amsterdam | 🌐 | [BL]"
     type: "hysteria2"
-    server: "194.180.188.104"
-    port: 8443
-    password: "dsfa_k0123WFzerrf_kZ3490VNb03J_m30_s"
-    sni: "keyhop-offshore.roxa.org"
+    server: "nl8.mechvpn.online"
+    port: 443
+    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    sni: "nl8.mechvpn.online"
     skip-cert-verify: false
     udp: true
   -
-    name: "🇫🇷 France, Paris | 🌐 | [BL] [2]"
+    name: ".𖥔 ݁ ˖ִ🛸༄˖°. | [BL]"
     type: "hysteria2"
-    server: "fr194.mechvpn.online"
+    server: "nl.prisma-access.club"
+    port: 8445
+    password: "085178e12d2211ec"
+    sni: "nl.prisma-access.club"
+    skip-cert-verify: false
+    udp: true
+    alpn:
+      - "h3"
+  -
+    name: "🇵🇱 Poland, Warsaw | 🌐 | [BL]"
+    type: "hysteria2"
+    server: "pl10.mechvpn.online"
     port: 443
     password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "fr194.mechvpn.online"
+    sni: "pl10.mechvpn.online"
     skip-cert-verify: false
     udp: true
     alpn:
@@ -182,155 +352,14 @@ proxies:
       host: ""
       mode: "auto"
   -
-    name: "🇬🇧 United Kingdom, London | [BL]"
-    type: "vless"
-    server: "api.getsavesafe.space"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "api.getsavesafe.space"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "fkYk0Ow--0GYExpBFb2wZjooymT7uASOQLw9ESC3DF8"
-      short-id: "62b6d6e64d461d78"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: ".𖥔 ݁ ˖ִ🛸༄˖°. | [BL]"
+    name: "🇫🇮 Finland, Helsinki | [BL]"
     type: "hysteria2"
-    server: "nl.prisma-access.club"
-    port: 8445
-    password: "085178e12d2211ec"
-    sni: "nl.prisma-access.club"
-    skip-cert-verify: false
-    udp: true
-    alpn:
-      - "h3"
-  -
-    name: "🇺🇸 United States, West Miami | [BL]"
-    type: "vless"
-    server: "140.99.223.129"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "usa.savesafe.cc"
-    client-fingerprint: "qq"
-    reality-opts:
-      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
-      short-id: "9f3df965329a8e7f"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: "🇺🇸 United States, West Miami | [BL] [2]"
-    type: "vless"
-    server: "140.99.223.129"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "usa.savesafe.cc"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
-      short-id: "9f3df965329a8e7f"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: "🇵🇱 Poland, Warsaw | 🌐 | [BL]"
-    type: "hysteria2"
-    server: "pl10.mechvpn.online"
-    port: 443
-    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "pl10.mechvpn.online"
-    skip-cert-verify: false
-    udp: true
-    alpn:
-      - "h3"
-  -
-    name: "🇺🇸 United States, West Miami | [BL] [3]"
-    type: "vless"
-    server: "usa.opngtr.nl"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "usa.savesafe.cc"
-    client-fingerprint: "edge"
-    reality-opts:
-      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
-      short-id: "9f3df965329a8e7f"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: "🇬🇧 United Kingdom, London | [BL] [2]"
-    type: "vless"
-    server: "api.getsavesafe.space"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "api.getsavesafe.space"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "fkYk0Ow--0GYExpBFb2wZjooymT7uASOQLw9ESC3DF8"
-      short-id: "62b6d6e64d461d78"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: "🇳🇱 The Netherlands, Amsterdam | [BL]"
-    type: "hysteria2"
-    server: "46.229.243.138"
+    server: "222.167.212.81"
     port: 8443
-    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
-    sni: "grape-turbo-fr.roxa.org"
+    password: "h_B9x3942fJ9x_Kpx3914KQ_nZ934HFg_rT"
+    sni: "hopp-legend-se.roxa.org"
     skip-cert-verify: false
     udp: true
-  -
-    name: "🇺🇸 United States, West Miami | [BL] [4]"
-    type: "vless"
-    server: "usa.opngtr.nl"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "usa.savesafe.cc"
-    client-fingerprint: "ios"
-    reality-opts:
-      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
-      short-id: "9f3df965329a8e7f"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: "🇸🇪 Sweden, Falkenberg | [BL]"
-    type: "hysteria2"
-    server: "us63.mechvpn.online"
-    port: 443
-    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "us63.mechvpn.online"
-    skip-cert-verify: false
-    udp: true
-    alpn:
-      - "h3"
   -
     name: "🇪🇸 Spain | 🌐 | [BL] [3]"
     type: "vless"
@@ -350,64 +379,97 @@ proxies:
       host: ""
       mode: "auto"
   -
-    name: "🇷🇴 Romania, Bucharest | 🌐 | [BL]"
+    name: "🇷🇸 Serbia, Belgrade | [BL]"
     type: "hysteria2"
-    server: "185.156.44.99"
-    port: 443
-    password: "gf1:gfhysteria2024"
-    sni: "speedtest.tinkoff.ru"
-    skip-cert-verify: true
-    udp: true
-    up: "10 Mbps"
-    down: "50 Mbps"
-  -
-    name: "🇵🇦 Panama, Panama City | [BL]"
-    type: "hysteria2"
-    server: "82.39.214.83"
+    server: "46.229.243.138"
     port: 8080
-    password: "VB92_Ka9qwef143K_L23K1hz3_bF_Hz62uT_Bn1_sC"
-    sni: "hopp-us.yyuyy.com"
+    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
+    sni: "grape-turbo-fr.roxa.org"
     skip-cert-verify: false
     udp: true
   -
-    name: "🇷🇴 Romania, Bucharest | 🌐 | [BL] [2]"
+    name: "🇸🇪 Sweden, Falkenberg | [BL]"
     type: "hysteria2"
-    server: "185.156.44.99"
+    server: "us63.mechvpn.online"
     port: 443
-    password: "gf1:gfhysteria2024"
-    sni: "css.rbxcdn.com"
-    skip-cert-verify: true
+    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    sni: "us63.mechvpn.online"
+    skip-cert-verify: false
     udp: true
-    up: "10 Mbps"
-    down: "50 Mbps"
+    alpn:
+      - "h3"
   -
-    name: "🇺🇸 United States, San Francisco (Financial District) | [BL]"
-    type: "vmess"
-    server: "165.140.216.142"
+    name: "🇬🇧 United Kingdom, London | [BL]"
+    type: "vless"
+    server: "api.getsavesafe.space"
     port: 443
-    uuid: "b65a2d69-5634-42a2-e4be-54e8a6176900"
-    alterId: 0
-    cipher: "auto"
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
     udp: true
-    network: "tcp"
+    tls: true
+    servername: "api.getsavesafe.space"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "fkYk0Ow--0GYExpBFb2wZjooymT7uASOQLw9ESC3DF8"
+      short-id: "62b6d6e64d461d78"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
   -
-    name: "🇷🇴 Romania, Bucharest | 🌐 | [BL] [3]"
+    name: "🇫🇷 France, Paris | [BL]"
     type: "hysteria2"
-    server: "185.156.44.99"
-    port: 443
-    password: "gf1:gfhysteria2024"
-    sni: "google.com"
-    skip-cert-verify: true
-    udp: true
-    up: "10 Mbps"
-    down: "50 Mbps"
-  -
-    name: "🇫🇮 Finland, Helsinki | [BL]"
-    type: "hysteria2"
-    server: "222.167.212.81"
+    server: "85.204.107.169"
     port: 8443
-    password: "h_B9x3942fJ9x_Kpx3914KQ_nZ934HFg_rT"
-    sni: "hopp-legend-se.roxa.org"
+    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
+    sni: "grape-zet-ro-turbo.bumbleshrimp.com"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇫🇷 France, Paris | [BL] [2]"
+    type: "hysteria2"
+    server: "85.204.107.168"
+    port: 8443
+    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
+    sni: "grape-zet-ro-turbo.bumbleshrimp.com"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇬🇧 United Kingdom, London | [BL] [2]"
+    type: "vless"
+    server: "api.getsavesafe.space"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "api.getsavesafe.space"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "fkYk0Ow--0GYExpBFb2wZjooymT7uASOQLw9ESC3DF8"
+      short-id: "62b6d6e64d461d78"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇷🇴 Romania, Bucharest | [BL]"
+    type: "hysteria2"
+    server: "rou0001ntrhy01.tcp-reset-club.net"
+    port: 443
+    password: "8fb328f0-d8e0-4b11-a6db-3dadfc4f02a3"
+    sni: "rou0001ntrhy01.tcp-reset-club.net"
+    skip-cert-verify: true
+    udp: true
+    alpn:
+      - "h3"
+  -
+    name: "🇦🇪 United Arab Emirates, Abu Dhabi (Al Ras Al Akhdar) | [BL]"
+    type: "hysteria2"
+    server: "85.204.107.169"
+    port: 8080
+    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
+    sni: "grape-zet-ro-turbo.bumbleshrimp.com"
     skip-cert-verify: false
     udp: true
   -
@@ -422,72 +484,31 @@ proxies:
     up: "10 Mbps"
     down: "50 Mbps"
   -
-    name: "🇺🇸 United States, Buffalo | [BL]"
+    name: "🇪🇸 Spain, Madrid | [BL]"
     type: "vless"
-    server: "sha.skysafe.online"
-    port: 2027
-    uuid: "579f0893-e6f9-4036-86a1-7c10aa2d24ea"
-    udp: true
-    tls: true
-    servername: "sha.skysafe.online"
-    client-fingerprint: "qq"
-    reality-opts:
-      public-key: "EApxy12MeXpqt-78odxizwcXT6hX9f8XeAcbMDVRAV0"
-      short-id: "6ba7b8109dad11d1"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/patch"
-      host: ""
-      mode: "auto"
-  -
-    name: "🇺🇸 United States, Buffalo | [BL] [2]"
-    type: "vless"
-    server: "186.246.19.131"
+    server: "200.234.227.64"
     port: 8443
-    uuid: "ef18d810-719c-4bf1-83c6-615d01f217eb"
+    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
     udp: true
     flow: "xtls-rprx-vision"
     tls: true
-    servername: "gem.cryptoofarm.com"
-    client-fingerprint: "firefox"
+    servername: "sp.crsmaps.com"
+    client-fingerprint: "edge"
     reality-opts:
-      public-key: "psBgpjOLk-vmOts84wgm_T0qqqaZHd9Reekul4L3ugA"
-      short-id: "42fe6ff20442d025"
+      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
+      short-id: "5326cc7587a9f0"
     network: "tcp"
   -
-    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [2]"
+    name: "🇬🇧 United Kingdom, London | [BL] [3]"
     type: "hysteria2"
-    server: "nl.vpn.legendaah.xyz"
-    port: 36723
-    password: "Krab9Hyst2_Rk7pQ2xL"
-    sni: "nl.vpn.legendaah.xyz"
-    skip-cert-verify: true
+    server: "222.167.212.81"
+    port: 8080
+    password: "h_B9x3942fJ9x_Kpx3914KQ_nZ934HFg_rT"
+    sni: "hopp-legend-se.roxa.org"
+    skip-cert-verify: false
     udp: true
   -
-    name: "🇨🇦 Canada, Montreal | [BL] [2]"
-    type: "hysteria2"
-    server: "vpn-ca-001.fastervpn.world"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "speedtest.tinkoff.ru"
-    skip-cert-verify: true
-    udp: true
-    up: "10 Mbps"
-    down: "50 Mbps"
-  -
-    name: "🇫🇮 Finland, Helsinki | 🌐 | [BL]"
-    type: "vless"
-    server: "146.75.119.82"
-    port: 80
-    uuid: "9ffc4b42-7aa7-4b8c-8420-72ecb8398a25"
-    udp: true
-    network: "ws"
-    ws-opts:
-      path: "ws/?ed=2048/@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1@VPNine1/?2048"
-      headers:
-        Host: "rb24.ir"
-  -
-    name: "🇺🇸 United States, Buffalo | [BL] [3]"
+    name: "🇺🇸 United States, Buffalo | [BL]"
     type: "vless"
     server: "gem.cryptoofarm.com"
     port: 8443
@@ -502,126 +523,16 @@ proxies:
       short-id: "42fe6ff20442d025"
     network: "tcp"
   -
-    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [3]"
+    name: "🇵🇦 Panama, Panama City | [BL]"
     type: "hysteria2"
-    server: "46.229.243.137"
-    port: 8443
-    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
-    sni: "grape-turbo-fr.roxa.org"
+    server: "82.39.214.83"
+    port: 8080
+    password: "VB92_Ka9qwef143K_L23K1hz3_bF_Hz62uT_Bn1_sC"
+    sni: "hopp-us.yyuyy.com"
     skip-cert-verify: false
     udp: true
   -
-    name: "🇨🇦 Canada, Montreal | [BL] [3]"
-    type: "hysteria2"
-    server: "vpn-ca-001.fastervpn.world"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "css.rbxcdn.com"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: ".𖥔 ݁ ˖ִ🛸༄˖°. | [BL] [2]"
-    type: "vless"
-    server: "5.75.207.94"
-    port: 7190
-    uuid: "8ce90db0-2b57-41eb-83f2-f65f68c6409b"
-    udp: true
-    tls: true
-    servername: "pypi.org"
-    client-fingerprint: "qq"
-    reality-opts:
-      public-key: "mPyGyFIPaIJskk9IhHv9rkv7amf77CYUV0KVeqDsPU8"
-      short-id: "7398e0c72f7d5c0e"
-    network: "tcp"
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [2]"
-    type: "hysteria2"
-    server: "althys2.superbuba.top"
-    port: 443
-    password: "65761043-f5c1-4e7b-8c16-b72c7a3fa4b7"
-    sni: "althys2.superbuba.top"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇫🇮 Finland, Helsinki | 🌐 | [BL] [2]"
-    type: "vless"
-    server: "144.31.82.201.fwqfw783rg2dad.website"
-    port: 443
-    uuid: "5ca83936-136d-4314-8453-4ba10a86cf60"
-    udp: true
-    tls: true
-    servername: "144.31.82.201.fwqfw783rg2dad.website"
-    network: "ws"
-    ws-opts:
-      path: "/websocket"
-      headers:
-        Host: "144.31.82.201.fwqfw783rg2dad.website"
-  -
-    name: "🇫🇮 Finland, Helsinki | 🌐 | [BL] [3]"
-    type: "vless"
-    server: "144.31.82.201.fwqfw783rg2dad.website"
-    port: 443
-    uuid: "5ca83936-136d-4314-8453-4ba10a86cf60"
-    udp: true
-    tls: true
-    servername: "144.31.82.201.fwqfw783rg2dad.website"
-    network: "ws"
-    ws-opts:
-      path: "/websocket"
-  -
-    name: "🇯🇵 Japan, Shibuya City | [BL]"
-    type: "vless"
-    server: "31.76.91.72"
-    port: 2087
-    uuid: "524e00ce-ed89-481d-b4a4-6d7017f884e3"
-    udp: true
-    tls: true
-    servername: "ads.x5.ru"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "-ZTJcZ_UcqAB7LHgkUqhnlJsQs_oBafRgjsFtWZElmM"
-      short-id: "c226283c4de5b1ad"
-    network: "grpc"
-    grpc-opts:
-      grpc-service-name: "grpc"
-  -
-    name: "🇫🇷 France, Paris | [BL]"
-    type: "hysteria2"
-    server: "f3.crsmaps.com"
-    port: 443
-    password: "ef18d810-719c-4bf1-83c6-615d01f217eb"
-    sni: "f3.crsmaps.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇸🇬 Singapore, Singapore | [BL]"
-    type: "hysteria2"
-    server: "47.129.3.178"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "t.me"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇸🇬 Singapore, Singapore | [BL] [2]"
-    type: "hysteria2"
-    server: "54.179.153.191"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "t.me"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇸🇬 Singapore, Singapore | 🌐 | [BL]"
-    type: "hysteria2"
-    server: "sg2.xiaoliyu.cyou"
-    port: 1935
-    password: "1427eb10-7529-4d38-a6a2-01b337868b37"
-    sni: "127.0.0.1"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇪🇸 Spain, Madrid | [BL]"
+    name: "🇪🇸 Spain, Madrid | [BL] [2]"
     type: "vless"
     server: "200.234.227.64"
     port: 8443
@@ -630,7 +541,31 @@ proxies:
     flow: "xtls-rprx-vision"
     tls: true
     servername: "sp.crsmaps.com"
-    client-fingerprint: "qq"
+    client-fingerprint: "safari"
+    reality-opts:
+      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
+      short-id: "5326cc7587a9f0"
+    network: "tcp"
+  -
+    name: "🇨🇦 Canada, Montreal | [BL] [2]"
+    type: "hysteria2"
+    server: "vpn-ca-001.fastervpn.world"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "css.rbxcdn.com"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇪🇸 Spain, Madrid | [BL] [3]"
+    type: "vless"
+    server: "sp.crsmaps.com"
+    port: 8443
+    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "sp.crsmaps.com"
+    client-fingerprint: "firefox"
     reality-opts:
       public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
       short-id: "5326cc7587a9f0"
@@ -651,23 +586,20 @@ proxies:
       short-id: "2d6d073dc88f22a8"
     network: "tcp"
   -
-    name: "🇯🇵 Japan, Shibuya City | [BL] [2]"
-    type: "hysteria2"
-    server: "jp.cryptoofarm.com"
-    port: 443
-    password: "ef18d810-719c-4bf1-83c6-615d01f217eb"
-    sni: "jp.cryptoofarm.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇫🇷 France, Paris | [BL] [2]"
-    type: "hysteria2"
-    server: "85.204.107.168"
+    name: "🇺🇸 United States, Buffalo | [BL] [2]"
+    type: "vless"
+    server: "186.246.19.131"
     port: 8443
-    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
-    sni: "grape-zet-ro-turbo.bumbleshrimp.com"
-    skip-cert-verify: false
+    uuid: "ef18d810-719c-4bf1-83c6-615d01f217eb"
     udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "gem.cryptoofarm.com"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "psBgpjOLk-vmOts84wgm_T0qqqaZHd9Reekul4L3ugA"
+      short-id: "42fe6ff20442d025"
+    network: "tcp"
   -
     name: "🇸🇪 Sweden, Stockholm | [BL] [2]"
     type: "vless"
@@ -684,29 +616,83 @@ proxies:
       short-id: "2d6d073dc88f22a8"
     network: "tcp"
   -
-    name: "🇸🇬 Singapore, Singapore | 🌐 | [BL] [2]"
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL]"
     type: "hysteria2"
-    server: "sg2.xiaoliyu.cyou"
-    port: 1935
-    password: "1427eb10-7529-4d38-a6a2-01b337868b37"
-    sni: "sg2.xiaoliyu.cyou"
-    skip-cert-verify: true
+    server: "player.wwwinternetvideo.click"
+    port: 443
+    password: "V1UQuwa-4PRIDW2paxrPe58RcxXHPGyFIGS-5QojaM8"
+    sni: "player.wwwinternetvideo.click"
+    skip-cert-verify: false
     udp: true
   -
-    name: "🇪🇸 Spain, Madrid | [BL] [2]"
+    name: "🇺🇸 United States, Buffalo | [BL] [3]"
     type: "vless"
-    server: "200.234.227.64"
-    port: 8443
-    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
+    server: "sha.skysafe.online"
+    port: 2027
+    uuid: "579f0893-e6f9-4036-86a1-7c10aa2d24ea"
     udp: true
-    flow: "xtls-rprx-vision"
     tls: true
-    servername: "sp.crsmaps.com"
-    client-fingerprint: "safari"
+    servername: "sha.skysafe.online"
+    client-fingerprint: "qq"
     reality-opts:
-      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
-      short-id: "5326cc7587a9f0"
-    network: "tcp"
+      public-key: "EApxy12MeXpqt-78odxizwcXT6hX9f8XeAcbMDVRAV0"
+      short-id: "6ba7b8109dad11d1"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/patch"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇫🇷 France, Paris | [BL] [3]"
+    type: "hysteria2"
+    server: "f3.crsmaps.com"
+    port: 443
+    password: "ef18d810-719c-4bf1-83c6-615d01f217eb"
+    sni: "f3.crsmaps.com"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇯🇵 Japan, Shibuya City | [BL]"
+    type: "vless"
+    server: "31.76.91.72"
+    port: 2087
+    uuid: "524e00ce-ed89-481d-b4a4-6d7017f884e3"
+    udp: true
+    tls: true
+    servername: "ads.x5.ru"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "-ZTJcZ_UcqAB7LHgkUqhnlJsQs_oBafRgjsFtWZElmM"
+      short-id: "c226283c4de5b1ad"
+    network: "grpc"
+    grpc-opts:
+      grpc-service-name: "grpc"
+  -
+    name: "🇫🇮 Finland, Helsinki | 🌐 | [BL]"
+    type: "vless"
+    server: "144.31.82.201.fwqfw783rg2dad.website"
+    port: 443
+    uuid: "5ca83936-136d-4314-8453-4ba10a86cf60"
+    udp: true
+    tls: true
+    servername: "144.31.82.201.fwqfw783rg2dad.website"
+    network: "ws"
+    ws-opts:
+      path: "/websocket"
+  -
+    name: "🇫🇮 Finland, Helsinki | 🌐 | [BL] [2]"
+    type: "vless"
+    server: "144.31.82.201.fwqfw783rg2dad.website"
+    port: 443
+    uuid: "5ca83936-136d-4314-8453-4ba10a86cf60"
+    udp: true
+    tls: true
+    servername: "144.31.82.201.fwqfw783rg2dad.website"
+    network: "ws"
+    ws-opts:
+      path: "/websocket"
+      headers:
+        Host: "144.31.82.201.fwqfw783rg2dad.website"
   -
     name: "🇵🇱 Poland, Warsaw | [BL]"
     type: "vless"
@@ -722,141 +708,46 @@ proxies:
       host: ""
       mode: "stream-up"
   -
-    name: "🇪🇸 Spain, Madrid | [BL] [3]"
-    type: "vless"
-    server: "sp.crsmaps.com"
-    port: 8443
-    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "sp.crsmaps.com"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
-      short-id: "5326cc7587a9f0"
-    network: "tcp"
-  -
-    name: "🇯🇵 Japan, Shibuya City | 🌐 | [BL]"
+    name: "🇸🇬 Singapore, Singapore | 🌐 | [BL]"
     type: "hysteria2"
-    server: "185.39.31.111"
-    port: 8443
-    password: "Foc_Mcxi45rM9v3ve_N92fdrK_10_Ssc5"
-    sni: "grape-beer.yyuyy.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🌐 Anycast-IP | 🇩🇪 | [BL]"
-    type: "vless"
-    server: "ru.golu-gulu.online"
-    port: 3443
-    uuid: "e7c11cc8-e4ae-45cf-98ef-6d9bc9cc5aa7"
-    udp: true
-    tls: true
-    servername: "id.pervye.ru"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "xEShpzw3ELhAha1ilVBZdkfgxtRMxZmP8Ji_Y3FZSX0"
-      short-id: ""
-    network: "grpc"
-    grpc-opts:
-      grpc-service-name: "nss"
-  -
-    name: "🇪🇸 Spain, Madrid | [BL] [4]"
-    type: "vless"
-    server: "200.234.227.64"
-    port: 8443
-    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "sp.crsmaps.com"
-    client-fingerprint: "edge"
-    reality-opts:
-      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
-      short-id: "5326cc7587a9f0"
-    network: "tcp"
-  -
-    name: "🇹🇼 Taiwan, Taoyuan | [BL]"
-    type: "vmess"
-    server: "165.154.195.38"
-    port: 35034
-    uuid: "959a8caf-4cea-43d0-a548-3628e7ddfafc"
-    alterId: 0
-    cipher: "auto"
-    udp: true
-    network: "tcp"
-  -
-    name: "🇪🇸 Spain, Madrid | [BL] [5]"
-    type: "vless"
-    server: "200.234.227.64"
-    port: 8443
-    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "sp.crsmaps.com"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
-      short-id: "5326cc7587a9f0"
-    network: "tcp"
-  -
-    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL]"
-    type: "vless"
-    server: "103.76.85.207"
-    port: 443
-    uuid: "6f339a8a-6c15-4104-a9ef-95f2082e8e53"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "wz7upg9oyxhWauuxq8wT0vwm-zwq2GlGqXPuRyjHVTs"
-      short-id: "d243260730435fb4"
-    network: "tcp"
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL]"
-    type: "hysteria2"
-    server: "player.wwwinternetvideo.click"
-    port: 443
-    password: "V1UQuwa-4PRIDW2paxrPe58RcxXHPGyFIGS-5QojaM8"
-    sni: "player.wwwinternetvideo.click"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [3]"
-    type: "hysteria2"
-    server: "althys.superbuba.top"
-    port: 443
-    password: "65761043-f5c1-4e7b-8c16-b72c7a3fa4b7"
-    sni: "althys.superbuba.top"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇫🇷 France, Paris | 🌐 | [BL] [3]"
-    type: "hysteria2"
-    server: "62.210.7.139"
-    port: 60111
-    password: "github.com/Alvin9999-newpac/fanqiang"
-    sni: "bing.com"
+    server: "sg2.xiaoliyu.cyou"
+    port: 1935
+    password: "1427eb10-7529-4d38-a6a2-01b337868b37"
+    sni: "127.0.0.1"
     skip-cert-verify: true
     udp: true
   -
-    name: "🇯🇵 Japan, Chiyoda City | [BL]"
-    type: "vless"
-    server: "103.100.158.63"
+    name: "🇺🇸 United States | 🌐 | [BL] [6]"
+    type: "hysteria2"
+    server: "66.94.121.46"
     port: 443
-    uuid: "ea1c1e20-7263-4b08-a01b-690b29af66b3"
+    password: "gf1:gfhysteria2024"
+    sni: "66.94.121.46"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇸🇬 Singapore, Singapore | [BL]"
+    type: "hysteria2"
+    server: "54.179.153.191"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "t.me"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇫🇮 Finland, Helsinki | [BL] [2]"
+    type: "vless"
+    server: "31.207.7.143"
+    port: 443
+    uuid: "f202c7ca-17b7-416d-b3a2-ac71d35afe9c"
     udp: true
     flow: "xtls-rprx-vision"
     tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "chrome"
+    servername: "se1.se-cdn.ru"
+    client-fingerprint: "firefox"
     reality-opts:
-      public-key: "T587xqua0Nrs0YreQRWJAP9Wto94NcbbhKPK4DkSi0c"
-      short-id: "2223411c2ad9c55f"
+      public-key: "nF_kEdHan2dgl2tlQ_dtNaKZ4oORhuiFrXHbtEDcT2Q"
+      short-id: "2d6d073dc88f22a8"
     network: "tcp"
   -
     name: "🇹🇷 Turkey, Arnavutköy | [BL]"
@@ -874,7 +765,215 @@ proxies:
       short-id: "f93c9d5127e622e4"
     network: "tcp"
   -
-    name: "🇫🇮 Finland, Helsinki | [BL] [2]"
+    name: "🇯🇵 Japan, Shibuya City | [BL] [2]"
+    type: "hysteria2"
+    server: "jp.cryptoofarm.com"
+    port: 443
+    password: "ef18d810-719c-4bf1-83c6-615d01f217eb"
+    sni: "jp.cryptoofarm.com"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇸🇬 Singapore, Singapore | [BL] [2]"
+    type: "hysteria2"
+    server: "47.129.3.178"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "t.me"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇸🇬 Singapore, Singapore | [BL] [3]"
+    type: "hysteria2"
+    server: "43.156.90.144"
+    port: 34567
+    password: "P6qkAwznuC076mbIR2cGPg=="
+    sni: "bing.com"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇸🇬 Singapore, Singapore | 🌐 | [BL] [2]"
+    type: "hysteria2"
+    server: "sg2.xiaoliyu.cyou"
+    port: 1935
+    password: "1427eb10-7529-4d38-a6a2-01b337868b37"
+    sni: "sg2.xiaoliyu.cyou"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇷🇴 Romania, Bucharest | 🌐 | [BL]"
+    type: "hysteria2"
+    server: "185.156.44.99"
+    port: 443
+    password: "gf1:gfhysteria2024"
+    sni: "speedtest.tinkoff.ru"
+    skip-cert-verify: true
+    udp: true
+    up: "10 Mbps"
+    down: "50 Mbps"
+  -
+    name: "🇷🇴 Romania, Bucharest | 🌐 | [BL] [2]"
+    type: "hysteria2"
+    server: "185.156.44.99"
+    port: 443
+    password: "gf1:gfhysteria2024"
+    sni: "google.com"
+    skip-cert-verify: true
+    udp: true
+    up: "10 Mbps"
+    down: "50 Mbps"
+  -
+    name: "🇺🇸 United States | 🌐 | [BL] [7]"
+    type: "hysteria2"
+    server: "66.94.121.46"
+    port: 443
+    password: "gf1:gfhysteria2024"
+    sni: "66.94.121.46"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇺🇸 United States, San Francisco (Financial District) | [BL]"
+    type: "vmess"
+    server: "165.140.216.142"
+    port: 443
+    uuid: "b65a2d69-5634-42a2-e4be-54e8a6176900"
+    alterId: 0
+    cipher: "auto"
+    udp: true
+    network: "tcp"
+  -
+    name: "🇺🇸 United States | 🌐 | [BL] [8]"
+    type: "hysteria2"
+    server: "66.94.121.46"
+    port: 443
+    password: "gf1:gfhysteria2024"
+    sni: "www.broadcom.com"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [2]"
+    type: "vless"
+    server: "185.204.170.32"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "safari"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [3]"
+    type: "vless"
+    server: "185.204.170.32"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇨🇦 Canada, Montreal | [BL] [3]"
+    type: "hysteria2"
+    server: "vpn-ca-001.fastervpn.world"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "speedtest.tinkoff.ru"
+    skip-cert-verify: true
+    udp: true
+    up: "10 Mbps"
+    down: "50 Mbps"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [4]"
+    type: "vless"
+    server: "185.204.170.32"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇺🇸 United States, Los Angeles | 🌐 | [BL]"
+    type: "hysteria2"
+    server: "mg2.mangshe.xyz"
+    port: 2056
+    password: "22d891f5-ad85-4824-b0b8-e30cf3d37eb5"
+    sni: "mg2.mangshe.xyz#🇩🇪|DE|@wxgqlfx|20"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [3]"
+    type: "hysteria2"
+    server: "nl.vpn.legendaah.xyz"
+    port: 36723
+    password: "Krab9Hyst2_Rk7pQ2xL"
+    sni: "nl.vpn.legendaah.xyz"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [5]"
+    type: "vless"
+    server: "185.204.170.32"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [6]"
+    type: "vless"
+    server: "185.204.170.32"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇯🇵 Japan, Shibuya City | 🌐 | [BL]"
+    type: "hysteria2"
+    server: "185.39.31.111"
+    port: 8443
+    password: "Foc_Mcxi45rM9v3ve_N92fdrK_10_Ssc5"
+    sni: "grape-beer.yyuyy.com"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [7]"
+    type: "vless"
+    server: "185.204.170.32"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "ios"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇫🇮 Finland, Helsinki | [BL] [3]"
     type: "vless"
     server: "31.207.7.210"
     port: 443
@@ -889,127 +988,183 @@ proxies:
       short-id: "2d6d073dc88f22a8"
     network: "tcp"
   -
-    name: "🇫🇷 France, Paris | [BL] [3]"
-    type: "hysteria2"
-    server: "85.204.107.169"
-    port: 8443
-    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
-    sni: "grape-zet-ro-turbo.bumbleshrimp.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇺🇸 United States | 🌐 | [BL] [3]"
-    type: "hysteria2"
-    server: "66.94.121.46"
-    port: 443
-    password: "gf1:gfhysteria2024"
-    sni: "66.94.121.46"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇫🇷 France, Yvrac | [BL]"
-    type: "hysteria2"
-    server: "frn.skysafe.online"
-    port: 443
-    password: "579f0893-e6f9-4036-86a1-7c10aa2d24ea"
-    sni: "frn.skysafe.online"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [4]"
-    type: "hysteria2"
-    server: "de2.vpn.legendaah.xyz"
-    port: 36723
-    password: "Krab9Hyst2_Rk7pQ2xL"
-    sni: "de2.vpn.legendaah.xyz"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL] [2]"
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [8]"
     type: "vless"
-    server: "103.76.85.123"
+    server: "185.204.170.32"
     port: 443
-    uuid: "81a865ca-3a2e-48b1-8ba4-fcdcbbed94cb"
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [9]"
+    type: "vless"
+    server: "185.204.170.32"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇺🇸 United States, Los Angeles | 🌐 | [BL] [2]"
+    type: "hysteria2"
+    server: "mg2.mangshe.xyz"
+    port: 2056
+    password: "22d891f5-ad85-4824-b0b8-e30cf3d37eb5"
+    sni: "127.0.0.1"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL]"
+    type: "vless"
+    server: "103.76.85.207"
+    port: 443
+    uuid: "6f339a8a-6c15-4104-a9ef-95f2082e8e53"
     udp: true
     flow: "xtls-rprx-vision"
     tls: true
     servername: "www.apple.com"
     client-fingerprint: "chrome"
     reality-opts:
-      public-key: "-FabDynhSYw-MiWTA9byBLG1qn6Ccr0X9gSuST4kpQU"
-      short-id: "6869a2f27528a6cf"
+      public-key: "wz7upg9oyxhWauuxq8wT0vwm-zwq2GlGqXPuRyjHVTs"
+      short-id: "d243260730435fb4"
     network: "tcp"
   -
-    name: "🇺🇸 United States | 🌐 | [BL] [4]"
-    type: "hysteria2"
-    server: "66.94.121.46"
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [10]"
+    type: "vless"
+    server: "first.fezlixa.ir"
     port: 443
-    password: "gf1:gfhysteria2024"
-    sni: "www.broadcom.com"
-    skip-cert-verify: true
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
     udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "ios"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
   -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [5]"
+    name: "🇫🇷 France, Paris | 🌐 | [BL] [3]"
     type: "hysteria2"
-    server: "95.164.123.231"
-    port: 36723
-    password: "Krab9Hyst2_Rk7pQ2xL"
-    sni: "95.164.123.231"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇦🇪 United Arab Emirates, Abu Dhabi (Al Ras Al Akhdar) | [BL]"
-    type: "hysteria2"
-    server: "85.204.107.169"
-    port: 8080
-    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
-    sni: "grape-zet-ro-turbo.bumbleshrimp.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇯🇵 Japan, Shibuya City | [BL] [3]"
-    type: "hysteria2"
-    server: "43.167.198.167"
-    port: 443
-    password: "fJT5wNXNkYDvYKKGWUc9f2vd0LvHKSwc"
-    sni: "43.167.198.167"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇸🇬 Singapore, Singapore | [BL] [3]"
-    type: "hysteria2"
-    server: "43.156.90.144"
-    port: 34567
-    password: "P6qkAwznuC076mbIR2cGPg=="
+    server: "62.210.7.139"
+    port: 60111
+    password: "github.com/Alvin9999-newpac/fanqiang"
     sni: "bing.com"
     skip-cert-verify: true
     udp: true
   -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [6]"
-    type: "hysteria2"
-    server: "de2.vpn.legendaah.xyz"
-    port: 36723
-    password: "Krab9Hyst2_Rk7pQ2xL"
-    sni: "127.0.0.1"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇫🇮 Finland, Helsinki | [BL] [3]"
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [11]"
     type: "vless"
-    server: "31.207.7.143"
+    server: "first.fezlixa.ir"
     port: 443
-    uuid: "f202c7ca-17b7-416d-b3a2-ac71d35afe9c"
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [12]"
+    type: "vless"
+    server: "96.126.129.29"
+    port: 2027
+    uuid: "579f0893-e6f9-4036-86a1-7c10aa2d24ea"
     udp: true
     flow: "xtls-rprx-vision"
     tls: true
-    servername: "se1.se-cdn.ru"
-    client-fingerprint: "firefox"
+    servername: "deh.skysafe.online"
+    client-fingerprint: "qq"
     reality-opts:
-      public-key: "nF_kEdHan2dgl2tlQ_dtNaKZ4oORhuiFrXHbtEDcT2Q"
-      short-id: "2d6d073dc88f22a8"
+      public-key: "EApxy12MeXpqt-78odxizwcXT6hX9f8XeAcbMDVRAV0"
+      short-id: "6ba7b8109dad11d1"
     network: "tcp"
   -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [7]"
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [13]"
+    type: "vless"
+    server: "96.126.129.29"
+    port: 2027
+    uuid: "579f0893-e6f9-4036-86a1-7c10aa2d24ea"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "deh.skysafe.online"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "EApxy12MeXpqt-78odxizwcXT6hX9f8XeAcbMDVRAV0"
+      short-id: "6ba7b8109dad11d1"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [14]"
+    type: "vless"
+    server: "first.fezlixa.ir"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇪🇸 Spain, Madrid | [BL] [4]"
+    type: "vless"
+    server: "200.234.227.64"
+    port: 8443
+    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "sp.crsmaps.com"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
+      short-id: "5326cc7587a9f0"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [15]"
+    type: "vless"
+    server: "first.fezlixa.ir"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "safari"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [16]"
+    type: "vless"
+    server: "first.fezlixa.ir"
+    port: 443
+    uuid: "4ed2b265-22e0-4401-a561-30c8229db255"
+    udp: true
+    tls: true
+    servername: "amp-api-edge.apps.apple.com"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "GbTJWGlMSR3vDh_FVCxO0CpaXZR61d1ezPaiRRmZkm0"
+      short-id: "9f99ec"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [2]"
     type: "hysteria2"
     server: "95.164.123.231"
     port: 36723
@@ -1018,20 +1173,63 @@ proxies:
     skip-cert-verify: true
     udp: true
   -
-    name: "🇰🇿 Kazakhstan, Almaty | [BL]"
+    name: "🇪🇸 Spain, Madrid | [BL] [5]"
+    type: "vless"
+    server: "200.234.227.64"
+    port: 8443
+    uuid: "16ab4d4a-fd81-4535-9b7b-346677226ce8"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "sp.crsmaps.com"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "OFK3xqhyTsDoJi8emuzmOCE9Xzwi0DyZPNj0X-E4iVE"
+      short-id: "5326cc7587a9f0"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Frankfurt am Main West) | [BL]"
+    type: "vless"
+    server: "tr.cellser.ir"
+    port: 24949
+    uuid: "13efddd3-1a20-49f3-bbbe-f5b530398bb6"
+    udp: true
+    tls: true
+    servername: "www.yahoo.com"
+    client-fingerprint: "ios"
+    reality-opts:
+      public-key: "qjRHJ5qtLh5zJymurmhkrpBHl1yN0EeRByRznftR3Hw"
+      short-id: "e5cdac"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [3]"
     type: "hysteria2"
-    server: "kz.frkn.org"
-    port: 443
-    password: "3b8c82ed-fe66-472d-915e-034ccb57103f"
-    sni: "kz.frkn.org"
-    skip-cert-verify: false
+    server: "95.164.123.231"
+    port: 36723
+    password: "Krab9Hyst2_Rk7pQ2xL"
+    sni: "95.164.123.231"
+    skip-cert-verify: true
     udp: true
   -
-    name: "🇰🇿 Kazakhstan, Almaty | [BL] [2]"
+    name: "🇩🇪 Germany, Frankfurt am Main (Frankfurt am Main West) | [BL] [2]"
+    type: "vless"
+    server: "tr.cellser.ir"
+    port: 24949
+    uuid: "13efddd3-1a20-49f3-bbbe-f5b530398bb6"
+    udp: true
+    tls: true
+    servername: "www.yahoo.com"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "qjRHJ5qtLh5zJymurmhkrpBHl1yN0EeRByRznftR3Hw"
+      short-id: "e5cdac"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [4]"
     type: "hysteria2"
-    server: "kz.frkn.org"
-    port: 443
-    password: "3b8c82ed-fe66-472d-915e-034ccb57103f"
-    sni: "kz.frkn.org"
-    skip-cert-verify: false
+    server: "de2.vpn.legendaah.xyz"
+    port: 36723
+    password: "Krab9Hyst2_Rk7pQ2xL"
+    sni: "127.0.0.1"
+    skip-cert-verify: true
     udp: true
