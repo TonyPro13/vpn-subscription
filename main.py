@@ -20,6 +20,10 @@ SOURCES = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS%2BAll_RUS.txt",
+    "https://raw.githubusercontent.com/3inker/v2ray-subscription/refs/heads/main/subs/all_not_ru.txt",
+    "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/super-sub.txt",
+    "https://raw.githubusercontent.com/luxxuria/harvester/refs/heads/main/top_600.txt",
+    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/refs/heads/main/Best-Results/proxies.txt",
 ]
 
 SUPPORTED = {"vless", "vmess", "trojan", "ss", "hysteria2", "hy2"}
@@ -28,6 +32,7 @@ OUT_DIR = Path("output")
 BIN_DIR = Path("bin")
 XRAY = BIN_DIR / "xray"
 SINGBOX = BIN_DIR / "sing-box"
+MIHOMO = Path(os.getenv("MIHOMO_BIN", str(BIN_DIR / "mihomo")))
 GEOIP_COUNTRY_DB = Path("data/GeoLite2-Country.mmdb")
 
 CHEAP_PROBE_SEMAPHORE = None
@@ -97,6 +102,7 @@ INSTAGRAM_PROBE_URLS = (
 )
 
 MIHOMO_AUTO_TEST_URL = "https://www.gstatic.com/generate_204"
+MIHOMO_PROBE_TIMEOUT = float(os.getenv("MIHOMO_PROBE_TIMEOUT_SECONDS", "5"))
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
 MAX_PUBLISHED_NODES = 100
@@ -2045,6 +2051,136 @@ def yaml_dump(data):
     return dump(data) + "\n"
 
 
+async def mihomo_real_probe(uri: str):
+    """
+    Final mandatory compatibility gate executed with Mihomo itself.
+
+    It uses the same URI-to-Mihomo conversion as mihomo-provider.yaml, starts
+    a temporary one-node Mihomo instance, and sends a real HTTP 204 request
+    through its local SOCKS/mixed port. A pass therefore proves both that the
+    converted node starts in Mihomo and that it can forward real traffic.
+    """
+    process = None
+    cfg_file = None
+    port = free_port()
+
+    try:
+        proxy = mihomo_proxy_from_uri(uri, "MIHOMO_PROBE")
+        config = {
+            "mixed-port": port,
+            "mode": "rule",
+            "log-level": "silent",
+            "proxies": [proxy],
+            "proxy-groups": [{
+                "name": "MIHOMO_PROBE_GROUP",
+                "type": "select",
+                "proxies": ["MIHOMO_PROBE"],
+            }],
+            "rules": ["MATCH,MIHOMO_PROBE_GROUP"],
+        }
+
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".yaml",
+            delete=False,
+            encoding="utf-8",
+        ) as f:
+            f.write(yaml_dump(config))
+            cfg_file = f.name
+
+        process = await asyncio.create_subprocess_exec(
+            str(MIHOMO),
+            "-f",
+            cfg_file,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+
+        if not await wait_port(port):
+            return Probe(False, error="mihomo: mixed port not opened")
+
+        proc = await asyncio.create_subprocess_exec(
+            "curl",
+            "-sS",
+            "--max-time",
+            str(max(1, int(MIHOMO_PROBE_TIMEOUT))),
+            "--proxy",
+            f"socks5h://127.0.0.1:{port}",
+            "-o",
+            os.devnull,
+            "-w",
+            "%{http_code} %{time_total}",
+            MIHOMO_AUTO_TEST_URL,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
+        try:
+            out, err = await asyncio.wait_for(
+                proc.communicate(),
+                timeout=MIHOMO_PROBE_TIMEOUT + 2,
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.communicate()
+            return Probe(False, error="mihomo: delay probe timeout")
+
+        result_text = out.decode(errors="replace").strip()
+        parts = result_text.split()
+        code = parts[0] if parts else ""
+
+        try:
+            total_seconds = float(parts[1])
+        except (IndexError, ValueError):
+            total_seconds = MIHOMO_PROBE_TIMEOUT + 1
+
+        if proc.returncode != 0:
+            error_text = err.decode(errors="replace").strip()
+            return Probe(
+                False,
+                error=f"mihomo: HTTP probe failed: {error_text[-300:]}",
+            )
+
+        if code != "204":
+            return Probe(
+                False,
+                latency_ms=round(total_seconds * 1000, 1),
+                error=f"mihomo: unexpected HTTP status {code or '000'}",
+            )
+
+        return Probe(
+            True,
+            latency_ms=round(total_seconds * 1000, 1),
+        )
+
+    except Exception as e:
+        return Probe(False, error=f"mihomo: {type(e).__name__}: {e}")
+
+    finally:
+        if process is not None:
+            try:
+                process.terminate()
+                await asyncio.wait_for(process.wait(), timeout=2)
+            except Exception:
+                try:
+                    process.kill()
+                    await process.wait()
+                except Exception:
+                    pass
+
+        if cfg_file:
+            try:
+                Path(cfg_file).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+
+async def safe_mihomo_probe(uri: str):
+    """Run the final Mihomo gate under the existing VPN process limit."""
+    async with VPN_PROCESS_SEMAPHORE:
+        return await mihomo_real_probe(uri)
+
+
 async def safe_probe(uri: str, probe_stats: dict):
     """
     Full VPN probe wrapper.
@@ -2069,6 +2205,12 @@ async def main():
     run_started = time.monotonic()
     OUT_DIR.mkdir(exist_ok=True)
     STATE_FILE.parent.mkdir(exist_ok=True)
+
+    if not MIHOMO.is_file() or not os.access(MIHOMO, os.X_OK):
+        raise FileNotFoundError(
+            f"Mandatory executable Mihomo binary not found: {MIHOMO}. "
+            "Set MIHOMO_BIN or place the executable at bin/mihomo."
+        )
 
     global CHEAP_PROBE_SEMAPHORE
     global VPN_PROCESS_SEMAPHORE
@@ -2134,6 +2276,7 @@ async def main():
             "telegram_mtproto",
             "whatsapp_core",
             "instagram_core",
+            "mihomo",
         )
     }
 
@@ -2161,6 +2304,30 @@ async def main():
                 })
             del current[key]
             deleted += 1
+
+    # Final mandatory Mihomo compatibility gate. It runs only for nodes that
+    # already passed the complete existing service cascade above.
+    mihomo_keys = list(current.keys())
+    mihomo_results = await asyncio.gather(
+        *(safe_mihomo_probe(current[k]["uri"]) for k in mihomo_keys)
+    )
+
+    for key, result in zip(mihomo_keys, mihomo_results):
+        probe_stats["mihomo"]["checked"] += 1
+        if result.ok:
+            probe_stats["mihomo"]["passed"] += 1
+            continue
+
+        probe_stats["mihomo"]["failed"] += 1
+        successes -= 1
+        failures += 1
+        if len(failure_samples) < 20:
+            failure_samples.append({
+                "protocol": current[key]["uri"].split("://", 1)[0].lower(),
+                "error": result.error,
+            })
+        del current[key]
+        deleted += 1
 
     # Rank every fully verified node by the average latency already collected
     # from the existing mandatory service cascade. No new probe or admission
@@ -2262,6 +2429,10 @@ async def main():
                 "www.instagram.com and i.instagram.com/api/v1/ checked in parallel; "
                 "both must return a real HTTP response; any HTTP status is accepted; "
                 f"timeout {INSTAGRAM_PROBE_TIMEOUT:g}s per request"
+            ),
+            "mihomo": (
+                "final mandatory real Mihomo startup + HTTP 204 through the converted "
+                f"node; url={MIHOMO_AUTO_TEST_URL}; timeout {MIHOMO_PROBE_TIMEOUT:g}s"
             ),
         },
         "failure_samples": failure_samples,
