@@ -2431,13 +2431,14 @@ async def main():
         "not_published_due_to_limit": max(
             0,
             len(mihomo_final_ranked) - len(published_ordered),
-        ),
         "ranking_policy": (
-            "Mihomo first removes nodes with no positive Cloudflare delay before "
-            "the service cascade. After every mandatory service probe has passed, "
-            "Mihomo measures the survivors again. Publish up to 100 nodes with the "
-            "lowest FINAL Mihomo delay; preliminary and service-probe latency are "
-            "not used for TOP-100 ordering"
+            f"Mihomo first allows only nodes with 0 < Cloudflare delay < "
+            f"{MIHOMO_MAX_LATENCY_MS} ms before the service cascade. After every "
+            "mandatory service probe has passed, Mihomo measures the survivors again. "
+            f"Only nodes with 0 < FINAL delay < {MIHOMO_MAX_LATENCY_MS} ms are eligible "
+            "for publication. Publish up to 100 eligible nodes ordered by the lowest "
+            "FINAL Mihomo delay; preliminary and service-probe latency are not used "
+            "for TOP-100 ordering"
         ),
         "mihomo_precheck": mihomo_precheck_stats,
         "mihomo_precheck_errors": mihomo_precheck_errors[:50],
@@ -2475,13 +2476,15 @@ async def main():
             "mihomo_precheck": (
                 "pre-cascade native Mihomo group delay test; test URL "
                 f"{MIHOMO_PING_TEST_URL}; timeout {MIHOMO_PING_TIMEOUT_MS} ms; "
-                "nodes without a positive delay are rejected before the cascade"
+                f"only nodes with 0 < delay < {MIHOMO_MAX_LATENCY_MS} ms are admitted "
+                "to the service cascade"
             ),
             "mihomo_final_ping": (
                 "post-cascade native Mihomo group delay test against the same "
                 f"Cloudflare URL {MIHOMO_PING_TEST_URL}; timeout "
-                f"{MIHOMO_PING_TIMEOUT_MS} ms; ascending FINAL delay is the sole "
-                "TOP-100 ranking metric"
+                f"{MIHOMO_PING_TIMEOUT_MS} ms; only nodes with 0 < FINAL delay < "
+                f"{MIHOMO_MAX_LATENCY_MS} ms are eligible for publication; ascending "
+                "FINAL delay is the sole TOP-100 ranking metric among eligible nodes"
             ),
         },
         "failure_samples": failure_samples,
@@ -2495,8 +2498,8 @@ async def main():
             "duration_seconds": duration,
         },
         "run_duration_seconds": duration,
-        "admission_rule": "Geography and preliminary DNS latency filters are disabled. Every deduplicated candidate is first tested by Mihomo itself against Cloudflare; no positive delay means immediate rejection before the service cascade. Survivors must then pass every mandatory service probe. After the cascade, Mihomo performs a second fresh Cloudflare delay test. Only nodes with a positive FINAL Mihomo delay are eligible for publication, and TOP-100 is ordered strictly by that final delay.",
-        "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. Preliminary Mihomo latency is only a dead-node filter. Service-probe latency is admission telemetry only. Final Mihomo latency is the sole TOP-100 ordering metric. Client AUTO uses the same Cloudflare test URL.",
+        "admission_rule": f"Geography and preliminary DNS latency filters are disabled. Every deduplicated candidate is first tested by Mihomo itself against Cloudflare; only nodes with 0 < delay < {MIHOMO_MAX_LATENCY_MS} ms are admitted to the service cascade. Survivors must then pass every mandatory service probe. After the cascade, Mihomo performs a second fresh Cloudflare delay test. Only nodes with 0 < FINAL delay < {MIHOMO_MAX_LATENCY_MS} ms are eligible for publication, and TOP-100 is ordered strictly by that final delay.",
+        "note": f"Node age does not matter. Previous nodes and new nodes are treated equally on every run. Preliminary Mihomo latency is an admission filter requiring delay below {MIHOMO_MAX_LATENCY_MS} ms. Service-probe latency is admission telemetry only. Final Mihomo latency must also be below {MIHOMO_MAX_LATENCY_MS} ms and is the sole TOP-100 ordering metric among eligible nodes. Client AUTO uses the same Cloudflare test URL.",
     }
 
     (OUT_DIR / "status.json").write_text(
