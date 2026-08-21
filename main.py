@@ -2431,6 +2431,7 @@ async def main():
         "not_published_due_to_limit": max(
             0,
             len(mihomo_final_ranked) - len(published_ordered),
+        ),
         "ranking_policy": (
             f"Mihomo first allows only nodes with 0 < Cloudflare delay < "
             f"{MIHOMO_MAX_LATENCY_MS} ms before the service cascade. After every "
