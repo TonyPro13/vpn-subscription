@@ -108,6 +108,8 @@ MIHOMO_PING_TIMEOUT_MS = int(
     os.getenv("MIHOMO_PING_TIMEOUT_MS", "5000")
 )
 
+MIHOMO_MAX_LATENCY_MS = 500
+
 MIHOMO_START_TIMEOUT = float(
     os.getenv("MIHOMO_START_TIMEOUT_SECONDS", "5")
 )
@@ -1948,6 +1950,19 @@ async def measure_nodes_with_mihomo(
 
         if delay <= 0:
             error = "measurement: Mihomo returned no positive delay"
+            item[error_key] = error
+            errors.append({
+                "name": node_name,
+                "protocol": item["uri"].split("://", 1)[0].lower(),
+                "error": error,
+            })
+            continue
+
+        if delay >= MIHOMO_MAX_LATENCY_MS:
+            error = (
+                f"measurement: Mihomo delay too high "
+                f"({delay:.1f} ms >= {MIHOMO_MAX_LATENCY_MS} ms)"
+            )
             item[error_key] = error
             errors.append({
                 "name": node_name,
