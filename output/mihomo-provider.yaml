@@ -9,10 +9,33 @@ proxies:
     sni: "333-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
     alpn:
       - "http/1.1"
-    client-fingerprint: "chrome"
+    client-fingerprint: "firefox"
     network: "ws"
     ws-opts:
       path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/u-s@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+  -
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [2]"
+    type: "trojan"
+    server: "45.205.0.6"
+    port: 443
+    password: "mitivpn"
+    udp: true
+    sni: "333-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    alpn:
+      - "http/1.1"
+    client-fingerprint: "qq"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/u-s@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+  -
+    name: "🇺🇸 United States, Buffalo | [BL]"
+    type: "hysteria2"
+    server: "keep-out.whit3.net"
+    port: 443
+    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
+    sni: "keep-out.whit3.net"
+    skip-cert-verify: false
+    udp: true
   -
     name: "🇺🇸 United States, New York | [BL]"
     type: "hysteria2"
@@ -23,14 +46,52 @@ proxies:
     skip-cert-verify: false
     udp: true
   -
-    name: "🇺🇸 United States, Buffalo | [BL]"
-    type: "hysteria2"
-    server: "keep-out.whit3.net"
+    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL]"
+    type: "vless"
+    server: "103.76.85.213"
     port: 443
-    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
-    sni: "keep-out.whit3.net"
-    skip-cert-verify: false
+    uuid: "1fb60770-fc92-480f-801f-4e4e05af88b3"
     udp: true
+    flow: "xtls-rprx-vision"
+    packet-encoding: "xudp"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "Me7Ii42ZwYdhuQUAGUimaTeOUQVSAaoxRat8KnZFDTk"
+      short-id: "ee8f9024bee24cac"
+    network: "tcp"
+  -
+    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL] [2]"
+    type: "vless"
+    server: "103.76.85.213"
+    port: 443
+    uuid: "1fb60770-fc92-480f-801f-4e4e05af88b3"
+    udp: true
+    flow: "xtls-rprx-vision"
+    packet-encoding: "xudp"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "Me7Ii42ZwYdhuQUAGUimaTeOUQVSAaoxRat8KnZFDTk"
+      short-id: "ee8f9024bee24cac"
+    network: "tcp"
+  -
+    name: "🇯🇵 Japan, Chiyoda City | [BL]"
+    type: "vless"
+    server: "116.206.92.44"
+    port: 443
+    uuid: "d29f3c8c-650a-466c-a8b0-8150f33b1640"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "vnJsxWf4fvfo-3_EOY3QidjgCpDFe7XnB59ltE70pnI"
+      short-id: "1b09f4d0491f2a48"
+    network: "tcp"
   -
     name: "🇺🇸 United States | 🌐 | [BL]"
     type: "vless"
@@ -50,15 +111,30 @@ proxies:
       host: ""
       mode: "auto"
   -
+    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL] [3]"
+    type: "vless"
+    server: "103.76.85.82"
+    port: 443
+    uuid: "ef5e311d-ed25-42d7-98a6-30fa273cf174"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "uLhi4XEmyszRHxTWF2-X_rehZdceMD4bdVaBOB64Kmc"
+      short-id: "36ff988994b11357"
+    network: "tcp"
+  -
     name: "🇺🇸 United States | 🌐 | [BL] [2]"
     type: "vless"
-    server: "usa-backup.opngtr.nl"
+    server: "usa.opngtr.nl"
     port: 443
     uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
     udp: true
     tls: true
     servername: "usa-select.savesafe.cc"
-    client-fingerprint: "firefox"
+    client-fingerprint: "chrome"
     reality-opts:
       public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
       short-id: "9f3df965329a8e7f"
@@ -76,7 +152,7 @@ proxies:
     udp: true
     tls: true
     servername: "usa-select.savesafe.cc"
-    client-fingerprint: "qq"
+    client-fingerprint: "safari"
     reality-opts:
       public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
       short-id: "9f3df965329a8e7f"
@@ -86,15 +162,60 @@ proxies:
       host: ""
       mode: "auto"
   -
+    name: "🇯🇵 Japan, Chiyoda City | [BL] [2]"
+    type: "vless"
+    server: "116.206.92.44"
+    port: 443
+    uuid: "d29f3c8c-650a-466c-a8b0-8150f33b1640"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "vnJsxWf4fvfo-3_EOY3QidjgCpDFe7XnB59ltE70pnI"
+      short-id: "1b09f4d0491f2a48"
+    network: "tcp"
+  -
+    name: "🇯🇵 Japan, Chiyoda City | [BL] [3]"
+    type: "vless"
+    server: "116.206.92.44"
+    port: 443
+    uuid: "d29f3c8c-650a-466c-a8b0-8150f33b1640"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "vnJsxWf4fvfo-3_EOY3QidjgCpDFe7XnB59ltE70pnI"
+      short-id: "1b09f4d0491f2a48"
+    network: "tcp"
+  -
+    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL] [4]"
+    type: "vless"
+    server: "103.76.85.82"
+    port: 443
+    uuid: "ef5e311d-ed25-42d7-98a6-30fa273cf174"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "safari"
+    reality-opts:
+      public-key: "uLhi4XEmyszRHxTWF2-X_rehZdceMD4bdVaBOB64Kmc"
+      short-id: "36ff988994b11357"
+    network: "tcp"
+  -
     name: "🇺🇸 United States | 🌐 | [BL] [4]"
     type: "vless"
-    server: "usa.opngtr.nl"
+    server: "usa-backup.opngtr.nl"
     port: 443
     uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
     udp: true
     tls: true
     servername: "usa-select.savesafe.cc"
-    client-fingerprint: "safari"
+    client-fingerprint: "firefox"
     reality-opts:
       public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
       short-id: "9f3df965329a8e7f"
@@ -112,38 +233,6 @@ proxies:
     udp: true
     tls: true
     servername: "usa-select.savesafe.cc"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
-      short-id: "9f3df965329a8e7f"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [2]"
-    type: "trojan"
-    server: "45.205.0.6"
-    port: 443
-    password: "mitivpn"
-    udp: true
-    sni: "333-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-    alpn:
-      - "http/1.1"
-    client-fingerprint: "firefox"
-    network: "ws"
-    ws-opts:
-      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/u-s@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
-  -
-    name: "🇺🇸 United States | 🌐 | [BL] [6]"
-    type: "vless"
-    server: "usa.opngtr.nl"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "usa-select.savesafe.cc"
     client-fingerprint: "edge"
     reality-opts:
       public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
@@ -154,21 +243,53 @@ proxies:
       host: ""
       mode: "auto"
   -
+    name: "🇺🇸 United States | 🌐 | [BL] [6]"
+    type: "vless"
+    server: "usa.opngtr.nl"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "usa-select.savesafe.cc"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "q-8lriuP627DilumgJAvbowp7YGzWBZg9gSDgbmowjk"
+      short-id: "9f3df965329a8e7f"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [3]"
+    type: "trojan"
+    server: "45.205.0.6"
+    port: 443
+    password: "mitivpn"
+    udp: true
+    sni: "333-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    alpn:
+      - "http/1.1"
+    client-fingerprint: "chrome"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/u-s@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+  -
     name: "🇳🇱 The Netherlands, Amsterdam | [BL]"
     type: "hysteria2"
-    server: "86.107.178.76"
+    server: "86.107.178.78"
     port: 8443
     password: "Oz_Kx9342gefwJ89x3_M9z32kzf9KJq003_s"
     sni: "hopp-netherland-new.dynuddns.net"
     skip-cert-verify: false
     udp: true
   -
-    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [2]"
+    name: "🇵🇦 Panama, Panama City | [BL]"
     type: "hysteria2"
-    server: "46.229.243.140"
-    port: 8443
-    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
-    sni: "grape-turbo-fr.roxa.org"
+    server: "82.39.214.98"
+    port: 8080
+    password: "VB92_Ka9qwef143K_L23K1hz3_bF_Hz62uT_Bn1_sC"
+    sni: "hopp-us.yyuyy.com"
     skip-cert-verify: false
     udp: true
   -
@@ -180,137 +301,17 @@ proxies:
     udp: true
     tls: true
     servername: "net.savesafe.run"
-    client-fingerprint: "firefox"
+    client-fingerprint: "ios"
     reality-opts:
       public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
       short-id: "812609fa663c57fb"
     network: "xhttp"
     xhttp-opts:
       path: "/"
-      host: ""
+      host: "net.savesafe.run"
       mode: "auto"
-  -
-    name: "🇬🇧 United Kingdom, London | [BL]"
-    type: "hysteria2"
-    server: "162.249.124.111"
-    port: 8443
-    password: "9Me_Jx935gnHx13_Nx45M_NYXe037js_Be4z"
-    sni: "hopp-germany-new.ddnsguru.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL]"
-    type: "vless"
-    server: "194.48.250.172"
-    port: 443
-    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "eu-central.cendora.ru"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
-      short-id: "00bca5982f82d083"
-    network: "tcp"
   -
     name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [2]"
-    type: "vless"
-    server: "162.35.231.122"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "net.savesafe.run"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
-      short-id: "812609fa663c57fb"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: ""
-      mode: "auto"
-  -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [3]"
-    type: "vless"
-    server: "162.35.231.122"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "net.savesafe.run"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
-      short-id: "812609fa663c57fb"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: "net.savesafe.run"
-      mode: "auto"
-  -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [4]"
-    type: "vless"
-    server: "162.35.231.100"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "net.savesafe.run"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
-      short-id: "812609fa663c57fb"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: "net.savesafe.run"
-      mode: "auto"
-  -
-    name: "🇬🇧 United Kingdom, London | [BL] [2]"
-    type: "hysteria2"
-    server: "uk196.mechvpn.online"
-    port: 443
-    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "uk196.mechvpn.online"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [2]"
-    type: "vless"
-    server: "194.48.250.172"
-    port: 443
-    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "eu-central.cendora.ru"
-    client-fingerprint: "safari"
-    reality-opts:
-      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
-      short-id: "00bca5982f82d083"
-    network: "tcp"
-  -
-    name: "🇨🇦 Canada, Montreal | [BL]"
-    type: "hysteria2"
-    server: "vpn-ca-001.fastervpn.world"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "css.rbxcdn.com"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇨🇦 Canada, Montreal | [BL] [2]"
-    type: "hysteria2"
-    server: "vpn-ca-001.fastervpn.world"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "css.rbxcdn.com"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [5]"
     type: "vless"
     server: "162.35.231.93"
     port: 443
@@ -328,37 +329,83 @@ proxies:
       host: "net.savesafe.run"
       mode: "auto"
   -
-    name: "🇨🇦 Canada, Montreal | [BL] [3]"
-    type: "hysteria2"
-    server: "vpn-ca-001.fastervpn.world"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "t.me"
-    skip-cert-verify: true
-    udp: true
-    up: "10 Mbps"
-    down: "50 Mbps"
-  -
     name: "🇦🇪 United Arab Emirates, Warisan | [BL]"
+    type: "vless"
+    server: "151.242.160.94"
+    port: 443
+    uuid: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "pl94.mechvpn.online"
+    client-fingerprint: "firefox"
+    network: "tcp"
+  -
+    name: "🇬🇧 United Kingdom, London | [BL]"
     type: "hysteria2"
-    server: "pl94.mechvpn.online"
+    server: "uk196.mechvpn.online"
     port: 443
     password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "pl94.mechvpn.online"
+    sni: "uk196.mechvpn.online"
     skip-cert-verify: false
     udp: true
     alpn:
       - "h3"
   -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [6]"
+    name: ".𖥔 ݁ ˖ִ🛸༄˖°. | [BL]"
     type: "vless"
-    server: "162.35.231.122"
+    server: "194.48.250.172"
+    port: 443
+    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "eu-central.cendora.ru"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
+      short-id: "00bca5982f82d083"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL]"
+    type: "vless"
+    server: "194.48.250.172"
+    port: 443
+    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "eu-central.cendora.ru"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
+      short-id: "00bca5982f82d083"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [2]"
+    type: "vless"
+    server: "194.48.250.172"
+    port: 443
+    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "eu-central.cendora.ru"
+    client-fingerprint: "ios"
+    reality-opts:
+      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
+      short-id: "00bca5982f82d083"
+    network: "tcp"
+  -
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [3]"
+    type: "vless"
+    server: "162.35.231.100"
     port: 443
     uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
     udp: true
     tls: true
     servername: "net.savesafe.run"
-    client-fingerprint: "edge"
+    client-fingerprint: "firefox"
     reality-opts:
       public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
       short-id: "812609fa663c57fb"
@@ -368,7 +415,25 @@ proxies:
       host: "net.savesafe.run"
       mode: "auto"
   -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [7]"
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [4]"
+    type: "vless"
+    server: "162.35.231.94"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "net.savesafe.run"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
+      short-id: "812609fa663c57fb"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [5]"
     type: "vless"
     server: "162.35.231.101"
     port: 443
@@ -386,6 +451,30 @@ proxies:
       host: ""
       mode: "auto"
   -
+    name: "🇬🇧 United Kingdom, London | [BL] [2]"
+    type: "hysteria2"
+    server: "uk196.mechvpn.online"
+    port: 443
+    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    sni: "uk196.mechvpn.online"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [3]"
+    type: "vless"
+    server: "194.48.250.172"
+    port: 443
+    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "eu-central.cendora.ru"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
+      short-id: "00bca5982f82d083"
+    network: "tcp"
+  -
     name: "🇩🇪 Germany, Frankfurt am Main | [BL]"
     type: "vless"
     server: "de137.mechvpn.online"
@@ -402,6 +491,87 @@ proxies:
     client-fingerprint: "chrome"
     network: "tcp"
   -
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [6]"
+    type: "vless"
+    server: "162.35.231.100"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "net.savesafe.run"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
+      short-id: "812609fa663c57fb"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [7]"
+    type: "vless"
+    server: "162.35.231.122"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "net.savesafe.run"
+    client-fingerprint: "edge"
+    reality-opts:
+      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
+      short-id: "812609fa663c57fb"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: "net.savesafe.run"
+      mode: "auto"
+  -
+    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [2]"
+    type: "hysteria2"
+    server: "86.107.178.76"
+    port: 8443
+    password: "Oz_Kx9342gefwJ89x3_M9z32kzf9KJq003_s"
+    sni: "hopp-netherland-new.dynuddns.net"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [8]"
+    type: "vless"
+    server: "162.35.231.122"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "net.savesafe.run"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
+      short-id: "812609fa663c57fb"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: ""
+      mode: "auto"
+  -
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [9]"
+    type: "vless"
+    server: "162.35.231.122"
+    port: 443
+    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    udp: true
+    tls: true
+    servername: "net.savesafe.run"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
+      short-id: "812609fa663c57fb"
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: "net.savesafe.run"
+      mode: "auto"
+  -
     name: "🇦🇪 United Arab Emirates, Warisan | [BL] [2]"
     type: "vless"
     server: "pl94.mechvpn.online"
@@ -416,6 +586,15 @@ proxies:
       - "h2"
       - "http/1.1"
     network: "tcp"
+  -
+    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [3]"
+    type: "hysteria2"
+    server: "46.229.243.140"
+    port: 8443
+    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
+    sni: "grape-turbo-fr.roxa.org"
+    skip-cert-verify: false
+    udp: true
   -
     name: "🇦🇪 United Arab Emirates, Warisan | [BL] [3]"
     type: "vless"
@@ -433,15 +612,15 @@ proxies:
     client-fingerprint: "edge"
     network: "tcp"
   -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [8]"
+    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [10]"
     type: "vless"
-    server: "162.35.231.101"
+    server: "162.35.231.94"
     port: 443
     uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
     udp: true
     tls: true
     servername: "net.savesafe.run"
-    client-fingerprint: "firefox"
+    client-fingerprint: "chrome"
     reality-opts:
       public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
       short-id: "812609fa663c57fb"
@@ -451,7 +630,7 @@ proxies:
       host: "net.savesafe.run"
       mode: "auto"
   -
-    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [3]"
+    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [4]"
     type: "vless"
     server: "194.48.250.172"
     port: 443
@@ -460,49 +639,10 @@ proxies:
     flow: "xtls-rprx-vision"
     tls: true
     servername: "eu-central.cendora.ru"
-    client-fingerprint: "firefox"
+    client-fingerprint: "chrome"
     reality-opts:
       public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
       short-id: "00bca5982f82d083"
-    network: "tcp"
-  -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [9]"
-    type: "vless"
-    server: "162.35.231.93"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "net.savesafe.run"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
-      short-id: "812609fa663c57fb"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: "net.savesafe.run"
-      mode: "auto"
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [2]"
-    type: "hysteria2"
-    server: "de87.mechvpn.online"
-    port: 443
-    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "de87.mechvpn.online"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [3]"
-    type: "vless"
-    server: "82.38.4.137"
-    port: 443
-    uuid: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "de137.mechvpn.online"
-    client-fingerprint: "firefox"
     network: "tcp"
   -
     name: "🇦🇪 United Arab Emirates, Warisan | [BL] [4]"
@@ -521,16 +661,128 @@ proxies:
     client-fingerprint: "chrome"
     network: "tcp"
   -
-    name: "🇬🇧 United Kingdom, London | [BL] [3]"
+    name: "🇦🇪 United Arab Emirates, Warisan | [BL] [5]"
     type: "hysteria2"
-    server: "uk196.mechvpn.online"
+    server: "pl94.mechvpn.online"
     port: 443
     password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "uk196.mechvpn.online"
+    sni: "pl94.mechvpn.online"
     skip-cert-verify: false
     udp: true
     alpn:
       - "h3"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [5]"
+    type: "vless"
+    server: "194.48.250.172"
+    port: 443
+    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "eu-central.cendora.ru"
+    client-fingerprint: "safari"
+    reality-opts:
+      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
+      short-id: "00bca5982f82d083"
+    network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [2]"
+    type: "hysteria2"
+    server: "194.180.188.126"
+    port: 8443
+    password: "dsfa_k0123WFzerrf_kZ3490VNb03J_m30_s"
+    sni: "keyhop-offshore.roxa.org"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [3]"
+    type: "vless"
+    server: "82.38.4.137"
+    port: 443
+    uuid: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "de137.mechvpn.online"
+    client-fingerprint: "firefox"
+    network: "tcp"
+  -
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [4]"
+    type: "trojan"
+    server: "213.182.199.137"
+    port: 443
+    password: "MiTiVPN"
+    udp: true
+    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    client-fingerprint: "qq"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+      headers:
+        Host: "2-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [6]"
+    type: "vless"
+    server: "194.48.250.172"
+    port: 443
+    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "eu-central.cendora.ru"
+    client-fingerprint: "firefox"
+    reality-opts:
+      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
+      short-id: "00bca5982f82d083"
+    network: "tcp"
+  -
+    name: "🇧🇬 Bulgaria, Sofia | [BL]"
+    type: "hysteria2"
+    server: "it.whit3.net"
+    port: 443
+    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
+    sni: "it.whit3.net"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [4]"
+    type: "hysteria2"
+    server: "de87.mechvpn.online"
+    port: 443
+    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    sni: "de87.mechvpn.online"
+    skip-cert-verify: false
+    udp: true
+    alpn:
+      - "h3"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [5]"
+    type: "hysteria2"
+    server: "de87.mechvpn.online"
+    port: 443
+    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    sni: "de87.mechvpn.online"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [6]"
+    type: "vless"
+    server: "144.31.168.174"
+    port: 443
+    uuid: "8c105407-82fb-4dd1-8df4-916d34a7d3fe"
+    udp: true
+    tls: true
+    servername: "www.google.com"
+    client-fingerprint: "qq"
+    reality-opts:
+      public-key: "sJTPQLMDCyPAbRcaJM-P8Y3_xRVpEEGrvv-kkIuIuQE"
+      short-id: ""
+    network: "xhttp"
+    xhttp-opts:
+      path: "/"
+      host: "www.google.com"
+      mode: "auto"
   -
     name: "🇩🇪 Germany | 🌐 | [BL]"
     type: "vless"
@@ -550,67 +802,7 @@ proxies:
       host: ""
       mode: "auto"
   -
-    name: "🇬🇧 United Kingdom, London | [BL] [4]"
-    type: "hysteria2"
-    server: "162.249.124.108"
-    port: 8443
-    password: "9Me_Jx935gnHx13_Nx45M_NYXe037js_Be4z"
-    sni: "hopp-germany-new.ddnsguru.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [10]"
-    type: "vless"
-    server: "162.35.231.100"
-    port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
-    udp: true
-    tls: true
-    servername: "net.savesafe.run"
-    client-fingerprint: "ios"
-    reality-opts:
-      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
-      short-id: "812609fa663c57fb"
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: "net.savesafe.run"
-      mode: "auto"
-  -
-    name: "🇧🇬 Bulgaria, Sofia | [BL]"
-    type: "hysteria2"
-    server: "it.whit3.net"
-    port: 443
-    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
-    sni: "it.whit3.net"
-    skip-cert-verify: false
-    udp: true
-  -
     name: "🇵🇱 Poland, Warsaw | [BL]"
-    type: "vless"
-    server: "31.56.188.179"
-    port: 8443
-    uuid: "afa92127-9235-4f03-9663-5eaef3f3d7bb"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "www.bing.com"
-    client-fingerprint: "edge"
-    reality-opts:
-      public-key: "UuEiv2T1QFnZA1IYb3is-th-eMCFFVENl6M3IGXZ9zs"
-      short-id: "6e3df2765ab89224"
-    network: "tcp"
-  -
-    name: "🇵🇦 Panama, Panama City | [BL]"
-    type: "hysteria2"
-    server: "82.39.214.98"
-    port: 8080
-    password: "VB92_Ka9qwef143K_L23K1hz3_bF_Hz62uT_Bn1_sC"
-    sni: "hopp-us.yyuyy.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇵🇱 Poland, Warsaw | [BL] [2]"
     type: "vless"
     server: "31.56.188.179"
     port: 8443
@@ -625,31 +817,7 @@ proxies:
       short-id: "6e3df2765ab89224"
     network: "tcp"
   -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [4]"
-    type: "hysteria2"
-    server: "194.180.188.126"
-    port: 8443
-    password: "dsfa_k0123WFzerrf_kZ3490VNb03J_m30_s"
-    sni: "keyhop-offshore.roxa.org"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [4]"
-    type: "vless"
-    server: "194.48.250.172"
-    port: 443
-    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "eu-central.cendora.ru"
-    client-fingerprint: "edge"
-    reality-opts:
-      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
-      short-id: "00bca5982f82d083"
-    network: "tcp"
-  -
-    name: "🇵🇱 Poland, Warsaw | [BL] [3]"
+    name: "🇵🇱 Poland, Warsaw | [BL] [2]"
     type: "vless"
     server: "31.56.188.179"
     port: 8443
@@ -665,46 +833,19 @@ proxies:
       short-id: "6e3df2765ab89224"
     network: "tcp"
   -
-    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [3]"
-    type: "hysteria2"
-    server: "86.107.178.78"
+    name: "🇵🇱 Poland, Warsaw | [BL] [3]"
+    type: "vless"
+    server: "31.56.188.179"
     port: 8443
-    password: "Oz_Kx9342gefwJ89x3_M9z32kzf9KJq003_s"
-    sni: "hopp-netherland-new.dynuddns.net"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [5]"
-    type: "vless"
-    server: "144.31.168.174"
-    port: 443
-    uuid: "8c105407-82fb-4dd1-8df4-916d34a7d3fe"
-    udp: true
-    tls: true
-    servername: "www.google.com"
-    client-fingerprint: "qq"
-    reality-opts:
-      public-key: "sJTPQLMDCyPAbRcaJM-P8Y3_xRVpEEGrvv-kkIuIuQE"
-      short-id: ""
-    network: "xhttp"
-    xhttp-opts:
-      path: "/"
-      host: "www.google.com"
-      mode: "auto"
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [5]"
-    type: "vless"
-    server: "194.48.250.172"
-    port: 443
-    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
+    uuid: "afa92127-9235-4f03-9663-5eaef3f3d7bb"
     udp: true
     flow: "xtls-rprx-vision"
     tls: true
-    servername: "eu-central.cendora.ru"
-    client-fingerprint: "ios"
+    servername: "www.bing.com"
+    client-fingerprint: "edge"
     reality-opts:
-      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
-      short-id: "00bca5982f82d083"
+      public-key: "UuEiv2T1QFnZA1IYb3is-th-eMCFFVENl6M3IGXZ9zs"
+      short-id: "6e3df2765ab89224"
     network: "tcp"
   -
     name: "🇵🇱 Poland, Warsaw | [BL] [4]"
@@ -722,26 +863,56 @@ proxies:
       short-id: "6e3df2765ab89224"
     network: "tcp"
   -
-    name: "🇦🇪 United Arab Emirates, Warisan | [BL] [5]"
-    type: "vless"
-    server: "151.242.160.94"
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [5]"
+    type: "trojan"
+    server: "213.182.199.137"
     port: 443
-    uuid: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    password: "MiTiVPN"
     udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "pl94.mechvpn.online"
-    client-fingerprint: "firefox"
-    network: "tcp"
+    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    client-fingerprint: "ios"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+      headers:
+        Host: "2-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
   -
-    name: "🇬🇧 United Kingdom, London | [BL] [5]"
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL]"
+    type: "trojan"
+    server: "213.182.199.137"
+    port: 443
+    password: "MiTiVPN"
+    udp: true
+    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    alpn:
+      - "http/1.1"
+    client-fingerprint: "ios"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+  -
+    name: "🇷🇸 Serbia, Belgrade | [BL]"
     type: "hysteria2"
-    server: "162.249.124.109"
-    port: 8443
-    password: "9Me_Jx935gnHx13_Nx45M_NYXe037js_Be4z"
-    sni: "hopp-germany-new.ddnsguru.com"
+    server: "46.229.243.140"
+    port: 8080
+    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
+    sni: "grape-turbo-fr.roxa.org"
     skip-cert-verify: false
     udp: true
+  -
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL] [2]"
+    type: "trojan"
+    server: "213.182.199.137"
+    port: 443
+    password: "MiTiVPN"
+    udp: true
+    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    alpn:
+      - "http/1.1"
+    client-fingerprint: "chrome"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
   -
     name: "🇳🇱 The Netherlands, Amsterdam | 🌐 | [BL]"
     type: "vless"
@@ -758,223 +929,14 @@ proxies:
       short-id: "c7d4e6fb729b69c2"
     network: "tcp"
   -
-    name: "🇫🇷 France, Paris | [BL]"
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [7]"
     type: "hysteria2"
-    server: "netnet.whit3.net"
+    server: "ndge1.whit3.net"
     port: 443
     password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
-    sni: "netnet.whit3.net"
+    sni: "ndge1.whit3.net"
     skip-cert-verify: false
     udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [6]"
-    type: "hysteria2"
-    server: "de87.mechvpn.online"
-    port: 443
-    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "de87.mechvpn.online"
-    skip-cert-verify: false
-    udp: true
-    alpn:
-      - "h3"
-  -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL]"
-    type: "trojan"
-    server: "213.182.199.137"
-    port: 443
-    password: "MiTiVPN"
-    udp: true
-    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-    alpn:
-      - "http/1.1"
-    client-fingerprint: "chrome"
-    network: "ws"
-    ws-opts:
-      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
-  -
-    name: "🇨🇦 Canada, Montreal | [BL] [4]"
-    type: "hysteria2"
-    server: "vpn-ca-001.fastervpn.world"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "speedtest.tinkoff.ru"
-    skip-cert-verify: true
-    udp: true
-    up: "10 Mbps"
-    down: "50 Mbps"
-  -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL] [2]"
-    type: "trojan"
-    server: "213.182.199.137"
-    port: 443
-    password: "MiTiVPN"
-    udp: true
-    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-    alpn:
-      - "http/1.1"
-    client-fingerprint: "ios"
-    network: "ws"
-    ws-opts:
-      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
-  -
-    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL]"
-    type: "vless"
-    server: "103.76.85.82"
-    port: 443
-    uuid: "ef5e311d-ed25-42d7-98a6-30fa273cf174"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "safari"
-    reality-opts:
-      public-key: "uLhi4XEmyszRHxTWF2-X_rehZdceMD4bdVaBOB64Kmc"
-      short-id: "36ff988994b11357"
-    network: "tcp"
-  -
-    name: "🇯🇵 Japan, Shibuya City | [BL]"
-    type: "hysteria2"
-    server: "43.167.198.167"
-    port: 443
-    password: "fJT5wNXNkYDvYKKGWUc9f2vd0LvHKSwc"
-    sni: "43.167.198.167"
-    skip-cert-verify: true
-    udp: true
-  -
-    name: "🇯🇵 Japan, Chiyoda City | [BL]"
-    type: "vless"
-    server: "116.206.92.44"
-    port: 443
-    uuid: "d29f3c8c-650a-466c-a8b0-8150f33b1640"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "vnJsxWf4fvfo-3_EOY3QidjgCpDFe7XnB59ltE70pnI"
-      short-id: "1b09f4d0491f2a48"
-    network: "tcp"
-  -
-    name: ".𖥔 ݁ ˖ִ🛸༄˖°. | [BL]"
-    type: "vless"
-    server: "194.48.250.172"
-    port: 443
-    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "eu-central.cendora.ru"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
-      short-id: "00bca5982f82d083"
-    network: "tcp"
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | 🌐 | [BL] [6]"
-    type: "vless"
-    server: "194.48.250.172"
-    port: 443
-    uuid: "423b1d79-08c4-403f-9d5e-c541f791b55f"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "eu-central.cendora.ru"
-    client-fingerprint: "qq"
-    reality-opts:
-      public-key: "b-Cm9hX-3UHsS1L_lnUB6AMjuKhlN1IDdBbZ506itjI"
-      short-id: "00bca5982f82d083"
-    network: "tcp"
-  -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL] [3]"
-    type: "trojan"
-    server: "213.182.199.137"
-    port: 443
-    password: "MiTiVPN"
-    udp: true
-    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-    alpn:
-      - "http/1.1"
-    client-fingerprint: "qq"
-    network: "ws"
-    ws-opts:
-      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
-  -
-    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL] [2]"
-    type: "vless"
-    server: "103.76.85.82"
-    port: 443
-    uuid: "ef5e311d-ed25-42d7-98a6-30fa273cf174"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "edge"
-    reality-opts:
-      public-key: "uLhi4XEmyszRHxTWF2-X_rehZdceMD4bdVaBOB64Kmc"
-      short-id: "36ff988994b11357"
-    network: "tcp"
-  -
-    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL] [3]"
-    type: "vless"
-    server: "103.76.85.213"
-    port: 443
-    uuid: "1fb60770-fc92-480f-801f-4e4e05af88b3"
-    udp: true
-    flow: "xtls-rprx-vision"
-    packet-encoding: "xudp"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "edge"
-    reality-opts:
-      public-key: "Me7Ii42ZwYdhuQUAGUimaTeOUQVSAaoxRat8KnZFDTk"
-      short-id: "ee8f9024bee24cac"
-    network: "tcp"
-  -
-    name: "🇯🇵 Japan, Chiyoda City | [BL] [2]"
-    type: "vless"
-    server: "116.206.92.44"
-    port: 443
-    uuid: "d29f3c8c-650a-466c-a8b0-8150f33b1640"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "edge"
-    reality-opts:
-      public-key: "vnJsxWf4fvfo-3_EOY3QidjgCpDFe7XnB59ltE70pnI"
-      short-id: "1b09f4d0491f2a48"
-    network: "tcp"
-  -
-    name: "🇯🇵 Japan, Kashiwa (Akehara) | [BL] [4]"
-    type: "vless"
-    server: "103.76.85.213"
-    port: 443
-    uuid: "1fb60770-fc92-480f-801f-4e4e05af88b3"
-    udp: true
-    flow: "xtls-rprx-vision"
-    packet-encoding: "xudp"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "Me7Ii42ZwYdhuQUAGUimaTeOUQVSAaoxRat8KnZFDTk"
-      short-id: "ee8f9024bee24cac"
-    network: "tcp"
-  -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [3]"
-    type: "trojan"
-    server: "213.182.199.137"
-    port: 443
-    password: "MiTiVPN"
-    udp: true
-    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-    client-fingerprint: "safari"
-    network: "ws"
-    ws-opts:
-      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
-      headers:
-        Host: "2-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
   -
     name: "🇳🇱 The Netherlands, Amsterdam | 🌐 | [BL] [2]"
     type: "vless"
@@ -991,31 +953,13 @@ proxies:
       short-id: "c7d4e6fb729b69c2"
     network: "tcp"
   -
-    name: "🇯🇵 Japan, Shibuya City | [BL] [2]"
+    name: "🇸🇬 Singapore, Singapore | [BL]"
     type: "hysteria2"
-    server: "43.167.198.167"
+    server: "54.179.153.191"
     port: 443
-    password: "fJT5wNXNkYDvYKKGWUc9f2vd0LvHKSwc"
-    sni: "43.167.198.167"
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "t.me"
     skip-cert-verify: true
-    udp: true
-  -
-    name: "🇷🇸 Serbia, Belgrade | [BL]"
-    type: "hysteria2"
-    server: "46.229.243.140"
-    port: 8080
-    password: "s0_sdK93x9wer_D02Lz9cvK3_Sa014Oakl_C2z"
-    sni: "grape-turbo-fr.roxa.org"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [7]"
-    type: "hysteria2"
-    server: "ndge1.whit3.net"
-    port: 443
-    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
-    sni: "ndge1.whit3.net"
-    skip-cert-verify: false
     udp: true
   -
     name: "🇵🇱 Poland, Ożarów | [BL]"
@@ -1027,74 +971,7 @@ proxies:
     skip-cert-verify: false
     udp: true
   -
-    name: "🇵🇱 Poland, Warsaw | [BL] [5]"
-    type: "hysteria2"
-    server: "103.246.248.226"
-    port: 8443
-    password: "h_B9x3942fJ9x_Kpx3914KQ_nZ934HFg_rT"
-    sni: "hopp-legend-se.roxa.org"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇺🇸 United States, New York | [BL] [2]"
-    type: "vless"
-    server: "94.183.209.59"
-    port: 443
-    uuid: "d23cb516-40db-4aa4-8142-6b45ff882f90"
-    udp: true
-    network: "ws"
-    ws-opts:
-      path: "/"
-  -
-    name: "🇺🇸 United States, New York | [BL] [3]"
-    type: "vless"
-    server: "94.183.209.59"
-    port: 443
-    uuid: "d23cb516-40db-4aa4-8142-6b45ff882f90"
-    udp: true
-    network: "ws"
-    ws-opts:
-      path: "/"
-  -
-    name: "🇯🇵 Japan, Chiyoda City | [BL] [3]"
-    type: "vless"
-    server: "116.206.92.44"
-    port: 443
-    uuid: "d29f3c8c-650a-466c-a8b0-8150f33b1640"
-    udp: true
-    flow: "xtls-rprx-vision"
-    tls: true
-    servername: "www.apple.com"
-    client-fingerprint: "chrome"
-    reality-opts:
-      public-key: "vnJsxWf4fvfo-3_EOY3QidjgCpDFe7XnB59ltE70pnI"
-      short-id: "1b09f4d0491f2a48"
-    network: "tcp"
-  -
-    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [8]"
-    type: "hysteria2"
-    server: "ndge4.whit3.net"
-    port: 443
-    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
-    sni: "ndge4.whit3.net"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [4]"
-    type: "trojan"
-    server: "213.182.199.137"
-    port: 443
-    password: "MiTiVPN"
-    udp: true
-    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-    client-fingerprint: "ios"
-    network: "ws"
-    ws-opts:
-      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
-      headers:
-        Host: "2-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-  -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [5]"
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [6]"
     type: "trojan"
     server: "213.182.199.137"
     port: 443
@@ -1108,21 +985,16 @@ proxies:
       headers:
         Host: "2-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
   -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [6]"
-    type: "trojan"
-    server: "213.182.199.137"
+    name: "🇫🇷 France, Paris | [BL]"
+    type: "hysteria2"
+    server: "netnet.whit3.net"
     port: 443
-    password: "MiTiVPN"
+    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
+    sni: "netnet.whit3.net"
+    skip-cert-verify: false
     udp: true
-    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
-    client-fingerprint: "qq"
-    network: "ws"
-    ws-opts:
-      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
-      headers:
-        Host: "2-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
   -
-    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL] [4]"
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL] [3]"
     type: "trojan"
     server: "213.182.199.137"
     port: 443
@@ -1145,14 +1017,19 @@ proxies:
     skip-cert-verify: false
     udp: true
   -
-    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [4]"
-    type: "hysteria2"
-    server: "nodenl.whit3.net"
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 | [BL] [7]"
+    type: "trojan"
+    server: "213.182.199.137"
     port: 443
-    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
-    sni: "nodenl.whit3.net"
-    skip-cert-verify: false
+    password: "MiTiVPN"
     udp: true
+    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    client-fingerprint: "safari"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+      headers:
+        Host: "2-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
   -
     name: "🇧🇬 Bulgaria, Sofia | [BL] [3]"
     type: "hysteria2"
@@ -1172,25 +1049,7 @@ proxies:
     skip-cert-verify: false
     udp: true
   -
-    name: "🇨🇭 Switzerland, Bern | [BL]"
-    type: "hysteria2"
-    server: "che01plrhy01.tcp-reset-club.net"
-    port: 443
-    password: "8fb328f0-d8e0-4b11-a6db-3dadfc4f02a3"
-    sni: "che01plrhy01.tcp-reset-club.net"
-    skip-cert-verify: false
-    udp: true
-  -
     name: "🇧🇬 Bulgaria, Sofia | [BL] [4]"
-    type: "hysteria2"
-    server: "bg185.mechvpn.online"
-    port: 443
-    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
-    sni: "bg185.mechvpn.online"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇧🇬 Bulgaria, Sofia | [BL] [5]"
     type: "hysteria2"
     server: "bg185.mechvpn.online"
     port: 443
@@ -1200,51 +1059,6 @@ proxies:
     udp: true
     alpn:
       - "h3"
-  -
-    name: "🇹🇷 Turkey, Ankara | [BL]"
-    type: "hysteria2"
-    server: "162.249.124.111"
-    port: 8080
-    password: "9Me_Jx935gnHx13_Nx45M_NYXe037js_Be4z"
-    sni: "hopp-germany-new.ddnsguru.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇯🇵 Japan, Shibuya City | 🌐 | [BL]"
-    type: "hysteria2"
-    server: "185.39.31.117"
-    port: 8443
-    password: "Foc_Mcxi45rM9v3ve_N92fdrK_10_Ssc5"
-    sni: "grape-beer.yyuyy.com"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇦🇪 United Arab Emirates, Abu Dhabi (Al Ras Al Akhdar) | [BL]"
-    type: "hysteria2"
-    server: "85.204.107.171"
-    port: 8080
-    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
-    sni: "hopp-romania-new.roxa.org"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇬🇧 United Kingdom, London | [BL] [6]"
-    type: "hysteria2"
-    server: "103.246.248.226"
-    port: 8080
-    password: "h_B9x3942fJ9x_Kpx3914KQ_nZ934HFg_rT"
-    sni: "hopp-legend-se.roxa.org"
-    skip-cert-verify: false
-    udp: true
-  -
-    name: "🇸🇬 Singapore, Singapore | [BL]"
-    type: "hysteria2"
-    server: "54.179.153.191"
-    port: 443
-    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
-    sni: "t.me"
-    skip-cert-verify: true
-    udp: true
   -
     name: "🇸🇬 Singapore, Singapore (Queenstown Estate) | [BL]"
     type: "vless"
@@ -1261,23 +1075,141 @@ proxies:
       short-id: "09024903c3dcb6df"
     network: "tcp"
   -
-    name: "🇺🇸 United States, San Jose (Trimble Business Area) | [BL] [11]"
-    type: "vless"
-    server: "162.35.231.94"
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇸🇬 | [BL]"
+    type: "trojan"
+    server: "188.42.145.180"
     port: 443
-    uuid: "b5ca5ab3-8cbc-4ac3-89da-9cd360589ecb"
+    password: "MiTiVPN"
     udp: true
-    tls: true
-    servername: "net.savesafe.run"
-    client-fingerprint: "firefox"
-    reality-opts:
-      public-key: "BvR2i3CJEL9QwNAWKqkkHY3rnqJdOFLyKw5DZ9sA2C8"
-      short-id: "812609fa663c57fb"
-    network: "xhttp"
-    xhttp-opts:
+    sni: "82929473-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    client-fingerprint: "ios"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/s-g@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+      headers:
+        Host: "383838-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+  -
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇳🇱 | [BL] [4]"
+    type: "trojan"
+    server: "213.182.199.137"
+    port: 443
+    password: "MiTiVPN"
+    udp: true
+    sni: "66-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    alpn:
+      - "http/1.1"
+    client-fingerprint: "qq"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/NLSs---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+  -
+    name: "🇧🇬 Bulgaria, Sofia | [BL] [5]"
+    type: "hysteria2"
+    server: "bg185.mechvpn.online"
+    port: 443
+    password: "53c76647-14d1-4df5-99cb-be99ad2e6bd9"
+    sni: "bg185.mechvpn.online"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇳🇱 The Netherlands, Amsterdam | [BL] [4]"
+    type: "hysteria2"
+    server: "nodenl.whit3.net"
+    port: 443
+    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
+    sni: "nodenl.whit3.net"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇺🇸 United States, New York | [BL] [2]"
+    type: "vless"
+    server: "94.183.209.59"
+    port: 443
+    uuid: "d23cb516-40db-4aa4-8142-6b45ff882f90"
+    udp: true
+    network: "ws"
+    ws-opts:
       path: "/"
-      host: ""
-      mode: "auto"
+  -
+    name: "🇨🇭 Switzerland, Bern | [BL]"
+    type: "hysteria2"
+    server: "che01plrhy01.tcp-reset-club.net"
+    port: 443
+    password: "8fb328f0-d8e0-4b11-a6db-3dadfc4f02a3"
+    sni: "che01plrhy01.tcp-reset-club.net"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇺🇸 United States, New York | [BL] [3]"
+    type: "vless"
+    server: "94.183.209.59"
+    port: 443
+    uuid: "d23cb516-40db-4aa4-8142-6b45ff882f90"
+    udp: true
+    network: "ws"
+    ws-opts:
+      path: "/"
+  -
+    name: "🇵🇱 Poland, Warsaw | [BL] [5]"
+    type: "hysteria2"
+    server: "103.246.248.226"
+    port: 8443
+    password: "h_B9x3942fJ9x_Kpx3914KQ_nZ934HFg_rT"
+    sni: "hopp-legend-se.roxa.org"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL]"
+    type: "hysteria2"
+    server: "newos.klzvezdi.ru"
+    port: 9443
+    password: "8569e507-8ef7-481d-9108-6bc7f040c2ff"
+    sni: "newos.klzvezdi.ru"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main (Innenstadt I) | [BL] [2]"
+    type: "hysteria2"
+    server: "newos.klzvezdi.ru"
+    port: 9443
+    password: "8569e507-8ef7-481d-9108-6bc7f040c2ff"
+    sni: "newos.klzvezdi.ru"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🌐 Anycast-IP | 🇨🇦 🇫🇮 🇸🇬 | [BL] [2]"
+    type: "trojan"
+    server: "188.42.145.180"
+    port: 443
+    password: "MiTiVPN"
+    udp: true
+    sni: "82929473-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+    alpn:
+      - "http/1.1"
+    client-fingerprint: "chrome"
+    network: "ws"
+    ws-opts:
+      path: "/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/s-g@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN/---@MiTiVPN---@MiTiVPN"
+      headers:
+        Host: "82929473-mitivpn--mitivpn------mitivpn.mitivpn-s.lifestyle"
+  -
+    name: "🇦🇪 United Arab Emirates, Abu Dhabi (Al Ras Al Akhdar) | [BL]"
+    type: "hysteria2"
+    server: "85.204.107.171"
+    port: 8080
+    password: "Jz40_mIJ934vK0_k9D3jz92_Vx48q_GHa1_sz0"
+    sni: "hopp-romania-new.roxa.org"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇸🇪 Sweden, Stockholm | [BL]"
+    type: "hysteria2"
+    server: "ndsw1.whit3.net"
+    port: 443
+    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
+    sni: "ndsw1.whit3.net"
+    skip-cert-verify: false
+    udp: true
   -
     name: "🇸🇬 Singapore, Singapore (Queenstown Estate) | [BL] [2]"
     type: "vless"
@@ -1294,7 +1226,31 @@ proxies:
       short-id: "693f679d3294f967"
     network: "tcp"
   -
+    name: "🇬🇧 United Kingdom, London | [BL] [3]"
+    type: "hysteria2"
+    server: "103.246.248.226"
+    port: 8080
+    password: "h_B9x3942fJ9x_Kpx3914KQ_nZ934HFg_rT"
+    sni: "hopp-legend-se.roxa.org"
+    skip-cert-verify: false
+    udp: true
+  -
     name: "🇸🇬 Singapore, Singapore (Queenstown Estate) | [BL] [3]"
+    type: "vless"
+    server: "163.128.99.73"
+    port: 443
+    uuid: "f3ed1945-dc1e-478a-b067-12b71badbea9"
+    udp: true
+    flow: "xtls-rprx-vision"
+    tls: true
+    servername: "www.apple.com"
+    client-fingerprint: "chrome"
+    reality-opts:
+      public-key: "ZMYQqRPgpITMElFSEMesSocBj7jvhhw3JGGzWEfyrBk"
+      short-id: "693f679d3294f967"
+    network: "tcp"
+  -
+    name: "🇸🇬 Singapore, Singapore (Queenstown Estate) | [BL] [4]"
     type: "vless"
     server: "163.128.99.73"
     port: 443
@@ -1308,3 +1264,61 @@ proxies:
       public-key: "ZMYQqRPgpITMElFSEMesSocBj7jvhhw3JGGzWEfyrBk"
       short-id: "693f679d3294f967"
     network: "tcp"
+  -
+    name: "🇩🇪 Germany, Frankfurt am Main | [BL] [8]"
+    type: "hysteria2"
+    server: "ndge4.whit3.net"
+    port: 443
+    password: "a6cf4b28-ba72-4e8c-90f8-6a884107ab3c"
+    sni: "ndge4.whit3.net"
+    skip-cert-verify: false
+    udp: true
+  -
+    name: "🇵🇱 Poland, Warsaw | [BL] [6]"
+    type: "hysteria2"
+    server: "go.wwwinternetvideo.click"
+    port: 443
+    password: "YutbgyXL1mGaSlBXDoEucWvYbrDCINgUcQ6R6_At5Pjr2xCc"
+    sni: "admin.wwwinternetvideo.click"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇨🇦 Canada, Montreal | [BL]"
+    type: "hysteria2"
+    server: "vpn-ca-001.fastervpn.world"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "css.rbxcdn.com"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇨🇦 Canada, Montreal | [BL] [2]"
+    type: "hysteria2"
+    server: "vpn-ca-001.fastervpn.world"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "css.rbxcdn.com"
+    skip-cert-verify: true
+    udp: true
+  -
+    name: "🇨🇦 Canada, Montreal | [BL] [3]"
+    type: "hysteria2"
+    server: "vpn-ca-001.fastervpn.world"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "t.me"
+    skip-cert-verify: true
+    udp: true
+    up: "10 Mbps"
+    down: "50 Mbps"
+  -
+    name: "🇨🇦 Canada, Montreal | [BL] [4]"
+    type: "hysteria2"
+    server: "vpn-ca-001.fastervpn.world"
+    port: 443
+    password: "H7mP2xY9kJ4nQ8wR5tF6vB3z"
+    sni: "speedtest.tinkoff.ru"
+    skip-cert-verify: true
+    udp: true
+    up: "10 Mbps"
+    down: "50 Mbps"
