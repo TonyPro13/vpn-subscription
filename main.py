@@ -100,7 +100,7 @@ INSTAGRAM_PROBE_URL = os.getenv(
 
 # One Cloudflare target is used everywhere Mihomo measures node latency:
 # - preliminary dead-node filter before the service cascade;
-# - final delay measurement used for TOP-100 ordering;
+# - final delay measurement used for publication ordering;
 # - client-side provider/AUTO health checks.
 MIHOMO_AUTO_TEST_URL = "https://cp.cloudflare.com"
 
@@ -118,7 +118,7 @@ MIHOMO_START_TIMEOUT = float(
 )
 
 QUALITY_MAX_SECONDS = float(os.getenv("QUALITY_MAX_SECONDS", "5"))
-MAX_PUBLISHED_NODES = 100
+MAX_PUBLISHED_NODES = None
 
 async def curl_tls_probe(port: int, name: str, url: str):
     proc = await asyncio.create_subprocess_exec(
@@ -1099,7 +1099,7 @@ async def whatsapp_core_probe(local_port: int):
     passed = sum(1 for result in first_results if result.ok)
 
     if passed == 2:
-        # Availability gate only: do not change the existing TOP-100 latency
+        # Availability gate only: do not change the existing publication latency
         # ranking with this TCP-connect measurement.
         return Probe(True)
 
@@ -1303,7 +1303,7 @@ async def instagram_https_probe(port: int):
     A real HTTPS response from www.instagram.com is enough to prove reachability.
     The exact HTTP status is intentionally not restricted because Instagram may
     legitimately return redirects or access-control responses to unauthenticated
-    clients. This probe is availability-only and does not affect TOP-100 ranking.
+    clients. This probe is availability-only and does not affect publication ranking.
     """
     result = await curl_tls_probe(port, "instagram_https", INSTAGRAM_PROBE_URL)
     if not result.ok:
@@ -1389,7 +1389,7 @@ async def quality_probe(
         return failed
 
     # Instagram availability check. This is a gate only and does not contribute
-    # latency to the TOP-100 ranking.
+    # latency to the publication ranking.
     probe_stats["instagram_https"]["checked"] += 1
     async with CHEAP_PROBE_SEMAPHORE:
         result = await instagram_https_probe(port)
@@ -1781,7 +1781,7 @@ def resolve_mihomo_binary() -> str:
 
     raise FileNotFoundError(
         "Mihomo binary not found. Put it at bin/mihomo (or bin/mihomo.exe) "
-        "or set MIHOMO_BINARY. Preliminary filtering and TOP-100 ranking "
+        "or set MIHOMO_BINARY. Preliminary filtering and publication ranking "
         "require real Mihomo delay tests."
     )
 
@@ -1823,7 +1823,7 @@ async def measure_nodes_with_mihomo(
     A node passes this stage only when Mihomo itself returns a positive delay.
     The same Cloudflare URL and timeout are used by the preliminary and final
     stages. The preliminary stage is an admission filter; the final stage is
-    also the sole source of the TOP-100 ordering metric.
+    also the sole source of the publication ordering metric.
     """
     nodes = list(nodes)
     stage_slug = re.sub(r"[^A-Za-z0-9_-]+", "-", stage).strip("-") or "ping"
@@ -2347,7 +2347,7 @@ async def main():
             deleted += 1
 
     # Second native Mihomo delay-test: every cascade-verified node is measured
-    # again from scratch. Only THIS final Mihomo delay determines TOP-100.
+    # again from scratch. Only THIS final Mihomo delay determines publication order.
     cascade_verified = list(current.values())
     mihomo_final_ranked, mihomo_final_stats, mihomo_final_errors = (
         await measure_nodes_with_mihomo(
@@ -2374,8 +2374,8 @@ async def main():
     )
 
     # Keep all nodes that passed the preliminary Mihomo filter and mandatory
-    # service cascade in state.json. Nodes below TOP-100 and nodes whose final
-    # Mihomo ping failed can compete again from scratch on the next refresh.
+    # service cascade in state.json. All eligible nodes are published; nodes whose final Mihomo ping failed
+    # can compete again from scratch on the next refresh.
     STATE_FILE.write_text(
         json.dumps({"updated_at": now, "nodes": current}, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -2425,9 +2425,9 @@ async def main():
         "ranking_policy": (
             "Mihomo first removes nodes with no positive Cloudflare delay before "
             "the service cascade. After every mandatory service probe has passed, "
-            "Mihomo measures the survivors again. Publish up to 100 nodes with the "
+            "Mihomo measures the survivors again. Publish all eligible nodes with the "
             "lowest FINAL Mihomo delay; preliminary and service-probe latency are "
-            "not used for TOP-100 ordering"
+            "not used for publication ordering"
         ),
         "mihomo_precheck": mihomo_precheck_stats,
         "mihomo_precheck_errors": mihomo_precheck_errors[:50],
@@ -2460,7 +2460,7 @@ async def main():
             "instagram_https": (
                 "mandatory availability gate through VPN; any real HTTPS response "
                 "from www.instagram.com passes; TLS/connect/timeout/no HTTP response fails; "
-                "latency does not affect TOP-100 ranking"
+                "latency does not affect publication ranking"
             ),
             "mihomo_precheck": (
                 "pre-cascade native Mihomo group delay test; test URL "
@@ -2471,7 +2471,7 @@ async def main():
                 "post-cascade native Mihomo group delay test against the same "
                 f"Cloudflare URL {MIHOMO_PING_TEST_URL}; timeout "
                 f"{MIHOMO_PING_TIMEOUT_MS} ms; ascending FINAL delay is the sole "
-                "TOP-100 ranking metric"
+                "publication ranking metric"
             ),
         },
         "failure_samples": failure_samples,
@@ -2485,8 +2485,8 @@ async def main():
             "duration_seconds": duration,
         },
         "run_duration_seconds": duration,
-        "admission_rule": "Geography and preliminary DNS latency filters are disabled. Every deduplicated candidate is first tested by Mihomo itself against Cloudflare; no positive delay means immediate rejection before the service cascade. Survivors must then pass every mandatory service probe. After the cascade, Mihomo performs a second fresh Cloudflare delay test. Only nodes with a positive FINAL Mihomo delay are eligible for publication, and TOP-100 is ordered strictly by that final delay.",
-        "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. Preliminary Mihomo latency is only a dead-node filter. Service-probe latency is admission telemetry only. Final Mihomo latency is the sole TOP-100 ordering metric. Client AUTO uses the same Cloudflare test URL.",
+        "admission_rule": "Geography and preliminary DNS latency filters are disabled. Every deduplicated candidate is first tested by Mihomo itself against Cloudflare; no positive delay means immediate rejection before the service cascade. Survivors must then pass every mandatory service probe. After the cascade, Mihomo performs a second fresh Cloudflare delay test. Only nodes with a positive FINAL Mihomo delay are eligible for publication, and all eligible nodes are ordered strictly by that final delay.",
+        "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. Preliminary Mihomo latency is only a dead-node filter. Service-probe latency is admission telemetry only. Final Mihomo latency is the sole publication ordering metric. Client AUTO uses the same Cloudflare test URL.",
     }
 
     (OUT_DIR / "status.json").write_text(
