@@ -1,49 +1,49 @@
 {
-  "updated_at": 1787619660,
-  "source_nodes_unique": 748,
-  "source_duplicates_removed": 353,
+  "updated_at": 1787621452,
+  "source_nodes_unique": 779,
+  "source_duplicates_removed": 349,
   "source_stats": {
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS%2BAll_RUS.txt": 133,
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS_WEAK_DPI_RUS.txt": 36,
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt": 306,
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt": 0,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt": 142,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt": 86,
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt": 143,
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt": 113,
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt": 0,
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt": 45
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt": 48
   },
   "source_protocol_stats": {
-    "hysteria2": 91,
-    "vmess": 5,
+    "hysteria2": 94,
+    "vmess": 6,
     "trojan": 50,
     "ss": 36,
-    "vless": 566
+    "vless": 593
   },
-  "state_nodes_loaded": 457,
-  "merged_candidates_before_dedup": 1205,
-  "merged_candidates_after_dedup": 917,
-  "merged_duplicates_removed": 288,
+  "state_nodes_loaded": 534,
+  "merged_candidates_before_dedup": 1313,
+  "merged_candidates_after_dedup": 936,
+  "merged_duplicates_removed": 377,
   "candidate_dedup_policy": "conservative effective configuration; fp/fingerprint and unknown operational fields are significant; display name/fragment and query order are cosmetic; VLESS omitted encryption/security normalize to none; repeated query fields are kept conservatively distinct",
   "geography_policy": "disabled; geography is not checked and never affects admission",
   "merged_protocol_stats": {
-    "hysteria2": 158,
+    "hysteria2": 157,
     "vmess": 6,
     "trojan": 50,
     "ss": 55,
-    "vless": 648
+    "vless": 668
   },
-  "initial_mihomo_precheck_candidates": 917,
-  "initial_mihomo_precheck_passed": 729,
-  "initial_mihomo_precheck_rejected": 188,
-  "checked_this_run": 729,
-  "vpn_engine_failed_before_checks": 39,
-  "successful_this_run": 534,
-  "failed_this_run": 195,
-  "rejected_this_run": 195,
-  "cascade_verified_nodes": 534,
-  "verified_nodes_before_publish_cap": 530,
-  "mihomo_final_eligible_nodes": 530,
-  "mihomo_final_failed_nodes": 4,
+  "initial_mihomo_precheck_candidates": 936,
+  "initial_mihomo_precheck_passed": 737,
+  "initial_mihomo_precheck_rejected": 199,
+  "checked_this_run": 737,
+  "vpn_engine_failed_before_checks": 37,
+  "successful_this_run": 551,
+  "failed_this_run": 186,
+  "rejected_this_run": 186,
+  "cascade_verified_nodes": 551,
+  "verified_nodes_before_publish_cap": 542,
+  "mihomo_final_eligible_nodes": 542,
+  "mihomo_final_failed_nodes": 9,
   "publish_limit": null,
   "not_published_due_to_limit": 0,
   "ranking_policy": "Mihomo first removes nodes with no positive Cloudflare delay before the service cascade. After every mandatory service probe has passed, Mihomo measures the survivors again. Publish all eligible nodes with the lowest FINAL Mihomo delay; preliminary and service-probe latency are not used for publication ordering",
@@ -51,11 +51,11 @@
     "stage": "precheck",
     "test_url": "https://cp.cloudflare.com",
     "timeout_ms": 5000,
-    "candidates": 917,
-    "converted": 917,
+    "candidates": 936,
+    "converted": 936,
     "conversion_failed": 0,
-    "measured": 729,
-    "measurement_failed": 188,
+    "measured": 737,
+    "measurement_failed": 199,
     "binary": "bin/mihomo"
   },
   "mihomo_precheck_errors": [
@@ -70,13 +70,28 @@
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
-      "name": "precheck-000020",
+      "name": "precheck-000017",
       "protocol": "hysteria2",
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
-      "name": "precheck-000022",
+      "name": "precheck-000018",
       "protocol": "hysteria2",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "precheck-000019",
+      "protocol": "hysteria2",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "precheck-000080",
+      "protocol": "vmess",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "precheck-000082",
+      "protocol": "vmess",
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
@@ -95,12 +110,12 @@
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
-      "name": "precheck-000105",
+      "name": "precheck-000104",
       "protocol": "trojan",
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
-      "name": "precheck-000106",
+      "name": "precheck-000105",
       "protocol": "trojan",
       "error": "measurement: Mihomo returned no positive delay"
     },
@@ -131,6 +146,11 @@
     },
     {
       "name": "precheck-000112",
+      "protocol": "trojan",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "precheck-000113",
       "protocol": "trojan",
       "error": "measurement: Mihomo returned no positive delay"
     },
@@ -175,6 +195,11 @@
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
+      "name": "precheck-000135",
+      "protocol": "ss",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
       "name": "precheck-000143",
       "protocol": "ss",
       "error": "measurement: Mihomo returned no positive delay"
@@ -196,11 +221,6 @@
     },
     {
       "name": "precheck-000174",
-      "protocol": "vless",
-      "error": "measurement: Mihomo returned no positive delay"
-    },
-    {
-      "name": "precheck-000176",
       "protocol": "vless",
       "error": "measurement: Mihomo returned no positive delay"
     },
@@ -288,118 +308,123 @@
       "name": "precheck-000232",
       "protocol": "vless",
       "error": "measurement: Mihomo returned no positive delay"
-    },
-    {
-      "name": "precheck-000233",
-      "protocol": "vless",
-      "error": "measurement: Mihomo returned no positive delay"
-    },
-    {
-      "name": "precheck-000238",
-      "protocol": "vless",
-      "error": "measurement: Mihomo returned no positive delay"
-    },
-    {
-      "name": "precheck-000239",
-      "protocol": "vless",
-      "error": "measurement: Mihomo returned no positive delay"
-    },
-    {
-      "name": "precheck-000240",
-      "protocol": "vless",
-      "error": "measurement: Mihomo returned no positive delay"
     }
   ],
   "mihomo_final_ping": {
     "stage": "final",
     "test_url": "https://cp.cloudflare.com",
     "timeout_ms": 5000,
-    "candidates": 534,
-    "converted": 534,
+    "candidates": 551,
+    "converted": 551,
     "conversion_failed": 0,
-    "measured": 530,
-    "measurement_failed": 4,
+    "measured": 542,
+    "measurement_failed": 9,
     "binary": "bin/mihomo"
   },
   "mihomo_final_ping_errors": [
     {
-      "name": "final-000247",
+      "name": "final-000071",
+      "protocol": "ss",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "final-000074",
+      "protocol": "ss",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "final-000091",
       "protocol": "vless",
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
-      "name": "final-000281",
+      "name": "final-000131",
       "protocol": "vless",
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
-      "name": "final-000428",
-      "protocol": "hysteria2",
+      "name": "final-000197",
+      "protocol": "vless",
       "error": "measurement: Mihomo returned no positive delay"
     },
     {
-      "name": "final-000429",
-      "protocol": "hysteria2",
+      "name": "final-000268",
+      "protocol": "vless",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "final-000298",
+      "protocol": "vless",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "final-000299",
+      "protocol": "vless",
+      "error": "measurement: Mihomo returned no positive delay"
+    },
+    {
+      "name": "final-000301",
+      "protocol": "vless",
       "error": "measurement: Mihomo returned no positive delay"
     }
   ],
-  "published_nodes": 530,
-  "mihomo_nodes": 530,
+  "published_nodes": 542,
+  "mihomo_nodes": 542,
   "mihomo_skipped": 0,
   "mihomo_output_warning": null,
   "output_validation": {
-    "published_nodes": 530,
-    "mihomo_nodes": 530,
+    "published_nodes": 542,
+    "mihomo_nodes": 542,
     "published_equals_mihomo": true,
     "conversion_failed": 0,
     "conversion_errors": []
   },
   "protocol_stats": {
+    "vless": 369,
     "hysteria2": 132,
-    "vless": 354,
-    "ss": 43,
-    "vmess": 1
+    "ss": 39,
+    "vmess": 2
   },
   "probe_stats": {
     "chatgpt": {
-      "checked": 690,
-      "passed": 609,
-      "failed": 81
+      "checked": 700,
+      "passed": 618,
+      "failed": 82
     },
     "chatgpt_auth_tls": {
-      "checked": 609,
-      "passed": 601,
-      "failed": 8
+      "checked": 618,
+      "passed": 606,
+      "failed": 12
     },
     "chatgpt_android_tls": {
-      "checked": 601,
-      "passed": 593,
-      "failed": 8
+      "checked": 606,
+      "passed": 604,
+      "failed": 2
     },
     "youtube_204": {
-      "checked": 593,
-      "passed": 580,
-      "failed": 13
+      "checked": 604,
+      "passed": 595,
+      "failed": 9
     },
     "telegram_https": {
-      "checked": 580,
-      "passed": 542,
-      "failed": 38
+      "checked": 595,
+      "passed": 560,
+      "failed": 35
     },
     "telegram_mtproto": {
-      "checked": 542,
-      "passed": 541,
-      "failed": 1
+      "checked": 560,
+      "passed": 560,
+      "failed": 0
     },
     "whatsapp_core": {
-      "checked": 541,
-      "passed": 541,
+      "checked": 560,
+      "passed": 560,
       "failed": 0
     },
     "instagram_https": {
-      "checked": 541,
-      "passed": 534,
-      "failed": 7
+      "checked": 560,
+      "passed": 551,
+      "failed": 9
     }
   },
   "probe_policy": {
@@ -412,15 +437,7 @@
   "failure_samples": [
     {
       "protocol": "hysteria2",
-      "error": "chatgpt: unexpected HTTP status 403"
-    },
-    {
-      "protocol": "hysteria2",
-      "error": "chatgpt: unexpected HTTP status 403"
-    },
-    {
-      "protocol": "hysteria2",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "error": "chatgpt: curl: (97) Can't complete SOCKS5 connection to chatgpt.com. (1)\n"
     },
     {
       "protocol": "hysteria2",
@@ -432,43 +449,51 @@
     },
     {
       "protocol": "hysteria2",
+      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
+    },
+    {
+      "protocol": "hysteria2",
+      "error": "chatgpt: too slow (7.04s)"
+    },
+    {
+      "protocol": "hysteria2",
+      "error": "chatgpt: unexpected HTTP status 403"
+    },
+    {
+      "protocol": "hysteria2",
+      "error": "chatgpt: unexpected HTTP status 403"
+    },
+    {
+      "protocol": "vmess",
+      "error": "chatgpt: curl: (28) Operation timed out after 9001 milliseconds with 4098 bytes received\n"
+    },
+    {
+      "protocol": "vmess",
       "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3000 milliseconds with 0 bytes received"
     },
     {
-      "protocol": "hysteria2",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Operation timed out after 3001 milliseconds with 0 bytes received"
+      "protocol": "trojan",
+      "error": "trojan: socks port not opened"
     },
     {
-      "protocol": "hysteria2",
-      "error": "chatgpt: too slow (5.29s)"
+      "protocol": "trojan",
+      "error": "trojan: socks port not opened"
     },
     {
-      "protocol": "hysteria2",
-      "error": "chatgpt: too slow (5.35s)"
+      "protocol": "trojan",
+      "error": "trojan: socks port not opened"
     },
     {
-      "protocol": "hysteria2",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "protocol": "trojan",
+      "error": "trojan: socks port not opened"
     },
     {
-      "protocol": "hysteria2",
-      "error": "chatgpt: unexpected HTTP status 403"
+      "protocol": "trojan",
+      "error": "trojan: socks port not opened"
     },
     {
-      "protocol": "vmess",
-      "error": "chatgpt: unexpected HTTP status 403"
-    },
-    {
-      "protocol": "vmess",
-      "error": "vmess: socks port not opened"
-    },
-    {
-      "protocol": "vmess",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
-    },
-    {
-      "protocol": "vmess",
-      "error": "telegram_https: TLS/HTTPS failed: curl: (28) Connection timed out after 3002 milliseconds"
+      "protocol": "trojan",
+      "error": "trojan: socks port not opened"
     },
     {
       "protocol": "trojan",
@@ -492,15 +517,15 @@
     }
   ],
   "run_statistics": {
-    "precheck_candidates": 917,
-    "precheck_passed_nodes": 729,
-    "checked_nodes": 729,
-    "cascade_verified_nodes": 534,
-    "final_mihomo_ranked_nodes": 530,
-    "published_nodes": 530,
-    "duration_seconds": 184.91
+    "precheck_candidates": 936,
+    "precheck_passed_nodes": 737,
+    "checked_nodes": 737,
+    "cascade_verified_nodes": 551,
+    "final_mihomo_ranked_nodes": 542,
+    "published_nodes": 542,
+    "duration_seconds": 172.52
   },
-  "run_duration_seconds": 184.91,
+  "run_duration_seconds": 172.52,
   "admission_rule": "Geography and preliminary DNS latency filters are disabled. Every deduplicated candidate is first tested by Mihomo itself against Cloudflare; no positive delay means immediate rejection before the service cascade. Survivors must then pass every mandatory service probe. After the cascade, Mihomo performs a second fresh Cloudflare delay test. Only nodes with a positive FINAL Mihomo delay are eligible for publication, and all eligible nodes are ordered strictly by that final delay.",
   "note": "Node age does not matter. Previous nodes and new nodes are treated equally on every run. Preliminary Mihomo latency is only a dead-node filter. Service-probe latency is admission telemetry only. Final Mihomo latency is the sole publication ordering metric. Client AUTO uses the same Cloudflare test URL."
 }
